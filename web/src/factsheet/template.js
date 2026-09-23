@@ -70,11 +70,11 @@ export function generateFactSheetHTML(geo) {
             <h3><span class="fs-card-icon">${ICONS.dollar}</span>Tax Credits</h3>
             <h4>Child Tax Credit (CTC)</h4>
             <ul>
-              <li>Families receive an average of <span class="fs-hi">${esc(geo.ctcAvg)}</span> per year, with a participation rate of <span class="fs-hi">${esc(geo.ctcRate)}</span>.</li>
+              <li>Families who claim it receive an average of <span class="fs-hi">${esc(geo.ctcAvg)}</span> per year. It is claimed on <span class="fs-hi">${esc(geo.ctcRate)}</span> of all tax returns.</li>
             </ul>
             <h4>Federal Earned Income Tax Credit (EITC)</h4>
             <ul>
-              <li>Working families receive an average of <span class="fs-hi">${esc(geo.eitcAvg)}</span> annually, with <span class="fs-hi">${esc(geo.eitcRate)}</span> of eligible families participating.</li>
+              <li>Working families who claim it receive an average of <span class="fs-hi">${esc(geo.eitcAvg)}</span> per year. It is claimed on <span class="fs-hi">${esc(geo.eitcRate)}</span> of all tax returns.</li>
             </ul>
             <h4>State Earned Income Tax Credit</h4>
             <ul>
@@ -87,7 +87,7 @@ export function generateFactSheetHTML(geo) {
             <h4>SNAP</h4>
             <ul>
               <li>About <strong>${esc(geo.snapRate)}</strong> of households participate in SNAP.</li>
-              <li>Participants receive an average of <span class="fs-hi">${esc(geo.avgMonthlyBenefit)}</span> per month — about <span class="fs-hi">${esc(geo.dailyPerPerson)}</span> per person per day.</li>
+              <li>Participating households receive an average of <span class="fs-hi">${esc(geo.avgMonthlyBenefit)}</span> per month—about <span class="fs-hi">${esc(geo.dailyPerHousehold)}</span> a day.</li>
               <li>SNAP brought <span class="fs-hi">${esc(geo.snapTotal)}</span> in benefits to ${esc(nameUpper)}.</li>
             </ul>
             <h4>School Meals (CEP)</h4>

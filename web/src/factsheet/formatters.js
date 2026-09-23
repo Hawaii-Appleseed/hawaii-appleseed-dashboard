@@ -83,9 +83,11 @@ export function buildGeoData(props, stateSummary) {
   const aliceRate = parseFloat(props.alice_rate) || 0;
   const snapRate = props.snap_household_rate;
   const snapTotal = props.snap_benefits_annual_total;
+  // Annual benefit dollars per participating SNAP household. The source has no
+  // person counts, so the daily figure stays per household, not per person.
   const snapPerHH = props.snap_benefit_annual_per_household;
   const monthlyBenefit = snapPerHH ? parseFloat(snapPerHH) / 12 : 0;
-  const dailyPerPerson = monthlyBenefit ? monthlyBenefit / 30 : 0;
+  const dailyPerHousehold = snapPerHH ? parseFloat(snapPerHH) / 365 : 0;
   const rentBurden = props.rent_burden_rate;
   const severeRentBurden = props.severe_rent_burden_rate;
   let renterRate = props.renter_rate;
@@ -106,7 +108,7 @@ export function buildGeoData(props, stateSummary) {
     snapRate: formatNumber(snapRate, { isPercent: true }),
     snapTotal: formatNumber(snapTotal, { isCurrency: true }),
     avgMonthlyBenefit: formatNumber(monthlyBenefit, { isCurrency: true, decimals: 2 }),
-    dailyPerPerson: formatNumber(dailyPerPerson, { isCurrency: true, decimals: 2 }),
+    dailyPerHousehold: formatNumber(dailyPerHousehold, { isCurrency: true, decimals: 2 }),
     ctcAvg: formatNumber(props.ctc_avg_amount, { isCurrency: true }),
     ctcRate: formatNumber(props.ctc_participation_rate, { isPercent: true }),
     eitcAvg: formatNumber(props.federal_eitc_avg_amount, { isCurrency: true }),
