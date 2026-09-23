@@ -1,4 +1,4 @@
-import { getSchemeColors, getThresholds, listSchemes } from '../map/colors.js';
+import { getSchemeColors, getThresholds, listSchemes, classColor } from '../map/colors.js';
 import { getState, setState } from '../state/store.js';
 
 let VARIABLES = null;
@@ -25,33 +25,42 @@ function pickDecimalsForGrades(grades, divisor) {
   return 2;
 }
 
-function formatRange(from, next, dataType, decimals) {
+// One boundary on its own, as the open-ended rows print it: the "45%" in
+// "45%+", the "$50k" in "<$50k".
+function formatBound(value, dataType, decimals, divisor) {
+  const isPct = dataType === 'percentage' || /rate|pct|percent/.test(dataType || '');
+  const isCurrency = dataType === 'currency' || /income|value|benefit|amount/.test(dataType || '');
+  if (isPct) return `${value}%`;
+  if (isCurrency) {
+    // 2-decimal k/M reads worse than full numbers — fall back to comma form.
+    if (divisor > 1 && value >= 1_000_000 && decimals < 2) return `$${(value / 1_000_000).toFixed(Math.max(1, decimals))}M`;
+    if (divisor > 1 && value >= 1000 && decimals < 2) return `$${(value / 1000).toFixed(decimals)}k`;
+    return `$${value.toLocaleString()}`;
+  }
+  if (dataType === 'count') return value.toLocaleString();
+  if (dataType === 'decimal') return value.toFixed(decimals);
+  return `${value}`;
+}
+
+function formatRange(from, next, dataType, decimals, divisor) {
+  if (next === undefined) return `${formatBound(from, dataType, decimals, divisor)}+`;
+
   const isPct = dataType === 'percentage' || /rate|pct|percent/.test(dataType || '');
   const isCurrency = dataType === 'currency' || /income|value|benefit|amount/.test(dataType || '');
   const isCount = dataType === 'count';
   const isDecimal = dataType === 'decimal';
 
-  if (next === undefined) {
-    if (isPct) return `${from}%+`;
-    if (isCurrency) {
-      // 2-decimal k/M reads worse than full numbers — fall back to comma form.
-      if (from >= 1_000_000 && decimals < 2) return `$${(from / 1_000_000).toFixed(Math.max(1, decimals))}M+`;
-      if (from >= 1000 && decimals < 2) return `$${(from / 1000).toFixed(decimals)}k+`;
-      return `$${from.toLocaleString()}+`;
-    }
-    if (isCount) return `${from.toLocaleString()}+`;
-    if (isDecimal) return `${from.toFixed(decimals)}+`;
-    return `${from}+`;
-  }
-
   if (isDecimal) return `${from.toFixed(decimals)}-${next.toFixed(decimals)}`;
   if (isPct) return `${from}-${next}%`;
   if (isCurrency) {
-    if (from >= 1_000_000 && decimals < 2) {
+    // k/M only when the whole legend is in thousands (divisor > 1), since
+    // `decimals` was picked for that divisor. A legend that starts in the
+    // hundreds stays in full dollars, or $1,000–1,250 would print "$1k-1k".
+    if (divisor > 1 && from >= 1_000_000 && decimals < 2) {
       const d = Math.max(1, decimals);
       return `$${(from / 1_000_000).toFixed(d)}M-${(next / 1_000_000).toFixed(d)}M`;
     }
-    if (from >= 1000 && decimals < 2) {
+    if (divisor > 1 && from >= 1000 && decimals < 2) {
       return `$${(from / 1000).toFixed(decimals)}k-${(next / 1000).toFixed(decimals)}k`;
     }
     return `$${from.toLocaleString()}-${next.toLocaleString()}`;
@@ -110,8 +119,12 @@ export function renderLegend(varKey, scheme) {
 
   let html = '';
   for (let i = 0; i < grades.length; i++) {
-    const range = formatRange(grades[i], grades[i + 1], dataType, decimals);
-    const c = colors[Math.min(i, colors.length - 1)];
+    // The first class also holds everything below grades[0] (see
+    // stepColorExpression), so it reads "<next" instead of "from-next".
+    const range = i === 0 && grades.length > 1
+      ? `&lt;${formatBound(grades[1], dataType, decimals, divisor)}`
+      : formatRange(grades[i], grades[i + 1], dataType, decimals, divisor);
+    const c = classColor(i, colors);
     html += `<div class="legend-item"><i style="background:${c};${swatchStyle}"></i><span>${range}</span></div>`;
   }
 

@@ -1,5 +1,5 @@
 import { getMap } from './mapInstance.js';
-import { getThresholds, getSchemeColors } from './colors.js';
+import { getThresholds, getSchemeColors, stepColorExpression } from './colors.js';
 import { loadLayer, fetchJson } from '../data/loader.js';
 import { bindLayerInteraction, bindPointsInteraction, clearSelectedLayer } from './popup.js';
 import { registerShadowLayer, prewarmShadowLayer, setShadowFeature, SHADOW_LAYER_ID } from './shadowLayer.js';
@@ -207,17 +207,13 @@ function colorExpression(variable, scheme) {
     ['==', ['typeof', ['get', variable]], 'number'], ['to-number', ['get', variable]],
     0,
   ];
-  const step = ['step', numericValue, colors[0]];
-  for (let i = 0; i < thresholds.length; i++) {
-    step.push(thresholds[i], colors[Math.min(i + 1, colors.length - 1)]);
-  }
   return [
     'case',
     ['all',
       ['!', ['has', numField]],
       ['!=', ['typeof', ['get', variable]], 'number'],
     ], '#cccccc',
-    step,
+    stepColorExpression(numericValue, thresholds, colors),
   ];
 }
 
@@ -462,11 +458,7 @@ function buildCircleRadiusExpr(countField) {
 
 function buildCircleColorExpr(countField, thresholds, colors) {
   const value = ['to-number', ['coalesce', ['get', countField], 0]];
-  const step = ['step', value, colors[0]];
-  for (let i = 0; i < thresholds.length; i++) {
-    step.push(thresholds[i], colors[Math.min(i + 1, colors.length - 1)]);
-  }
-  return step;
+  return stepColorExpression(value, thresholds, colors);
 }
 
 // Variable mode → scheme-tied colors (the circles are the data, so they follow

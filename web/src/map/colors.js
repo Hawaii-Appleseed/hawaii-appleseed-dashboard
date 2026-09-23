@@ -19,6 +19,26 @@ export function getThresholds(varKey) {
   return (v && v.color_thresholds) || DEFAULT_THRESHOLDS;
 }
 
+// Color classes, one per legend row: class i spans [thresholds[i],
+// thresholds[i+1]) and is drawn in colors[i]. Class 0 also takes everything
+// below thresholds[1], which the legend labels "<thresholds[1]". The map fill,
+// the point circles and the legend all go through these two helpers so the
+// map can't drift out of step with its legend.
+export function classColor(i, colors) {
+  return colors[Math.min(i, colors.length - 1)];
+}
+
+// MapLibre `step` expression that paints `input` by the classes above.
+export function stepColorExpression(input, thresholds, colors) {
+  // `step` needs at least one stop; below two thresholds there is one class.
+  if (thresholds.length < 2) return classColor(0, colors);
+  const expr = ['step', input, classColor(0, colors)];
+  for (let i = 1; i < thresholds.length; i++) {
+    expr.push(thresholds[i], classColor(i, colors));
+  }
+  return expr;
+}
+
 export function getColorForValue(value, varKey, scheme) {
   const colors = getSchemeColors(scheme);
   const thresholds = getThresholds(varKey);
