@@ -1320,28 +1320,57 @@ select {
   white-space: normal;
 }
 
-/* ========== Find an area (areaSearch.js) ========== */
+/* ========== Find an area (areaSearch.js) ==========
+   A map button in the zoom/reset column (MapLibre stacks those at 10px
+   margins: zoom 10–74px, reset 84–116px), opening the box beside it. */
 .area-search {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 1050; /* over the map controls; the info panel pushes it aside */
-  width: 280px;
-  max-width: calc(100% - 64px); /* clear of the zoom buttons */
+  top: 126px;
+  left: 10px;
+  z-index: 1050; /* over the map controls */
 }
-.area-search > svg {
-  position: absolute;
-  top: 10px;
-  left: 12px;
+.area-search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md), 0 0 0 1px var(--line);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.area-search-btn svg {
   width: 16px;
   height: 16px;
-  color: var(--ink-3);
-  pointer-events: none;
+}
+.area-search-btn:hover,
+.area-search-btn[aria-expanded="true"] {
+  background: var(--surface-sunken);
+  color: var(--accent);
+}
+.area-search-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring), var(--shadow-md);
+}
+.area-search-pop {
+  position: absolute;
+  top: 0;
+  left: 42px;
+  width: 280px;
+  max-width: calc(100vw - 72px);
+  animation: popIn var(--dur) var(--ease);
+}
+.area-search-pop[hidden] {
+  display: none;
 }
 .area-search input {
   width: 100%;
-  height: 36px;
-  padding: 0 12px 0 34px;
+  height: 32px;
+  padding: 0 12px;
   background: var(--surface);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-md);
@@ -1395,15 +1424,6 @@ select {
   padding: 12px 10px;
   font-size: var(--text-sm);
   color: var(--ink-3);
-}
-.map-wrap:has(.info-panel.visible) .area-search {
-  right: 372px;
-}
-@media (max-width: 760px) {
-  /* Phones: the panel is at the bottom, so the box stays put. */
-  .map-wrap:has(.info-panel.visible) .area-search {
-    right: 12px;
-  }
 }
 
 /* ========== Info panel ========== */

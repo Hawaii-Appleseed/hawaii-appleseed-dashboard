@@ -88,11 +88,27 @@ function close() {
   active = -1;
 }
 
+// The box itself: hidden behind the map button until wanted.
+function openBox() {
+  els.pop.hidden = false;
+  els.btn.setAttribute('aria-expanded', 'true');
+  els.input.focus();
+}
+
+function closeBox(focusButton) {
+  close();
+  els.input.value = '';
+  els.pop.hidden = true;
+  els.btn.setAttribute('aria-expanded', 'false');
+  if (focusButton) els.btn.focus();
+}
+
 function choose(li, fromKeyboard) {
   const o = options[Number(li.dataset.i)];
   if (!o) return;
-  els.input.value = o.name;
-  close();
+  closeBox(false);
+  // Escape from the info panel returns focus to the map button.
+  els.btn.focus({ preventScroll: true });
   // Keyboard users follow the selection into the info panel; Escape brings
   // them back here.
   selectFeature(o.level, o.feature, { focusPanel: fromKeyboard });
@@ -102,10 +118,22 @@ export function initAreaSearch() {
   const root = document.getElementById('area-search');
   if (!root) return;
   els = {
+    btn: root.querySelector('.area-search-btn'),
+    pop: root.querySelector('.area-search-pop'),
     input: root.querySelector('input'),
     list: root.querySelector('[role="listbox"]'),
   };
-  const { input, list } = els;
+  const { input, list, btn, pop } = els;
+
+  btn.addEventListener('click', () => (pop.hidden ? openBox() : closeBox(false)));
+  // "/" opens it from anywhere that isn't a text field.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.target.closest?.('input, textarea, select, [contenteditable]')) return;
+    if (document.getElementById('tab-map')?.hidden) return;
+    e.preventDefault();
+    openBox();
+  });
 
   // The list opens on typing, a click or ArrowDown — not on focus alone, so
   // tabbing through (or coming back from the info panel) stays quiet.
@@ -126,11 +154,9 @@ export function initAreaSearch() {
         if (!list.hidden && active >= 0) { e.preventDefault(); choose(items()[active], true); }
         break;
       case 'Escape':
-        if (!list.hidden) {
-          // Handled here: don't let it also close the info panel.
-          e.preventDefault();
-          if (input.value) { input.value = ''; render(''); } else close();
-        }
+        // Handled here: don't let it also close the info panel.
+        e.preventDefault();
+        if (input.value) { input.value = ''; render(''); } else closeBox(true);
         break;
       case 'Tab':
         close();
@@ -150,8 +176,12 @@ export function initAreaSearch() {
     if (li) choose(li, false);
   });
   document.addEventListener('pointerdown', (e) => {
-    if (!list.hidden && !root.contains(e.target)) close();
+    if (!pop.hidden && !root.contains(e.target)) closeBox(false);
   }, true);
+  // Tabbing out of the box folds it back into the button.
+  root.addEventListener('focusout', (e) => {
+    if (!pop.hidden && e.relatedTarget && !root.contains(e.relatedTarget)) closeBox(false);
+  });
 
   // A new geography means a new list of areas.
   const placeholder = (level) => {
@@ -162,8 +192,7 @@ export function initAreaSearch() {
   subscribe((state, changed) => {
     if ('activeLayer' in changed) {
       options = [];
-      input.value = '';
-      close();
+      closeBox(false);
       placeholder(state.activeLayer);
     }
   });
