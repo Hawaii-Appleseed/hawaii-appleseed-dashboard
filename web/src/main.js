@@ -1,7 +1,7 @@
 import './map/perfFlags.js'; // must be first — applies CSS kills before paint
 import { loadConfig, loadRepData } from './data/loader.js';
 import { initColors } from './map/colors.js';
-import { createMap, getMap } from './map/mapInstance.js';
+import { createMap, getMap, fitHome } from './map/mapInstance.js';
 import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, getFeatureProperties, initLayerManager } from './map/layerManager.js';
 import { initPopup } from './map/popup.js';
 import { initDiag } from './map/diag.js';
@@ -120,6 +120,10 @@ async function main() {
       });
     }
   }
+
+  // The controls bar, legend and embed styling are all in place now, and each
+  // changes how much of the map is visible — so settle the starting view here.
+  fitHome();
 
   // Tab switching
   document.querySelectorAll('.main-tab').forEach((btn) => {

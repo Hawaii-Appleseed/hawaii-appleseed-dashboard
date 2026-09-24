@@ -40,6 +40,7 @@
   "map": {
     "center": [20.65, -157.65],
     "zoom": 6.8,
+    "bounds": [[18.91, -160.25], [22.24, -154.8]],
     "zoom_snap": 0,
     "zoom_delta": 0.5,
     "zoom_animation_threshold": 4,
