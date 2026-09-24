@@ -20,7 +20,7 @@
   --gray-100: #eaece7;
   --gray-200: #dcdfd8;
   --gray-300: #c3c8bf;
-  --gray-500: #778077;
+  --gray-500: #687068; /* 4.5:1 on --gray-50, for placeholder and helper text */
   --gray-600: #5a625a;
   --gray-800: #2b322c;
   --gray-900: #161c17;
@@ -522,12 +522,19 @@ select {
    sets a "sticky" :hover that would leave the menu stuck open. Keyboard and
    touch open them through the `.open` class instead (sidebar.js). */
 @media (hover: hover) {
-  .cascade-root:hover > .cascade-menu,
-  .cascade-parent:hover > .cascade-menu {
+  .cascade-root:hover > .cascade-menu {
     display: block;
   }
   .cascade-root:hover > .cascade-trigger .cascade-trigger-caret {
     transform: rotate(180deg);
+  }
+}
+/* Sub-menus fly out on hover on wide screens. Below 900px they unfold in
+   place, so hovering would collapse one as the pointer moves past it and
+   make the rows jump; there a click opens them (sidebar.js). */
+@media (hover: hover) and (min-width: 901px) {
+  .cascade-parent:hover > .cascade-menu {
+    display: block;
   }
 }
 .cascade-root.open > .cascade-menu,

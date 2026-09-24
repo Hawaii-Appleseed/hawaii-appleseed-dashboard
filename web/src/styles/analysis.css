@@ -226,3 +226,8 @@ body:has(> .da-main) {
     grid-template-columns: 1fr;
   }
 }
+
+.da-full-table-wrap:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

@@ -299,9 +299,11 @@ export function bindLayerInteraction(map, level) {
       const panel = document.getElementById('info-panel');
       const panelOpen = panel && panel.classList.contains('visible');
       const sidePad = 70;
-      const rightPad = panelOpen
-        ? (panel.getBoundingClientRect().width || 360) + sidePad
-        : sidePad;
+      // Leave room for the panel beside the district, unless the panel
+      // covers most of the map (phones), where there is no room to leave.
+      const panelW = panelOpen ? (panel.getBoundingClientRect().width || 360) : 0;
+      const mapW = map.getContainer().clientWidth;
+      const rightPad = panelW && panelW + sidePad * 2 < mapW * 0.8 ? panelW + sidePad : sidePad;
       try {
         map.fitBounds(bounds, {
           padding: { top: sidePad, bottom: sidePad, left: sidePad, right: rightPad },

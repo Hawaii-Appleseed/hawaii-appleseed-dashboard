@@ -245,6 +245,8 @@ function renderColumn(rootKey, tag, tagStyle, items, currentKey, placeholder) {
 // of sub-menus, and Escape backs out. Touch screens can't hover, so there a
 // tap on a trigger or a sub-menu row toggles it open (the `.open` class).
 const CAN_HOVER = window.matchMedia?.('(hover: hover)').matches ?? true;
+// Below 900px sub-menus unfold in place and open on click, even with a mouse.
+const NARROW = window.matchMedia?.('(max-width: 900px)');
 let menusBound = false;
 let focusTriggerAfterRender = null; // column whose trigger gets focus back after a keyboard pick
 
@@ -383,7 +385,8 @@ function bindMenus(bar) {
       if (root.classList.contains('open')) closeMenus(bar);
       else openRoot(bar, root, byKeyboard ? 'first' : null);
     } else if (label) {
-      if (CAN_HOVER) return; // hover opens sub-menus; keys go through keydown
+      // Wide screens: hover opens sub-menus; keys go through keydown.
+      if (CAN_HOVER && !NARROW?.matches) return;
       const li = label.parentElement;
       if (li.classList.contains('open')) setOpen(li, false);
       else openSubmenu(li, false);

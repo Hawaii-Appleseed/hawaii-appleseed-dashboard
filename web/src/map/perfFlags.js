@@ -51,6 +51,9 @@ if (typeof window !== 'undefined') {
     el.textContent = `.info-panel { display: none !important; }`;
     document.head.appendChild(el);
   }
-  // eslint-disable-next-line no-console
-  console.log('[perfFlags]', FLAGS);
+  // Only worth logging when a flag is actually set.
+  if (Object.values(FLAGS).some((v) => v !== false && v !== null)) {
+    // eslint-disable-next-line no-console
+    console.log('[perfFlags]', FLAGS);
+  }
 }

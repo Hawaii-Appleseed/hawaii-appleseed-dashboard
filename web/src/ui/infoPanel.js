@@ -318,6 +318,13 @@ function bindHeadlineTooltip(el) {
   el.addEventListener('blur', hide);
 }
 
+// Escape closes the panel (unless a menu or popover is handling it).
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || e.defaultPrevented) return;
+  if (document.querySelector('.cascade-root.open, #map-options:not([hidden])')) return;
+  if (document.getElementById('info-panel')?.classList.contains('visible')) hideInfoPanel();
+});
+
 export function hideInfoPanel() {
   const panel = document.getElementById('info-panel');
   if (panel) panel.classList.remove('visible');
