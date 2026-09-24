@@ -8,10 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/hawaii-appleseed-dashboard/assets/main-KbQsXJBY.js"></script>
+    <script type="module" crossorigin src="/hawaii-appleseed-dashboard/assets/main-MkJpfX_1.js"></script>
     <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/loader-xgymrUWK.js">
-    <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/store-XYcRBNDa.js">
-    <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/store-DaUKH1t4.css">
+    <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/store-shgm4nmu.js">
+    <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/store-C2xGuNdq.css">
     <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/main-CuCRB34y.css">
   </head>
   <body>
@@ -41,10 +41,16 @@
           Open
         </button>
         <section class="map-wrap">
+          <!-- "Find an area": a map button under zoom/reset that opens the
+               search box beside it (areaSearch.js). -->
           <div id="area-search" class="area-search" role="search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input type="text" role="combobox" aria-expanded="false" aria-controls="area-search-list" aria-autocomplete="list" aria-label="Find a county or district" placeholder="Find a county" autocomplete="off" spellcheck="false" />
-            <ul id="area-search-list" class="area-list" role="listbox" aria-label="Areas" hidden></ul>
+            <button type="button" class="area-search-btn" aria-expanded="false" aria-controls="area-search-pop" aria-label="Find an area" title="Find an area (/)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </button>
+            <div id="area-search-pop" class="area-search-pop" hidden>
+              <input type="text" role="combobox" aria-expanded="false" aria-controls="area-search-list" aria-autocomplete="list" aria-label="Find a county or district" placeholder="Find a county" autocomplete="off" spellcheck="false" />
+              <ul id="area-search-list" class="area-list" role="listbox" aria-label="Areas" hidden></ul>
+            </div>
           </div>
           <div id="main-map" class="map-container"></div>
           <div id="main-map-legend" class="map-legend">
