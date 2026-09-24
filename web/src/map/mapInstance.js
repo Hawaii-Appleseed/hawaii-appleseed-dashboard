@@ -4,6 +4,16 @@ import { FLAGS } from './perfFlags.js';
 import { installSmoothWheelZoom } from './smoothWheelZoom.js';
 
 let mapInstance = null;
+let mapReady = false; // MapLibre's one-time 'load' has fired: the style is in
+
+// Run `fn` once layers can be added. Wait on that one-time 'load' rather than
+// isStyleLoaded(), which also reads false whenever a source is re-processing
+// (for as long as it likes while the map is hidden behind the Data tab, which
+// stops rendering) — a 'load' that has already fired would never come.
+export function whenMapReady(fn) {
+  if (mapReady) fn();
+  else mapInstance.once('load', fn);
+}
 
 // Starting view. theme.json's center/zoom suit a desktop window; on smaller
 // maps (phones, embeds) that zoom crops islands, so homeCamera() zooms out to
@@ -154,6 +164,7 @@ export function createMap(containerId, theme) {
     mapOpts.pixelRatio = FLAGS.lowDpr;
   }
   mapInstance = new maplibregl.Map(mapOpts);
+  mapInstance.once('load', () => { mapReady = true; });
   mapInstance.touchZoomRotate?.disableRotation();
 
   // Self-heal against container-size races (e.g. embedded in an iframe whose
@@ -166,7 +177,8 @@ export function createMap(containerId, theme) {
   if (container && typeof ResizeObserver !== 'undefined') {
     const ro = new ResizeObserver(() => {
       mapInstance.resize();
-      if (followHome) goHome(false);
+      // While the Data tab shows, the hidden map has no size to fit into.
+      if (followHome && container.clientWidth && container.clientHeight) goHome(false);
     });
     ro.observe(container);
   }

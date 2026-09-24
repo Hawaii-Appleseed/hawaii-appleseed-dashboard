@@ -1,5 +1,6 @@
 import { loadConfig, loadLayer } from './data/loader.js';
 import { renderChart, renderFullTable } from './analysis/charts.js';
+import { getState, setState } from './state/store.js';
 
 const LAYERS = [
   { key: 'state', label: 'State Boundary' },
@@ -12,13 +13,41 @@ let config = null;
 let activeLayer = 'county';
 let activeVar = 'poverty_rate';
 let initialized = false;
+let layerSel = null;
+let varSel = null;
+// Inside the dashboard the Data tab shares the map's geography and variable:
+// it opens on whatever the map shows, and a change here carries back to the
+// map. (The standalone data-analysis.html page has no map and reads ?layer=
+// and ?var= instead.)
+let linkedToMap = false;
 
+// Called every time the dashboard's Data tab opens.
 export async function initAnalysis(sharedConfig) {
-  if (initialized) return;
-  initialized = true;
-  config = sharedConfig || await loadConfig();
-  buildControls();
-  await refreshChart();
+  linkedToMap = true;
+  config = config || sharedConfig || await loadConfig();
+  const s = getState();
+  const layer = LAYERS.some((l) => l.key === s.activeLayer) ? s.activeLayer : activeLayer;
+  // Map-only variables (the Millionaires markers) have no Data view, so keep
+  // the tab's own pick for those, without touching the map's.
+  const variable = isChartable(s.selectedVariable) ? s.selectedVariable : activeVar;
+  const changed = layer !== activeLayer || variable !== activeVar;
+  activeLayer = layer;
+  activeVar = variable;
+  if (!initialized) {
+    initialized = true;
+    buildControls();
+    await refreshChart();
+  } else if (changed) {
+    layerSel.value = activeLayer;
+    varSel.value = activeVar;
+    await refreshChart();
+  }
+}
+
+// Whether a variable is offered in the Data tab (see buildControls).
+function isChartable(key) {
+  const v = config.variables?.variables?.[key];
+  return !!v && v.show_in_dropdown && v.render_type !== 'points';
 }
 
 async function main() {
@@ -39,13 +68,17 @@ function buildControls() {
   const groups = config.variables?.dropdown_groups || {};
 
   // Layer selector
-  const layerSel = document.createElement('select');
+  layerSel = document.createElement('select');
   layerSel.className = 'da-select';
   layerSel.innerHTML = LAYERS.map((l) => `<option value="${l.key}" ${l.key === activeLayer ? 'selected' : ''}>${l.label}</option>`).join('');
-  layerSel.addEventListener('change', async () => { activeLayer = layerSel.value; await refreshChart(); });
+  layerSel.addEventListener('change', async () => {
+    activeLayer = layerSel.value;
+    if (linkedToMap) setState({ activeLayer });
+    await refreshChart();
+  });
 
   // Variable selector — grouped optgroups
-  const varSel = document.createElement('select');
+  varSel = document.createElement('select');
   varSel.className = 'da-select da-select-wide';
   const byGroup = {};
   for (const [key, v] of Object.entries(vars)) {
@@ -71,7 +104,11 @@ function buildControls() {
     }
     varSel.appendChild(og);
   }
-  varSel.addEventListener('change', async () => { activeVar = varSel.value; await refreshChart(); });
+  varSel.addEventListener('change', async () => {
+    activeVar = varSel.value;
+    if (linkedToMap) setState({ selectedVariable: activeVar });
+    await refreshChart();
+  });
 
   root.innerHTML = '';
   const layerWrap = document.createElement('label');

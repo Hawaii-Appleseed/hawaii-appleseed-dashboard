@@ -1,4 +1,4 @@
-import { getMap } from './mapInstance.js';
+import { getMap, whenMapReady } from './mapInstance.js';
 import { getThresholds, getSchemeColors, stepColorExpression } from './colors.js';
 import { loadLayer, fetchJson } from '../data/loader.js';
 import { bindLayerInteraction, bindPointsInteraction, clearSelectedLayer } from './popup.js';
@@ -620,11 +620,10 @@ export async function setLayer(level) {
     refreshReliability();
   };
 
-  if (map.isStyleLoaded()) {
-    apply();
-  } else {
-    map.once('load', apply);
-  }
+  // Not isStyleLoaded(): a variable picked right after this geography (as the
+  // Data tab does when both change) repaints the old level, which reads as
+  // "not loaded" until the next render, and the switch was being dropped.
+  whenMapReady(apply);
 }
 
 // Preload and register all level GeoJSON in the background so layer switches
