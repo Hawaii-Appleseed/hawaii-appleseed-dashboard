@@ -1,6 +1,5 @@
 import './map/perfFlags.js'; // must be first — applies CSS kills before paint
 import { loadConfig, loadRepData } from './data/loader.js';
-import { initAnalysis } from './analysis-main.js';
 import { initColors } from './map/colors.js';
 import { createMap, getMap } from './map/mapInstance.js';
 import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, getFeatureProperties, initLayerManager } from './map/layerManager.js';
@@ -137,10 +136,31 @@ async function main() {
         if (map) map.resize();
       }
       if (tab === 'data') {
-        await initAnalysis(config);
+        await openDataTab(config);
       }
     });
   });
+}
+
+// The Data tab brings in Plotly (~1.4 MB gzipped, most of the app's JS), so it
+// loads the first time the tab opens instead of with the map.
+let analysisModule = null;
+async function openDataTab(config) {
+  const chartEl = document.getElementById('da-chart');
+  if (!analysisModule) {
+    if (chartEl) chartEl.innerHTML = '<p class="da-loading">Loading…</p>';
+    analysisModule = import('./analysis-main.js');
+  }
+  try {
+    const { initAnalysis } = await analysisModule;
+    await initAnalysis(config);
+  } catch (err) {
+    analysisModule = null; // let the next click retry
+    console.error('Data tab failed to load:', err);
+    if (chartEl) {
+      chartEl.innerHTML = '<p style="color:#c0392b;padding:20px">Couldn’t load the data view. Check your connection and try again.</p>';
+    }
+  }
 }
 
 main().catch((err) => {
