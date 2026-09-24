@@ -172,6 +172,8 @@ function renderCascade(rootKey, items, currentKey, placeholder) {
   const triggerText = currentLabel || placeholder;
   const isSelected = !!currentLabel;
 
+  // Items take no Tab stop (tabindex -1): the trigger is the column's one Tab
+  // stop and arrow keys move within the menu (see onMenuKeydown).
   function renderItems(list) {
     return list
       .map((it) => {
@@ -180,24 +182,27 @@ function renderCascade(rootKey, items, currentKey, placeholder) {
           // empty row area shouldn't fire it. Position "above" so it
           // doesn't cover the submenu that opens to the right on hover.
           return `
-            <li class="cascade-parent">
-              <div class="cascade-label"><span class="cascade-label-text"${tipAttrs(it.tooltip, 'above')}>${escapeHtml(it.label)}</span><span class="cascade-caret" aria-hidden="true">›</span></div>
-              <ul class="cascade-menu">${renderItems(it.children)}</ul>
+            <li class="cascade-parent" role="none">
+              <div class="cascade-label" role="menuitem" tabindex="-1" aria-haspopup="menu" aria-expanded="false"><span class="cascade-label-text"${tipAttrs(it.tooltip, 'above')}>${escapeHtml(it.label)}</span><span class="cascade-caret" aria-hidden="true">›</span></div>
+              <ul class="cascade-menu" role="menu" aria-label="${escapeHtml(it.label)}">${renderItems(it.children)}</ul>
             </li>`;
         }
-        const sel = it.key === currentKey ? 'cascade-leaf--selected' : '';
-        return `<li class="cascade-leaf ${sel}"><a href="#" data-cascade-key="${escapeHtml(it.key)}"><span class="cascade-leaf-text"${tipAttrs(it.tooltip, 'right', it.year)}>${escapeHtml(it.label)}</span></a></li>`;
+        const selected = it.key === currentKey;
+        return `<li class="cascade-leaf ${selected ? 'cascade-leaf--selected' : ''}" role="none"><a href="#" role="menuitemradio" aria-checked="${selected}" tabindex="-1" data-cascade-key="${escapeHtml(it.key)}"><span class="cascade-leaf-text"${tipAttrs(it.tooltip, 'right', it.year)}>${escapeHtml(it.label)}</span></a></li>`;
       })
       .join('');
   }
 
+  // The trigger is a real button so it takes keyboard focus; its accessible
+  // name is the column tag plus the current pick ("Economic Security, ALICE
+  // Households").
   return `
     <div class="cascade-root" data-cascade-root="${rootKey}">
-      <div class="cascade-trigger">
-        <span class="cascade-current ${isSelected ? 'is-selected' : 'is-placeholder'}">${escapeHtml(triggerText)}</span>
+      <button type="button" class="cascade-trigger" aria-haspopup="menu" aria-expanded="false" aria-labelledby="ctrl-tag-${rootKey} cascade-current-${rootKey}">
+        <span class="cascade-current ${isSelected ? 'is-selected' : 'is-placeholder'}" id="cascade-current-${rootKey}">${escapeHtml(triggerText)}</span>
         <span class="cascade-trigger-caret" aria-hidden="true"><svg viewBox="0 0 12 8" width="11" height="8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1.5l5 5 5-5"/></svg></span>
-      </div>
-      <ul class="cascade-menu">${renderItems(items)}</ul>
+      </button>
+      <ul class="cascade-menu" role="menu" aria-labelledby="ctrl-tag-${rootKey}">${renderItems(items)}</ul>
     </div>`;
 }
 
@@ -207,9 +212,183 @@ function renderColumn(rootKey, tag, tagStyle, items, currentKey, placeholder) {
   // the four topics always read as a uniform set).
   return `
     <div class="ctrl-col">
-      <div class="ctrl-tag-wrap"><span class="ctrl-tag ${tagStyle}">${escapeHtml(tag)}</span></div>
+      <div class="ctrl-tag-wrap"><span class="ctrl-tag ${tagStyle}" id="ctrl-tag-${rootKey}">${escapeHtml(tag)}</span></div>
       ${renderCascade(rootKey, items, currentKey, placeholder)}
     </div>`;
+}
+
+// ── Keyboard and touch access ──────────────────────────────────────────────
+// Mouse users open the menus by hovering (CSS). Keyboard users follow the
+// WAI-ARIA menu-button pattern: Enter, Space or ArrowDown on a trigger opens
+// its menu, arrow keys move through it, ArrowRight/ArrowLeft go into and out
+// of sub-menus, and Escape backs out. Touch screens can't hover, so there a
+// tap on a trigger or a sub-menu row toggles it open (the `.open` class).
+const CAN_HOVER = window.matchMedia?.('(hover: hover)').matches ?? true;
+let menusBound = false;
+let focusTriggerAfterRender = null; // column whose trigger gets focus back after a keyboard pick
+
+function menuItems(menu) {
+  return [...menu.children].map((li) => li.firstElementChild).filter(Boolean);
+}
+
+// `el` is a .cascade-root or a .cascade-parent; closing it closes its sub-menus.
+function setOpen(el, open) {
+  el.classList.toggle('open', open);
+  el.querySelector(':scope > .cascade-trigger, :scope > .cascade-label')
+    ?.setAttribute('aria-expanded', String(open));
+  if (!open) el.querySelectorAll('.cascade-parent.open').forEach((p) => setOpen(p, false));
+}
+
+function closeMenus(bar, except = null) {
+  bar.querySelectorAll('.cascade-root.open').forEach((r) => { if (r !== except) setOpen(r, false); });
+  hideTooltip();
+}
+
+// Focus a menu item and show the description mouse users get on hover.
+function focusItem(el) {
+  if (!el) return;
+  el.focus();
+  const tip = el.querySelector('[data-tip]');
+  if (tip) showTooltip(tip, tip.dataset.tip, tip.dataset.tipPos, tip.dataset.tipYear);
+  else hideTooltip();
+}
+
+function openRoot(bar, root, focus) {
+  closeMenus(bar, root);
+  setOpen(root, true);
+  const items = menuItems(root.querySelector(':scope > .cascade-menu'));
+  if (focus === 'first') focusItem(items[0]);
+  if (focus === 'last') focusItem(items[items.length - 1]);
+}
+
+function openSubmenu(li, focus) {
+  for (const sibling of li.parentElement.children) {
+    if (sibling !== li && sibling.classList.contains('open')) setOpen(sibling, false);
+  }
+  setOpen(li, true);
+  if (focus) focusItem(menuItems(li.querySelector(':scope > .cascade-menu'))[0]);
+}
+
+function pick(bar, leaf, byKeyboard) {
+  const root = leaf.closest('.cascade-root');
+  const key = leaf.dataset.cascadeKey;
+  const patch = key.startsWith('layer:')
+    ? { activeLayer: key.slice('layer:'.length) }
+    : { selectedVariable: key };
+  const [prop, value] = Object.entries(patch)[0];
+  closeMenus(bar);
+  if (byKeyboard) {
+    // A real change re-renders the bar and destroys the focused item, so the
+    // trigger gets focus back after that render; otherwise straight away.
+    if (getState()[prop] !== value) focusTriggerAfterRender = root.dataset.cascadeRoot;
+    else root.querySelector('.cascade-trigger').focus();
+  }
+  setState(patch);
+}
+
+function onMenuKeydown(bar, e) {
+  const root = e.target.closest('.cascade-root');
+  if (!root) return;
+  if (e.target.matches('.cascade-trigger')) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      openRoot(bar, root, e.key === 'ArrowDown' ? 'first' : 'last');
+    } else if (e.key === 'Escape') {
+      closeMenus(bar);
+    }
+    return;
+  }
+  const item = e.target.closest('.cascade-label, a[data-cascade-key]');
+  if (!item) return;
+  const li = item.parentElement;
+  const isParent = li.classList.contains('cascade-parent');
+  const items = menuItems(li.parentElement);
+  const i = items.indexOf(item);
+  const owner = li.parentElement.parentElement.closest('.cascade-parent'); // set inside a sub-menu
+  const backOut = () => {
+    setOpen(owner, false);
+    focusItem(owner.querySelector(':scope > .cascade-label'));
+  };
+  switch (e.key) {
+    case 'ArrowDown': focusItem(items[(i + 1) % items.length]); break;
+    case 'ArrowUp': focusItem(items[(i - 1 + items.length) % items.length]); break;
+    case 'Home': focusItem(items[0]); break;
+    case 'End': focusItem(items[items.length - 1]); break;
+    case 'ArrowRight':
+      if (!isParent) return;
+      openSubmenu(li, true);
+      break;
+    case 'ArrowLeft':
+      if (!owner) return;
+      backOut();
+      break;
+    case 'Enter':
+    case ' ':
+      if (isParent) openSubmenu(li, true);
+      else item.click();
+      break;
+    case 'Escape':
+      if (owner) {
+        backOut();
+      } else {
+        closeMenus(bar);
+        root.querySelector('.cascade-trigger').focus();
+      }
+      break;
+    case 'Tab':
+      // Leave from the trigger, so Tab and Shift+Tab land on the neighbouring
+      // columns rather than wherever the hidden item sat.
+      root.querySelector('.cascade-trigger').focus();
+      closeMenus(bar);
+      return;
+    default:
+      return;
+  }
+  e.preventDefault();
+}
+
+// Bound once: the bar element persists while renderSidebar swaps its contents.
+function bindMenus(bar) {
+  bar.addEventListener('click', (e) => {
+    const byKeyboard = e.detail === 0; // Enter/Space and item.click() report detail 0
+    const trigger = e.target.closest('.cascade-trigger');
+    const label = e.target.closest('.cascade-label');
+    const leaf = e.target.closest('a[data-cascade-key]');
+    if (trigger) {
+      // A mouse has already opened the menu by hovering; toggling on its
+      // click too would pin the menu open after the pointer leaves.
+      if (CAN_HOVER && !byKeyboard) return;
+      const root = trigger.closest('.cascade-root');
+      if (root.classList.contains('open')) closeMenus(bar);
+      else openRoot(bar, root, byKeyboard ? 'first' : null);
+    } else if (label) {
+      if (CAN_HOVER) return; // hover opens sub-menus; keys go through keydown
+      const li = label.parentElement;
+      if (li.classList.contains('open')) setOpen(li, false);
+      else openSubmenu(li, false);
+    } else if (leaf) {
+      e.preventDefault();
+      pick(bar, leaf, byKeyboard);
+    }
+  });
+  bar.addEventListener('keydown', (e) => onMenuKeydown(bar, e));
+  // Tabbing away or tapping elsewhere closes a menu opened by keyboard or touch.
+  bar.addEventListener('focusout', (e) => {
+    const root = e.target.closest('.cascade-root');
+    if (root && !root.contains(e.relatedTarget)) {
+      setOpen(root, false);
+      hideTooltip();
+    }
+  });
+  document.addEventListener('pointerdown', (e) => {
+    if (!bar.contains(e.target)) closeMenus(bar);
+  }, true);
+  // Hovering another column shouldn't leave a keyboard-opened menu showing too.
+  bar.addEventListener('mouseover', (e) => {
+    const root = e.target.closest('.cascade-root');
+    if (!root) return;
+    bar.querySelectorAll('.cascade-root.open').forEach((r) => { if (r !== root) setOpen(r, false); });
+  });
 }
 
 let TOOLTIP_EL = null;
@@ -312,14 +491,15 @@ function hideTooltip() {
 }
 
 function attachTooltipListeners(root) {
+  // On a touch screen a tap would pop the tooltip up over the menu being used,
+  // so hover tooltips are mouse-only. Keyboard focus shows them via focusItem.
+  if (!CAN_HOVER) return;
   const tipped = root.querySelectorAll('[data-tip]');
   tipped.forEach((node) => {
     const pos = node.dataset.tipPos;
     const year = node.dataset.tipYear;
     node.addEventListener('mouseenter', () => showTooltip(node, node.dataset.tip, pos, year));
     node.addEventListener('mouseleave', hideTooltip);
-    node.addEventListener('focus', () => showTooltip(node, node.dataset.tip, pos, year));
-    node.addEventListener('blur', hideTooltip);
   });
 }
 
@@ -389,19 +569,16 @@ export function renderSidebar() {
   const varHeader = '<div class="ctrl-header">Choose your variable</div>';
   root.innerHTML = geoCol + varHeader + econCol + foodCol + housingCol + healthCol;
 
-  root.querySelectorAll('a[data-cascade-key]').forEach((a) => {
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      const key = a.dataset.cascadeKey;
-      if (key.startsWith('layer:')) {
-        setState({ activeLayer: key.slice('layer:'.length) });
-      } else {
-        setState({ selectedVariable: key });
-      }
-    });
-  });
-
+  if (!menusBound) {
+    bindMenus(root);
+    menusBound = true;
+  }
   attachTooltipListeners(root);
+
+  if (focusTriggerAfterRender) {
+    root.querySelector(`[data-cascade-root="${focusTriggerAfterRender}"] .cascade-trigger`)?.focus();
+    focusTriggerAfterRender = null;
+  }
 }
 
 export function reflectSidebar() {
