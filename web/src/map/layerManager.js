@@ -149,15 +149,40 @@ const FADE_MS = 300;
 const pendingHide = new Map(); // level → setTimeout id
 
 // Opacity expressions as constants so fade-in can restore them after zeroing out.
-// 0.75 idle → 0.92 on hover → 1.0 when selected. Combined with the
-// fill-opacity-transition (300ms) this gives a soft "brighten" feel when the
-// cursor enters a geo — no extra layer needed.
+// Solid fills (the legend shows the same colors), lightening a touch under
+// the cursor; with the 300ms fill-opacity-transition that reads as a soft
+// hover cue. The selected area stays solid.
 const FILL_OPACITY_EXPR = [
   'case',
   ['boolean', ['feature-state', 'selected'], false], 1.0,
-  ['boolean', ['feature-state', 'hover'], false], 0.92,
-  0.75,
+  ['boolean', ['feature-state', 'hover'], false], 0.82,
+  1.0,
 ];
+// While an area is picked, the others fade back so it stands out whatever
+// its color (a dark outline alone vanishes on the darkest classes).
+const FILL_OPACITY_FOCUS_EXPR = [
+  'case',
+  ['boolean', ['feature-state', 'selected'], false], 1.0,
+  ['boolean', ['feature-state', 'hover'], false], 0.7,
+  0.45,
+];
+let selectionFocus = false;
+const fillOpacity = () => (selectionFocus ? FILL_OPACITY_FOCUS_EXPR : FILL_OPACITY_EXPR);
+
+// Borders between areas: thin white lines that thicken as you zoom in, so
+// Honolulu's small districts don't blur into a mesh at the statewide view.
+const LINE_COLOR = '#ffffff';
+const LINE_OPACITY = 0.95;
+const LINE_WIDTH_EXPR = ['interpolate', ['linear'], ['zoom'], 6, 0.5, 9, 1, 12, 1.75];
+
+// The islands' coastline, drawn under every level's fills as a thin dark
+// halo: the solid fills cover its inner half, so only a crisp edge shows
+// outside the shapes, and a light district still has an edge against the
+// background. (District coasts don't match the county outline vertex for
+// vertex; drawing it underneath hides the small differences.)
+const COAST_LAYER_ID = 'coastline';
+const COAST_COLOR = '#6f786f';
+const COAST_WIDTH_EXPR = ['interpolate', ['linear'], ['zoom'], 6, 1.4, 9, 2, 12, 3];
 
 // Feature-state gated value: returns `whenSelected` if the feature has selected
 // state, else `whenNot` (0). Used for opacity, width, etc.
@@ -217,6 +242,29 @@ function colorExpression(variable, scheme) {
   ];
 }
 
+let coastRequested = false;
+async function ensureCoastline(map) {
+  if (coastRequested) return;
+  coastRequested = true;
+  let data;
+  try {
+    data = await loadLayer('county');
+  } catch (err) {
+    console.warn('coastline: county outline failed to load', err);
+    return;
+  }
+  if (map.getLayer(COAST_LAYER_ID)) return;
+  map.addSource(COAST_LAYER_ID, { type: 'geojson', data });
+  // Straight after the background, so every level's fill sits on top of it.
+  const firstAbove = map.getStyle().layers.find((l) => l.id !== 'bg')?.id;
+  map.addLayer({
+    id: COAST_LAYER_ID,
+    type: 'line',
+    source: COAST_LAYER_ID,
+    paint: { 'line-color': COAST_COLOR, 'line-width': COAST_WIDTH_EXPR, 'line-opacity': 0.9 },
+  }, firstAbove);
+}
+
 function fillLayerIds(level) {
   return [
     `${level}-fill`,
@@ -247,7 +295,7 @@ function ensureSourceAndLayers(map, level, data) {
     layout: { visibility: 'none' },
     paint: {
       'fill-color': '#cccccc',
-      'fill-opacity': FILL_OPACITY_EXPR,
+      'fill-opacity': fillOpacity(),
       ...TRANSITION_PAINT,
     },
   });
@@ -274,9 +322,9 @@ function ensureSourceAndLayers(map, level, data) {
     source: level,
     layout: { visibility: 'none' },
     paint: {
-      'line-color': '#aaaaaa',
-      'line-width': 1,
-      'line-opacity': 1,
+      'line-color': LINE_COLOR,
+      'line-width': LINE_WIDTH_EXPR,
+      'line-opacity': LINE_OPACITY,
       ...LINE_TRANSITION_PAINT,
     },
   });
@@ -290,13 +338,13 @@ function ensureSourceAndLayers(map, level, data) {
     source: level,
     layout: { visibility: 'none' },
     paint: {
-      'line-color': '#333333',
+      'line-color': '#161c17',
       'line-width': [
         'case',
-        ['boolean', ['feature-state', 'selected'], false], 1.25,
+        ['boolean', ['feature-state', 'selected'], false], 2,
         0,
       ],
-      'line-opacity': 0.5,
+      'line-opacity': 0.9,
       ...LINE_TRANSITION_PAINT,
     },
   });
@@ -330,11 +378,11 @@ function ensureSourceAndLayers(map, level, data) {
 
 function restoreTargetOpacities(map, level) {
   if (map.getLayer(`${level}-fill`))
-    map.setPaintProperty(`${level}-fill`, 'fill-opacity', FILL_OPACITY_EXPR);
+    map.setPaintProperty(`${level}-fill`, 'fill-opacity', fillOpacity());
   if (map.getLayer(`${level}-line`))
-    map.setPaintProperty(`${level}-line`, 'line-opacity', 1);
+    map.setPaintProperty(`${level}-line`, 'line-opacity', LINE_OPACITY);
   if (map.getLayer(`${level}-selected`))
-    map.setPaintProperty(`${level}-selected`, 'line-opacity', 0.5);
+    map.setPaintProperty(`${level}-selected`, 'line-opacity', 0.9);
   if (map.getLayer(`${level}-hover`))
     map.setPaintProperty(`${level}-hover`, 'line-opacity', 0.45);
 }
@@ -391,7 +439,7 @@ function applyColorExpression(map, level) {
   } else {
     map.setPaintProperty(`${level}-fill`, 'fill-color', colorExpression(currentVariable, currentScheme));
     if (map.getLayer(`${level}-line`)) {
-      map.setPaintProperty(`${level}-line`, 'line-color', '#aaaaaa');
+      map.setPaintProperty(`${level}-line`, 'line-color', LINE_COLOR);
     }
   }
 }
@@ -592,6 +640,7 @@ export async function setLayer(level) {
     // first click has no shader-compile / FBO-create delay. Keep it strictly
     // below the active level's colored fill so the shadow renders under
     // the polygon body.
+    ensureCoastline(map);
     registerShadowLayer(map);
     prewarmShadowLayer(`${level}-fill`);
     if (map.getLayer(SHADOW_LAYER_ID) && map.getLayer(`${level}-fill`)) {
@@ -686,6 +735,14 @@ export function setColorScheme(scheme) {
   if (!map || !currentLevel) return;
   applyColorExpression(map, currentLevel);
   if (pointsLayerActive) updatePointsPaint(map);
+}
+
+// Fade the unpicked areas (on) or bring them back (off).
+export function setSelectionFocus(on) {
+  selectionFocus = on;
+  const map = getMap();
+  if (!map || !currentLevel || !map.getLayer(`${currentLevel}-fill`)) return;
+  map.setPaintProperty(`${currentLevel}-fill`, 'fill-opacity', fillOpacity());
 }
 
 export function getCurrentVariable() {

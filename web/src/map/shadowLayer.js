@@ -32,10 +32,12 @@ import { getFeatureById } from './layerManager.js';
 export const SHADOW_LAYER_ID = 'selection-shadow';
 
 // Visual tuning knobs.
-const BLUR_RADIUS_PX = 18;
-const OFFSET_PX = [10, 16];
+// A small, light shadow: it lifts the selected area without a dark smudge
+// around it (the selection outline in layerManager.js marks it clearly).
+const BLUR_RADIUS_PX = 10;
+const OFFSET_PX = [4, 7];
 const SHADOW_RGB = [0.0, 0.0, 0.0];
-const SHADOW_MAX_ALPHA = 0.85;
+const SHADOW_MAX_ALPHA = 0.35;
 // Asymmetric fade: snap-on (0ms) so the shadow lands the moment you
 // click — the pre-warmed layer is ready immediately, no reason to
 // stall it behind a fade-in. Fade-off (180ms) is graceful so deselects

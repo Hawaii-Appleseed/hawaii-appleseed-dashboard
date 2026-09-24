@@ -2,12 +2,12 @@ import './map/perfFlags.js'; // must be first — applies CSS kills before paint
 import { loadConfig, loadRepData } from './data/loader.js';
 import { initColors } from './map/colors.js';
 import { createMap, getMap, fitHome } from './map/mapInstance.js';
-import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, getFeatureProperties, initLayerManager } from './map/layerManager.js';
-import { initPopup } from './map/popup.js';
+import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, getFeatureProperties, initLayerManager, setSelectionFocus } from './map/layerManager.js';
+import { initPopup, clearSelectedLayer } from './map/popup.js';
 import { initDiag } from './map/diag.js';
 import { initLegend, renderLegend } from './ui/legend.js';
 import { initSidebar, renderSidebar } from './ui/sidebar.js';
-import { initInfoPanel, showInfoPanel } from './ui/infoPanel.js';
+import { initInfoPanel, showInfoPanel, hideInfoPanel } from './ui/infoPanel.js';
 import { initAreaSearch } from './ui/areaSearch.js';
 import { getState, subscribe } from './state/store.js';
 import { readFromUrl, writeToUrl } from './state/urlSync.js';
@@ -51,7 +51,13 @@ async function main() {
     state.showMillionaires || state.selectedVariable === 'millionaires';
 
   subscribe(async (state, changed) => {
+    if ('selectedFeatureId' in changed) {
+      setSelectionFocus(!!state.selectedFeatureId);
+      if (!state.selectedFeatureId) clearSelectedLayer();
+    }
     if ('activeLayer' in changed) {
+      // The panel describes an area of the old geography; close it.
+      hideInfoPanel();
       await setLayer(state.activeLayer);
       setVariable(state.selectedVariable);
       setColorScheme(state.colorScheme);

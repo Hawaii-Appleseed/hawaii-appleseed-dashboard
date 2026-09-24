@@ -285,7 +285,9 @@ export function bindLayerInteraction(map, level) {
 export function selectFeature(level, feature, { focusPanel = false } = {}) {
   const map = getMap();
   if (!map || !feature) return;
-  const id = feature.id ?? feature.properties?.GEOID;
+  // Sources promote GEOID to the feature id, so key on GEOID: a cached
+  // GeoJSON feature carries its own numeric id, which the map doesn't use.
+  const id = feature.properties?.GEOID ?? feature.id;
   if (id == null) return;
 
   // Drop hover so it doesn't compete with the selected styling.
@@ -298,7 +300,7 @@ export function selectFeature(level, feature, { focusPanel = false } = {}) {
   }
   selectedFeature = { level, id };
   setSelectedState(map, level, id, true);
-  setShadowFeature(level, feature); // push the new selection into the WebGL shadow layer
+  setShadowFeature(level, { ...feature, id }); // push the new selection into the WebGL shadow layer
 
   const props = feature.properties;
   setState({ selectedFeatureId: props.GEOID || String(id) });

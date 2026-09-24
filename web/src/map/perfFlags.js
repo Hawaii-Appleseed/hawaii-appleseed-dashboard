@@ -7,8 +7,7 @@
 //                  (kills the 300ms tween that runs after every hover state change)
 //   ?nohover=1   — don't bind the layer-scoped mousemove/click handlers at all
 //                  (kills MapLibre's per-mousemove queryRenderedFeatures hit-test)
-//   ?noglass=1   — at boot, strip the SVG-displacement backdrop-filter on
-//                  .map-wrap::before and .map-legend
+//   ?noglass=1   — at boot, strip the backdrop-filter blur on .map-legend
 //   ?nopanel=1   — disable info-panel + its sliding transition
 //   ?nofade=1    — disable the 300ms layer-switch fade animation
 //   ?nonav=1     — don't add NavigationControl / ResetControl

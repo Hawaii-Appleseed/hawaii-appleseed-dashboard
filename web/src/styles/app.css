@@ -895,47 +895,6 @@ select {
   height: 100%;
   background: var(--surface);
 }
-/* Edge-feather along the TOP edge: a strip that applies the liquid-glass
-   displacement filter (#liquidGlassTop, defined inline in index.html) to
-   the map beneath it via backdrop-filter, so districts running under the
-   top bar bend into it instead of being sliced by a hard crop. Its strength
-   is masked from full → zero so the inner edge dissolves smoothly.
-
-   Stacking: z-index 500 — above the MapLibre canvas but below the legend
-   (1000) and info panel (1001). pointer-events: none keeps map clicks
-   intact. */
-.map-wrap::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 42px;
-  pointer-events: none;
-  z-index: 500;
-  /* - url(#liquidGlassTop): pre-computed gradient displacement map,
-       refracts pixels purely vertically — strongest at the rim, zero in
-       the interior.
-     - saturate/contrast/brightness: glass-clarity bumps so map content
-       under the strip pops slightly rather than muting. */
-  -webkit-backdrop-filter: url(#liquidGlassTop) saturate(1.25) contrast(1.07) brightness(1.04);
-          backdrop-filter: url(#liquidGlassTop) saturate(1.25) contrast(1.07) brightness(1.04);
-  /* Specular gradient: bright at the rim, fading inward. */
-  background: linear-gradient(to bottom,
-    rgba(255, 255, 255, 0.62) 0%,
-    rgba(255, 255, 255, 0.26) 30%,
-    rgba(255, 255, 255, 0.10) 60%,
-    rgba(255, 255, 255, 0) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.88),
-    inset 0 -1px 2px rgba(255, 255, 255, 0.24);
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
-          mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
-}
-/* Stop the strip at the info panel's left edge while the panel is open. */
-.map-wrap:has(.info-panel.visible)::before {
-  right: 360px;
-}
 /* MapLibre canvas + container: transparent background. */
 .maplibregl-map,
 .maplibregl-canvas-container,
@@ -945,20 +904,12 @@ select {
 .maplibregl-canvas:focus {
   outline: none;
 }
-/* Lift native MapLibre controls above the glass-strip overlay (z-index 500)
-   so the zoom/reset buttons render crisply rather than being smeared by the
-   strip's backdrop-filter. */
+/* Keep the native MapLibre controls above the map's own layers. */
 .maplibregl-ctrl-top-left,
 .maplibregl-ctrl-top-right,
 .maplibregl-ctrl-bottom-left,
 .maplibregl-ctrl-bottom-right {
   z-index: 600;
-}
-/* Push the top-left controls clear of the 42px glass strip. !important
-   because maplibre-gl.css is JS-imported and Vite injects it as a <style>
-   tag after our static <link>, giving it higher cascade order. */
-.maplibregl-ctrl-top-left {
-  top: 40px !important;
 }
 .maplibregl-ctrl-top-left *,
 .maplibregl-ctrl-top-right *,
@@ -1047,12 +998,9 @@ select {
   border-radius: var(--radius-sm);
   overflow: hidden;
 }
-/* The map fills districts at 75% opacity (layerManager.js), so the steps do
-   too, to show the same colors. */
 .legend-step {
   flex: 1;
   background: var(--c);
-  opacity: 0.75;
 }
 /* Circle variables (Millionaires): a row of dots. */
 .legend-bar.is-points {
@@ -1659,9 +1607,6 @@ select {
   }
   .ip-head {
     padding-top: 16px;
-  }
-  .map-wrap:has(.info-panel.visible)::before {
-    right: 0;
   }
 }
 

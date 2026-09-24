@@ -26,8 +26,8 @@ let homeBounds = null; // [[west, south], [east, north]]
 // layout settling, a phone rotating) until the user moves the map themselves.
 let followHome = true;
 
-// Room to leave around the islands. The top clears the 42px frosted strip over
-// the map's top edge (.map-wrap::before). The legend card sits in the
+// Room to leave around the islands. The top clears the "Find an area" box in
+// the map's top-right corner. The legend card sits in the
 // lower-left corner, so the islands also clear it, by padding past either its
 // right edge or its top edge, whichever leaves them bigger.
 function fitPaddings(map) {
@@ -63,7 +63,7 @@ function homeCamera() {
   if (best && best.zoom >= MIN_ZOOM) return { center: best.center, zoom: best.zoom };
 
   // Phones: the legend runs most of the map's height, so not even the minimum
-  // zoom clears it. Put the islands just under the top strip at that zoom,
+  // zoom clears it. Put the islands just under the search box at that zoom,
   // centered across; the legend then covers only open ocean south of Kauaʻi
   // and Oʻahu. (Letting MapLibre clamp a smaller fit's zoom instead would keep
   // that fit's center and push islands off an edge.)

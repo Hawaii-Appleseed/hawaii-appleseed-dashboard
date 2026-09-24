@@ -1,4 +1,4 @@
-import { getState } from '../state/store.js';
+import { getState, setState } from '../state/store.js';
 import { lookupRep } from '../map/popup.js';
 import { getColorForValue } from '../map/colors.js';
 
@@ -332,6 +332,8 @@ document.addEventListener('keydown', (e) => {
 });
 
 export function hideInfoPanel() {
+  // Closing the panel lets go of the picked area (main.js clears the map).
+  if (getState().selectedFeatureId) setState({ selectedFeatureId: null });
   const panel = document.getElementById('info-panel');
   if (panel) {
     const hadFocus = panel.contains(document.activeElement);
