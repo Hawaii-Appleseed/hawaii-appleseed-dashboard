@@ -11,10 +11,20 @@ import { initInfoPanel, showInfoPanel } from './ui/infoPanel.js';
 import { getState, subscribe } from './state/store.js';
 import { readFromUrl, writeToUrl } from './state/urlSync.js';
 
+// Detect iframe embedding — drives the "Open" button and the legend's reduced
+// controls. Also honors ?embed=1 so the embed view can be previewed without an
+// iframe.
+function detectEmbedded() {
+  let embedded = false;
+  try { embedded = window.self !== window.top; } catch (_) { embedded = true; }
+  return embedded || /[?&]embed=1\b/.test(window.location.search);
+}
+
 async function main() {
   const [config, repData] = await Promise.all([loadConfig(), loadRepData()]);
+  const isEmbedded = detectEmbedded();
   initColors(config.theme, config.variables);
-  initLegend(config.variables);
+  initLegend(config.variables, { embedded: isEmbedded });
   initSidebar(config.variables);
   initInfoPanel(config.variables);
   initPopup(config.variables, repData);
@@ -88,25 +98,17 @@ async function main() {
   // messages during user interaction → micro-stutters). Layers load on-demand
   // when the user switches; the network fetch is fast enough.
 
-  // Update tab text nodes from ui_strings.json (preserves SVG icon child nodes)
+  // Tab labels from ui_strings.json (the icon stays).
   const tabs = config.uiStrings?.tabs || {};
   function setTabText(btn, fullLabel) {
     if (!btn || !fullLabel) return;
     // Strip leading emoji (everything before the first space after a non-letter char)
-    const text = fullLabel.replace(/^[\p{Emoji}\s]+/u, '').trim();
-    const textNode = [...btn.childNodes].find((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
-    if (textNode) textNode.textContent = ' ' + (text || fullLabel);
+    const text = fullLabel.replace(/^[\p{Emoji}\s]+/u, '').trim() || fullLabel;
+    const label = btn.querySelector('.seg-label');
+    if (label) label.textContent = text;
   }
   setTabText(document.querySelector('.main-tab[data-tab="map"]'), tabs.map);
   setTabText(document.querySelector('.main-tab[data-tab="data"]'), tabs.data);
-
-  // Detect iframe embedding — drives both the "Open" button and layout tweaks.
-  // Also honors ?embed=1 so the embed view can be previewed without an iframe.
-  let isEmbedded = false;
-  try { isEmbedded = window.self !== window.top; } catch (_) { isEmbedded = true; }
-  if (!isEmbedded && /[?&]embed=1\b/.test(window.location.search)) {
-    isEmbedded = true;
-  }
 
   if (isEmbedded) {
     document.body.classList.add('is-embedded');
@@ -162,7 +164,7 @@ async function openDataTab(config) {
     analysisModule = null; // let the next click retry
     console.error('Data tab failed to load:', err);
     if (chartEl) {
-      chartEl.innerHTML = '<p style="color:#c0392b;padding:20px">Couldn’t load the data view. Check your connection and try again.</p>';
+      chartEl.innerHTML = '<p class="da-error">Couldn’t load the data view. Check your connection and try again.</p>';
     }
   }
 }

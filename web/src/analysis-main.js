@@ -15,6 +15,7 @@ let activeVar = 'poverty_rate';
 let initialized = false;
 let layerSel = null;
 let varSel = null;
+let refreshId = 0; // the latest refreshChart call; older ones drop their result
 // Inside the dashboard the Data tab shares the map's geography and variable:
 // it opens on whatever the map shows, and a change here carries back to the
 // map. (The standalone data-analysis.html page has no map and reads ?layer=
@@ -125,27 +126,31 @@ function buildControls() {
   root.appendChild(varWrap);
 }
 
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 async function refreshChart() {
+  const id = ++refreshId;
   const chartEl = document.getElementById('da-chart');
   const tableEl = document.getElementById('da-side-table');
   const fullTableEl = document.getElementById('da-full-table');
   if (chartEl) chartEl.innerHTML = '<p class="da-loading">Loading…</p>';
   if (tableEl) tableEl.innerHTML = '';
   if (fullTableEl) fullTableEl.innerHTML = '';
+  document.querySelector('.da-caption')?.remove();
 
   try {
     const [geojson, stateGeojson] = await Promise.all([
       loadLayer(activeLayer),
       activeLayer !== 'state' ? loadLayer('state') : Promise.resolve(null),
     ]);
+    if (id !== refreshId) return; // a newer pick is already loading
 
     const varMeta = config.variables?.variables?.[activeVar];
     const layerLabel = LAYERS.find((l) => l.key === activeLayer)?.label || activeLayer;
 
     if (chartEl) chartEl.innerHTML = '';
-
-    const chartCaption = document.getElementById('da-chart-caption');
-    if (chartCaption) chartCaption.remove();
 
     renderChart(
       'da-chart',
@@ -160,7 +165,7 @@ async function refreshChart() {
     renderFullTable('da-full-table', geojson.features, config.variables, activeLayer);
   } catch (err) {
     console.error('Analysis error:', err);
-    if (chartEl) chartEl.innerHTML = `<p style="color:#c0392b;padding:20px">Error: ${err.message}</p>`;
+    if (chartEl) chartEl.innerHTML = `<p class="da-error">Error: ${escapeHtml(err.message)}</p>`;
   }
 }
 

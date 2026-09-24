@@ -159,6 +159,27 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+const ICONS = {
+  chevronRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
+  check: '<svg class="cascade-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17 19 7.5"/></svg>',
+};
+
+// One line icon per column tag.
+const TAG_ICONS = {
+  geography: '<path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.25"/>',
+  economic_security: '<circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.4c-.5-.9-1.5-1.4-2.8-1.4-1.6 0-2.8.8-2.8 2 0 2.8 5.6 1.4 5.6 4.1 0 1.2-1.2 2-2.8 2-1.3 0-2.4-.6-2.9-1.5M12 6.5v11"/>',
+  food_security: '<path d="M4 3v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3M7 3v18M20 15V3a4 4 0 0 0-4 4v6a2 2 0 0 0 2 2h2zm0 0v6"/>',
+  housing_transportation: '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-5.5h4v5.5"/>',
+  health: '<path d="M12 20s-7.5-4.6-7.5-10.1A4.4 4.4 0 0 1 12 7.4a4.4 4.4 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>',
+};
+
+function tagIcon(rootKey) {
+  const paths = TAG_ICONS[rootKey];
+  return paths
+    ? `<svg class="ctrl-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`
+    : '';
+}
+
 function tipAttrs(tip, pos, year) {
   if (!tip) return '';
   const parts = [`data-tip="${escapeHtml(tip)}"`];
@@ -183,12 +204,12 @@ function renderCascade(rootKey, items, currentKey, placeholder) {
           // doesn't cover the submenu that opens to the right on hover.
           return `
             <li class="cascade-parent" role="none">
-              <div class="cascade-label" role="menuitem" tabindex="-1" aria-haspopup="menu" aria-expanded="false"><span class="cascade-label-text"${tipAttrs(it.tooltip, 'above')}>${escapeHtml(it.label)}</span><span class="cascade-caret" aria-hidden="true">›</span></div>
+              <div class="cascade-label" role="menuitem" tabindex="-1" aria-haspopup="menu" aria-expanded="false"><span class="cascade-label-text"${tipAttrs(it.tooltip, 'above')}>${escapeHtml(it.label)}</span><span class="cascade-caret" aria-hidden="true">${ICONS.chevronRight}</span></div>
               <ul class="cascade-menu" role="menu" aria-label="${escapeHtml(it.label)}">${renderItems(it.children)}</ul>
             </li>`;
         }
         const selected = it.key === currentKey;
-        return `<li class="cascade-leaf ${selected ? 'cascade-leaf--selected' : ''}" role="none"><a href="#" role="menuitemradio" aria-checked="${selected}" tabindex="-1" data-cascade-key="${escapeHtml(it.key)}"><span class="cascade-leaf-text"${tipAttrs(it.tooltip, 'right', it.year)}>${escapeHtml(it.label)}</span></a></li>`;
+        return `<li class="cascade-leaf ${selected ? 'cascade-leaf--selected' : ''}" role="none"><a href="#" role="menuitemradio" aria-checked="${selected}" tabindex="-1" data-cascade-key="${escapeHtml(it.key)}"><span class="cascade-leaf-text"${tipAttrs(it.tooltip, 'right', it.year)}>${escapeHtml(it.label)}</span>${ICONS.check}</a></li>`;
       })
       .join('');
   }
@@ -212,7 +233,7 @@ function renderColumn(rootKey, tag, tagStyle, items, currentKey, placeholder) {
   // the four topics always read as a uniform set).
   return `
     <div class="ctrl-col">
-      <div class="ctrl-tag-wrap"><span class="ctrl-tag ${tagStyle}" id="ctrl-tag-${rootKey}">${escapeHtml(tag)}</span></div>
+      <div class="ctrl-tag-wrap"><span class="ctrl-tag ${tagStyle}" id="ctrl-tag-${rootKey}">${tagIcon(rootKey)}${escapeHtml(tag)}</span></div>
       ${renderCascade(rootKey, items, currentKey, placeholder)}
     </div>`;
 }
@@ -432,7 +453,7 @@ function buildTooltipBody(text) {
 
 function renderTooltipContent(text, year) {
   const yearBadge = year
-    ? `<div class="cascade-tooltip-year"><span class="cascade-tooltip-year-dot"></span>Data Year ${escapeHtml(year)}</div>`
+    ? `<div class="tip-year">Data year ${escapeHtml(year)}</div>`
     : '';
   return `<div class="cascade-tooltip-text">${buildTooltipBody(text)}</div>${yearBadge}`;
 }
@@ -442,7 +463,7 @@ function positionTooltip(target, pos) {
   if (!el) return;
   const r = target.getBoundingClientRect();
   const margin = 10;
-  el.style.maxWidth = '260px';
+  el.style.maxWidth = '280px';
   el.style.left = '0';
   el.style.top = '0';
   // Force layout to measure size

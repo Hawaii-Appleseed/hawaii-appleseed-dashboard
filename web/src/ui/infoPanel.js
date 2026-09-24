@@ -1,5 +1,6 @@
 import { getState } from '../state/store.js';
 import { lookupRep } from '../map/popup.js';
+import { getColorForValue } from '../map/colors.js';
 
 let VARIABLES = null;
 let CATEGORIES = null;
@@ -147,7 +148,7 @@ function tipHtml(el) {
     ${label ? `<div class="ip-tip-title">${escapeHtml(label)}</div>` : ''}
     ${desc ? `<div class="ip-tip-desc">${renderDescription(desc)}</div>` : ''}
     ${moeTipHtml(moe, note)}
-    ${year ? `<div class="ip-tip-year"><span class="ip-tip-year-dot"></span>Data Year ${escapeHtml(year)}</div>` : ''}
+    ${year ? `<div class="tip-year">Data year ${escapeHtml(year)}</div>` : ''}
   `;
 }
 
@@ -225,7 +226,7 @@ export function showInfoPanel(properties) {
   for (const cat of cats) {
     const items = (grouped[cat] || []).filter((m) => properties[m.key] !== undefined && properties[m.key] !== null);
     if (!items.length) continue;
-    body += `<div class="ip-category"><h4>${escapeHtml(cat)}</h4><div class="ip-metrics">`;
+    body += `<section class="ip-category"><h3>${escapeHtml(cat)}</h3><div class="ip-metrics">`;
     for (const m of items) {
       const isSelected = m.key === s.selectedVariable;
       let displayValue = formatValue(properties[m.key], m.data_type);
@@ -248,10 +249,7 @@ export function showInfoPanel(properties) {
           <div class="ip-metric-label">${escapeHtml(label)}</div>
         </div>`;
     }
-    if (items.length % 2 === 1) {
-      body += `<div style="visibility: hidden;"></div>`;
-    }
-    body += '</div></div>';
+    body += '</div></section>';
   }
 
   const rep = lookupRep(properties, s.activeLayer);
@@ -263,11 +261,18 @@ export function showInfoPanel(properties) {
        </div>`
     : '';
 
+  // The place's own color on the map, beside the headline figure.
+  const rawValue = parseFloat(properties[s.selectedVariable]);
+  const swatch = !isNaN(rawValue) && selectedVar?.render_type !== 'points'
+    ? `<span class="ip-swatch" style="background:${getColorForValue(rawValue, s.selectedVariable, s.colorScheme)}" aria-hidden="true"></span>`
+    : '';
+
   panel.innerHTML = `
-    <div class="ip-header">
-      <button class="ip-close" aria-label="Close">×</button>
-      <h2>${escapeHtml(name)}</h2>
-      <div class="ip-header-accent" aria-hidden="true"></div>
+    <div class="ip-head">
+      <h2 class="ip-title">${escapeHtml(name)}</h2>
+      <button type="button" class="icon-btn ip-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
     </div>
     <div class="ip-headline"
          tabindex="0"
@@ -276,21 +281,15 @@ export function showInfoPanel(properties) {
          data-label="${escapeHtml(selectedDisplayName)}"
          data-moe="${escapeHtml(selectedMoe.moe)}"
          data-moe-note="${escapeHtml(selectedMoe.note)}">
-      <div class="ip-headline-band">
-        <span class="ip-headline-name">${escapeHtml(selectedDisplayName)}</span>
-      </div>
-      <div class="ip-headline-body">
-        <span class="ip-headline-value">${escapeHtml(selectedValue)}</span>
-        ${selectedYear ? `<span class="ip-headline-year">${escapeHtml(selectedYear)}</span>` : ''}
-      </div>
+      <div class="ip-headline-label">${swatch}${escapeHtml(selectedDisplayName)}</div>
+      <div class="ip-headline-value">${escapeHtml(selectedValue)}</div>
+      ${selectedYear ? `<div class="ip-headline-meta">Data year ${escapeHtml(selectedYear)}</div>` : ''}
     </div>
     ${repHtml}
-    <div class="ip-actions">
-      <a class="ip-btn" href="${factsheetUrl}" target="_blank" rel="noopener">
-        <span>View / Print Fact Sheet</span>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 5l7 7-7 7"/></svg>
-      </a>
-    </div>
+    <a class="btn btn-primary ip-btn" href="${factsheetUrl}" target="_blank" rel="noopener">
+      <span>View / print fact sheet</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 5l7 7-7 7"/></svg>
+    </a>
     ${body}
   `;
   panel.classList.add('visible');

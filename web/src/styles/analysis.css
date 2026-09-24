@@ -1,4 +1,16 @@
+/* Data tab and the standalone data-analysis.html page. Colors, sizes and
+   corners come from the tokens at the top of app.css. */
+/* Standalone page. app.css pins the body to the window for the map; this
+   page scrolls like a normal one. The explicit width matters: in the body's
+   flex column, auto side margins alone would shrink the page to its
+   content, and the chart would draw at that narrow width. */
+body:has(> .da-main) {
+  height: auto;
+  min-height: 100dvh;
+  overflow: auto;
+}
 .da-main {
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px 28px 40px;
@@ -19,24 +31,28 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: #444;
+  color: var(--ink-2);
 }
 
 .da-select {
-  font-family: Inter, sans-serif;
-  font-size: 13px;
-  padding: 6px 10px;
-  border: 1px solid #cdd9c8;
-  border-radius: 6px;
-  background: white;
-  color: #333;
-  cursor: pointer;
+  height: 36px;
   min-width: 140px;
+  padding: 0 10px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  cursor: pointer;
 }
 .da-select-wide { min-width: 240px; }
-.da-select:focus { outline: none; border-color: #6a9a50; }
+.da-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
 
 /* Chart + side table row */
 .da-chart-row {
@@ -48,12 +64,10 @@
 }
 
 .da-section-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #6b8f71;
   margin: 0 0 8px;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .da-section-head {
@@ -71,72 +85,80 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  font-family: Inter, sans-serif;
-  font-size: 12px;
+  height: 32px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--text-sm);
   font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #1a4a4a;
-  background: linear-gradient(135deg, #ecfdf5 0%, #d6f5e8 100%);
-  border: 1px solid rgba(45, 161, 137, 0.4);
-  border-radius: 6px;
+  color: var(--ink);
   cursor: pointer;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease,
-    color 0.18s ease;
-  box-shadow: 0 1px 2px rgba(20, 60, 50, 0.06);
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
 }
 .da-download-btn svg {
   flex-shrink: 0;
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .da-download-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: #2da189;
-  background: linear-gradient(135deg, #d6f5e8 0%, #a7e6cf 100%);
-  color: #0e3d3d;
-  box-shadow: 0 4px 10px rgba(20, 60, 50, 0.15);
-}
-.da-download-btn:hover:not(:disabled) svg {
-  transform: translateY(2px);
-}
-.da-download-btn:active:not(:disabled) {
-  transform: translateY(0);
+  background: var(--bg);
+  border-color: var(--gray-300);
 }
 .da-download-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(45, 161, 137, 0.3);
+  box-shadow: var(--focus-ring);
 }
 .da-download-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 .da-download-btn-primary {
-  background: linear-gradient(135deg, #2da189 0%, #1a7a66 100%);
-  color: white;
-  border-color: rgba(13, 60, 60, 0.25);
-  padding: 8px 14px;
-  font-size: 12.5px;
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--gray-0);
 }
 .da-download-btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #34b89c 0%, #1f8c75 100%);
-  color: white;
-  border-color: rgba(13, 60, 60, 0.4);
-  box-shadow: 0 6px 14px rgba(45, 161, 137, 0.35);
+  background: var(--accent-hover);
+  border-color: transparent;
 }
 
-.da-chart-wrap {}
+#da-chart {
+  min-height: 120px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
 .da-table-wrap {
   padding-top: 2px;
   max-height: 440px;
   overflow-y: auto;
 }
 
-.da-loading { padding: 20px; color: #999; font-style: italic; }
+.da-loading {
+  margin: 0;
+  padding: 20px;
+  color: var(--ink-3);
+}
+.da-error {
+  margin: 0;
+  padding: 20px;
+  color: var(--danger);
+}
+.da-notice {
+  margin: 0;
+  padding: 20px;
+  color: var(--ink-2);
+}
+.da-caption {
+  margin: 6px 0 0;
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
 
 .da-divider {
   border: none;
-  border-top: 1px solid #e2e8e3;
+  border-top: 1px solid var(--line);
   margin: 16px 0 14px;
 }
 
@@ -144,56 +166,63 @@
 .da-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
 }
 .da-table th {
   position: sticky;
   top: 0;
-  background: white;
-  font-weight: 600;
-  color: #555;
-  text-align: left;
   padding: 6px 8px;
-  border-bottom: 2px solid #e0e0e0;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line-strong);
+  font-weight: 600;
+  color: var(--ink-2);
+  text-align: left;
 }
 .da-table td {
-  padding: 5px 8px;
-  border-bottom: 1px solid #f0f0f0;
-  color: #333;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
 }
-.da-table tr:hover td { background: #f6fbf4; }
+.da-table td:first-child {
+  white-space: nowrap;
+}
+.da-table tr:hover td { background: var(--surface-sunken); }
 
 /* Full data table */
 .da-full-table-wrap {
-  overflow-x: auto;
+  overflow: auto;
   max-height: 460px;
-  overflow-y: auto;
-  border: 1px solid #e2e8e3;
-  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
 }
 .da-full-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: var(--text-xs);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 .da-full-table th {
   position: sticky;
   top: 0;
-  background: #f8fbf6;
-  font-weight: 600;
-  color: #444;
-  text-align: left;
   padding: 8px 12px;
-  border-bottom: 2px solid #dde8d8;
-  font-size: 11px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--line-strong);
+  font-weight: 600;
+  color: var(--ink-2);
+  text-align: left;
 }
 .da-full-table td {
   padding: 6px 12px;
-  border-bottom: 1px solid #f0f4ef;
-  color: #333;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
 }
-.da-full-table tr:hover td { background: #f1f8ec; }
+.da-full-table tr:hover td { background: var(--accent-soft); }
+
+@media (max-width: 900px) {
+  .da-chart-row {
+    grid-template-columns: 1fr;
+  }
+}

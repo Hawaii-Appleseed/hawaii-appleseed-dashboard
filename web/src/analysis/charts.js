@@ -1,7 +1,17 @@
 import Plotly from 'plotly.js-dist-min';
 
+// Chart colors and type follow the page's tokens (app.css :root).
+function token(name, fallback) {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
 export function renderChart(containerId, tableId, features, varKey, varMeta, layerLabel, stateFeatures) {
   const unit = getUnit(varMeta);
+  const ink = token('--gray-900', '#161c17');
+  const ink2 = token('--gray-600', '#5a625a');
+  const grid = token('--gray-100', '#eaece7');
+  const font = { family: 'Inter, Arial', size: 12, color: ink };
 
   // Build sorted data
   const rows = features
@@ -11,7 +21,7 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
 
   if (!rows.length) {
     document.getElementById(containerId).innerHTML =
-      `<p style="padding:20px;color:#888">No data available for this variable.</p>`;
+      '<p class="da-notice">No data available for this variable.</p>';
     return;
   }
 
@@ -33,26 +43,28 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
     y: values,
     text: values,
     texttemplate: textFmt,
-    textposition: 'outside',
-    textfont: { size: 9, color: '#555' },
+    // Values over the bars only while there's room to read them; with 51
+    // districts only a stray few fit, so hover and the side table carry them.
+    textposition: n <= 10 ? 'outside' : 'none',
+    textfont: { size: 12, color: ink2 },
     cliponaxis: false,
-    marker: { color: '#4a8c64' },
+    marker: { color: token('--chart-bar', '#4d8a24') },
     hovertemplate: `<b>%{x}</b><br>${varShort}: ${hoverFmt}<extra></extra>`,
-    hoverlabel: { bgcolor: 'white', bordercolor: '#ccc', font: { size: 12, family: 'Inter, Arial' } },
+    hoverlabel: { bgcolor: 'white', bordercolor: grid, font: { ...font, size: 12 } },
   };
 
   const layout = {
-    title: { text: chartTitle, x: 0.5, xanchor: 'center', font: { size: 13, color: '#333', family: 'Inter, Arial' } },
+    title: { text: chartTitle, x: 0.5, xanchor: 'center', font: { ...font, size: 14 } },
     height: 400,
     showlegend: false,
     plot_bgcolor: 'white',
     paper_bgcolor: 'white',
-    font: { family: 'Inter, Arial', size: 12, color: '#333' },
+    font,
     yaxis: {
-      gridcolor: '#eef0ec',
+      gridcolor: grid,
       zeroline: false,
-      title: { text: varLong, font: { size: 11, color: '#666' } },
-      tickfont: { size: 10 },
+      title: { text: varLong, font: { size: 12, color: ink2 } },
+      tickfont: { size: 12, color: ink2 },
       tickformat: unit === '$' ? '$,d' : undefined,
     },
     xaxis: {
@@ -60,9 +72,10 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
       showgrid: false,
       showticklabels: n <= 10,
       tickangle: n <= 10 ? -40 : 0,
-      tickfont: { size: 10 },
+      tickfont: { size: 12, color: ink2 },
     },
-    margin: { l: 55, r: 20, t: 50, b: n <= 10 ? 60 : 28 },
+    // Room under the bars for the slanted names at 12px.
+    margin: { l: 55, r: 20, t: 50, b: n <= 10 ? 90 : 28 },
     uniformtext: { minsize: 7, mode: 'hide' },
   };
 
@@ -72,8 +85,9 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
     const sv = parseFloat(stateFeatures[0].properties[varKey]);
     if (!isNaN(sv)) {
       const lbl = unit === '%' ? `State: ${sv.toFixed(1)}%` : unit === '$' ? `State: $${sv.toLocaleString()}` : `State: ${sv.toFixed(1)}`;
-      shapes.push({ type: 'line', xref: 'paper', x0: 0, x1: 1, y0: sv, y1: sv, line: { color: '#e74c3c', width: 1.5, dash: 'dot' } });
-      annotations.push({ xref: 'paper', x: 1, y: sv, text: lbl, showarrow: false, font: { size: 10, color: '#e74c3c' }, xanchor: 'right', yanchor: 'bottom' });
+      const ref = token('--chart-ref', '#2b322c');
+      shapes.push({ type: 'line', xref: 'paper', x0: 0, x1: 1, y0: sv, y1: sv, line: { color: ref, width: 1.5, dash: 'dot' } });
+      annotations.push({ xref: 'paper', x: 1, y: sv, text: lbl, showarrow: false, font: { size: 12, color: ref }, xanchor: 'right', yanchor: 'bottom' });
     }
   }
   if (shapes.length) { layout.shapes = shapes; layout.annotations = annotations; }
@@ -89,7 +103,7 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
 
   if (n > 10) {
     const caption = document.createElement('p');
-    caption.style.cssText = 'font-size:12px;color:#888;margin-top:6px';
+    caption.className = 'da-caption';
     caption.textContent = `Showing all ${n} ${layerLabel.toLowerCase()} ranked by ${varShort}. Hover for details.`;
     document.getElementById(containerId).after(caption);
   }
