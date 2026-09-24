@@ -264,7 +264,7 @@ function ensureSourceAndLayers(map, level, data) {
       'fill-pattern': RELIABILITY_PATTERN_CAUTION,
       'fill-opacity': 0.9,
     },
-    filter: ['==', ['get', 'GEOID'], ' '], // matches nothing until applied
+    filter: ['==', ['get', 'GEOID'], '\u0000'], // matches nothing until applied
   });
 
   // Default outline
