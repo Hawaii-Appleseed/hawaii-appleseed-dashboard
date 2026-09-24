@@ -257,7 +257,7 @@ export function showInfoPanel(properties) {
   const rep = lookupRep(properties, s.activeLayer);
   const repHtml = rep
     ? `<div class="ip-rep">
-         <div class="ip-rep-label">Representative</div>
+         <div class="ip-rep-label">${escapeHtml(rep.title)}</div>
          <div class="ip-rep-name">${escapeHtml(rep.name)} <span class="ip-rep-party">(${escapeHtml(rep.party)})</span></div>
          <div class="ip-rep-areas">${escapeHtml((rep.areas || '').trim())}</div>
        </div>`

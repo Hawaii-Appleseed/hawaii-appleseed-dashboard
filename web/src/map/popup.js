@@ -105,7 +105,9 @@ export function lookupRep(properties, activeLayer) {
       if (!Number.isNaN(num)) key = `${activeLayer}_${num}`;
     }
   }
-  if (key && REP_DATA[key]) return REP_DATA[key];
+  if (key && REP_DATA[key]) {
+    return { ...REP_DATA[key], title: key.startsWith('senate_') ? 'Senator' : 'Representative' };
+  }
   return null;
 }
 
@@ -136,7 +138,7 @@ function buildTooltipContent(properties) {
       if (list.length > 2) areas += `, +${list.length - 2} more`;
     }
     html += `<div class="tt-rep-card">` +
-            `<div class="tt-rep-label">Representative</div>` +
+            `<div class="tt-rep-label">${escapeHtml(rep.title)}</div>` +
             `<div class="tt-rep-name">${escapeHtml(rep.name)} <span class="tt-rep-party">${escapeHtml(rep.party)}</span></div>` +
             `<div class="tt-areas">${escapeHtml(areas)}</div>` +
             `</div>`;
