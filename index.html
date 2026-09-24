@@ -8,42 +8,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/hawaii-appleseed-dashboard/assets/main-DrHr0nx3.js"></script>
+    <script type="module" crossorigin src="/hawaii-appleseed-dashboard/assets/main-KbQsXJBY.js"></script>
     <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/loader-xgymrUWK.js">
-    <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/store-P-duZ6C2.js">
-    <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/store-MIB3L6ic.css">
+    <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/store-XYcRBNDa.js">
+    <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/store-DaUKH1t4.css">
     <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/main-CuCRB34y.css">
   </head>
   <body>
-    <!--
-      Apple-style liquid-glass refraction for the strip along the map's top
-      edge (.map-wrap::before). The trick (per the LogRocket and kube.io
-      tutorials): feed feDisplacementMap a *pre-computed* smooth gradient
-      image, NOT random turbulence. The gradient encodes per-pixel refraction
-      vectors (R = X shift, G = Y shift, with 128 = no shift): strongest near
-      the outer rim, fading to mid-gray (no displacement) at the inner edge,
-      so the glass bends pixels purely vertically, like a horizontal
-      cylindrical lens laid along the rim.
-
-      The displacement map is inline as an SVG data URI; preserveAspectRatio="none"
-      stretches the 1x1 viewBox to whatever filter region the strip
-      defines. The 1px Gaussian blur on SourceGraphic before
-      displacement smooths sub-pixel artifacts.
-    -->
-    <svg class="svg-filter-defs" aria-hidden="true" focusable="false">
-      <defs>
-        <!-- G high at outer rim (y=0) → mid at inner edge (y=1). G > 128 ⇒
-             pixels sampled from BELOW their position ⇒ content appears
-             pulled DOWN at the rim, like light refracting toward the
-             cylinder axis. -->
-        <filter id="liquidGlassTop" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" result="softSrc"/>
-          <feImage preserveAspectRatio="none" result="dispMap"
-                   href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1' preserveAspectRatio='none'><linearGradient id='g' x2='0' y2='1'><stop offset='0' stop-color='rgb(128,205,128)'/><stop offset='0.35' stop-color='rgb(128,158,128)'/><stop offset='1' stop-color='rgb(128,128,128)'/></linearGradient><rect width='1' height='1' fill='url(%23g)'/></svg>"/>
-          <feDisplacementMap in="softSrc" in2="dispMap" scale="32" xChannelSelector="R" yChannelSelector="G"/>
-        </filter>
-      </defs>
-    </svg>
     <main class="app-main">
       <h1 class="sr-only">Hawaii Appleseed Data Dashboard</h1>
       <nav class="seg main-tabs" role="tablist" aria-label="View">
