@@ -62,18 +62,9 @@ function bindMetricTooltips(panel) {
 
   const showFor = (el) => {
     cancelHide();
-    const desc = el.getAttribute('data-desc') || '';
-    const year = el.getAttribute('data-year') || '';
-    const label = el.getAttribute('data-label') || '';
-    const moe = el.getAttribute('data-moe') || '';
-    const note = el.getAttribute('data-moe-note') || '';
-    if (!desc && !year && !moe && !note) return;
-    tip.innerHTML = `
-      ${label ? `<div class="ip-tip-title">${escapeHtml(label)}</div>` : ''}
-      ${desc ? `<div class="ip-tip-desc">${renderDescription(desc)}</div>` : ''}
-      ${moeTipHtml(moe, note)}
-      ${year ? `<div class="ip-tip-year"><span class="ip-tip-year-dot"></span>Data Year ${escapeHtml(year)}</div>` : ''}
-    `;
+    const html = tipHtml(el);
+    if (!html) return;
+    tip.innerHTML = html;
     tip.classList.add('visible');
     positionTip(el);
   };
@@ -140,6 +131,24 @@ function moeTipHtml(moe, note) {
   if (moe) return `<div class="ip-tip-moe">${escapeHtml(moe)} <span class="ip-tip-moe-ci">90% confidence</span></div>`;
   if (note) return `<div class="ip-tip-moe ip-tip-moe-na">${escapeHtml(note)}</div>`;
   return '';
+}
+
+// Tooltip markup for the headline or a metric, built from its data-*
+// attributes; '' when there's nothing to show. getAttribute returns the
+// unescaped text, so everything is escaped (and **phrases** highlighted) here.
+function tipHtml(el) {
+  const desc = el.getAttribute('data-desc') || '';
+  const year = el.getAttribute('data-year') || '';
+  const label = el.getAttribute('data-label') || '';
+  const moe = el.getAttribute('data-moe') || '';
+  const note = el.getAttribute('data-moe-note') || '';
+  if (!desc && !year && !moe && !note) return '';
+  return `
+    ${label ? `<div class="ip-tip-title">${escapeHtml(label)}</div>` : ''}
+    ${desc ? `<div class="ip-tip-desc">${renderDescription(desc)}</div>` : ''}
+    ${moeTipHtml(moe, note)}
+    ${year ? `<div class="ip-tip-year"><span class="ip-tip-year-dot"></span>Data Year ${escapeHtml(year)}</div>` : ''}
+  `;
 }
 
 function variablesByCategory() {
@@ -297,18 +306,9 @@ export function showInfoPanel(properties) {
 function bindHeadlineTooltip(el) {
   const tip = ensureFloatingTip();
   const showFor = () => {
-    const desc = el.getAttribute('data-desc') || '';
-    const year = el.getAttribute('data-year') || '';
-    const label = el.getAttribute('data-label') || '';
-    const moe = el.getAttribute('data-moe') || '';
-    const note = el.getAttribute('data-moe-note') || '';
-    if (!desc && !year && !moe && !note) return;
-    tip.innerHTML = `
-      ${label ? `<div class="ip-tip-title">${label}</div>` : ''}
-      ${desc ? `<div class="ip-tip-desc">${desc}</div>` : ''}
-      ${moeTipHtml(moe, note)}
-      ${year ? `<div class="ip-tip-year"><span class="ip-tip-year-dot"></span>Data Year ${year}</div>` : ''}
-    `;
+    const html = tipHtml(el);
+    if (!html) return;
+    tip.innerHTML = html;
     tip.classList.add('visible');
     positionTip(el);
   };
