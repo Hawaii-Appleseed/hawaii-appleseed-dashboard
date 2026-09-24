@@ -175,14 +175,20 @@ const LINE_COLOR = '#ffffff';
 const LINE_OPACITY = 0.95;
 const LINE_WIDTH_EXPR = ['interpolate', ['linear'], ['zoom'], 6, 0.5, 9, 1, 12, 1.75];
 
-// The islands' coastline, drawn under every level's fills as a thin dark
-// halo: the solid fills cover its inner half, so only a crisp edge shows
-// outside the shapes, and a light district still has an edge against the
-// background. (District coasts don't match the county outline vertex for
-// vertex; drawing it underneath hides the small differences.)
+// The islands' coastline (the county outline), drawn over the fills and the
+// white borders, so every island has a clean dark edge against the light
+// background, even when a variable colors it in its palest shade.
 const COAST_LAYER_ID = 'coastline';
-const COAST_COLOR = '#6f786f';
-const COAST_WIDTH_EXPR = ['interpolate', ['linear'], ['zoom'], 6, 1.4, 9, 2, 12, 3];
+const COAST_COLOR = '#5b645b';
+const COAST_WIDTH_EXPR = ['interpolate', ['linear'], ['zoom'], 6, 0.6, 9, 1, 12, 1.5];
+
+// Coastline over the level's fill and borders, under its selection and hover
+// outlines.
+function placeCoastline(map, level) {
+  if (map.getLayer(COAST_LAYER_ID) && map.getLayer(`${level}-selected`)) {
+    map.moveLayer(COAST_LAYER_ID, `${level}-selected`);
+  }
+}
 
 // Feature-state gated value: returns `whenSelected` if the feature has selected
 // state, else `whenNot` (0). Used for opacity, width, etc.
@@ -255,14 +261,14 @@ async function ensureCoastline(map) {
   }
   if (map.getLayer(COAST_LAYER_ID)) return;
   map.addSource(COAST_LAYER_ID, { type: 'geojson', data });
-  // Straight after the background, so every level's fill sits on top of it.
-  const firstAbove = map.getStyle().layers.find((l) => l.id !== 'bg')?.id;
   map.addLayer({
     id: COAST_LAYER_ID,
     type: 'line',
     source: COAST_LAYER_ID,
     paint: { 'line-color': COAST_COLOR, 'line-width': COAST_WIDTH_EXPR, 'line-opacity': 0.9 },
-  }, firstAbove);
+  });
+  if (currentLevel) placeCoastline(map, currentLevel);
+  if (pointsLayerActive && map.getLayer(pointsLayerActive.layerId)) map.moveLayer(pointsLayerActive.layerId);
 }
 
 function fillLayerIds(level) {
@@ -659,6 +665,7 @@ export async function setLayer(level) {
     // Millionaires overlay if it was already active from a prior level.
     // Re-assert it above everything so switching geography (e.g. Counties
     // → House Districts) doesn't bury the circles under the new fill.
+    placeCoastline(map, level);
     if (pointsLayerActive && map.getLayer(pointsLayerActive.layerId)) {
       map.moveLayer(pointsLayerActive.layerId);
     }
