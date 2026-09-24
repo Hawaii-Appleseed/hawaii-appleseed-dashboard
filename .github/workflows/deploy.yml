@@ -29,6 +29,12 @@ jobs:
         run: npm ci
         working-directory: web
 
+      # src/config/variables.json against its references and the built data.
+      # The build runs the same check; this step just reports it on its own.
+      - name: Check variables
+        run: npm run check
+        working-directory: web
+
       - name: Build
         run: npx vite build
         working-directory: web

@@ -2,7 +2,9 @@
 """Copy src/config/*.json -> web/src/config/ verbatim.
 
 Keeps the JS port reading the same single-source-of-truth JSON files
-that the Streamlit app uses today.
+that the Streamlit app uses today. variables.json isn't copied: the web
+build reads src/config/variables.json directly and checks it (see
+web/scripts/variables-config.mjs).
 """
 from __future__ import annotations
 
@@ -17,7 +19,7 @@ DEST = ROOT / 'web' / 'src' / 'config'
 
 def main() -> int:
     DEST.mkdir(parents=True, exist_ok=True)
-    for name in ('variables.json', 'theme.json', 'ui_strings.json', 'data_sources.json'):
+    for name in ('theme.json', 'ui_strings.json', 'data_sources.json'):
         src = SRC / name
         if not src.exists():
             print(f'  ! missing {src}, skipping')

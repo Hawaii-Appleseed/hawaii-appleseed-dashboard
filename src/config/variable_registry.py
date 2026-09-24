@@ -15,10 +15,43 @@ _CONFIG_PATH = os.path.join(os.path.dirname(__file__), "variables.json")
 _DATA_SOURCES_PATH = os.path.join(os.path.dirname(__file__), "data_sources.json")
 
 
+_UNIT_SUFFIX = {"percentage": " (%)", "currency": " ($)"}
+
+
+def _expand(key: str, entry: dict) -> dict:
+    """Fill in the fields a variables.json entry may leave out.
+
+    Mirrors expandVariable() in web/scripts/variables-config.mjs, which builds
+    the copy the web app loads (that file lists the defaults); keep the two in
+    step.
+    """
+    v = dict(entry)
+    v.setdefault("display_name_long", v["display_name"] + _UNIT_SUFFIX.get(v.get("data_type"), ""))
+    v.setdefault("dropdown_label", v["display_name_long"])
+    v.setdefault("show_in_dropdown", True)
+    v.setdefault("dropdown_group", None)
+    v.setdefault("info_panel_category", None)
+    v.setdefault("info_panel_label", None if v["info_panel_category"] is None else v["display_name"])
+    v.setdefault("info_panel_order", None)
+    v.setdefault("show_in_info_panel", v["info_panel_category"] is not None)
+    v.setdefault("fact_sheet_category", None)
+    v.setdefault("fact_sheet_label", None if v["fact_sheet_category"] is None else v["display_name"])
+    v.setdefault("show_in_fact_sheet", v["fact_sheet_category"] is not None)
+    v.setdefault("show_in_default_metrics", v["show_in_info_panel"])
+    v.setdefault("is_special_variable", False)
+    v.setdefault("legend_direction", "neutral")
+    v.setdefault("csv_column", key)
+    v.setdefault("data_source", None)
+    v.setdefault("description", "")
+    return v
+
+
 @lru_cache(maxsize=1)
 def _load_config() -> dict:
     with open(_CONFIG_PATH, "r") as f:
-        return json.load(f)
+        config = json.load(f)
+    config["variables"] = {k: _expand(k, v) for k, v in config["variables"].items()}
+    return config
 
 
 @lru_cache(maxsize=1)

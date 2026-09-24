@@ -8,7 +8,8 @@
     "dev": "vite",
     "prebuild": "bash ../scripts/build_static/run_all.sh",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check": "node scripts/check-variables.mjs"
   },
   "dependencies": {
     "earcut": "^3.0.2",
