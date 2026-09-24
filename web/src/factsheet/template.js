@@ -25,9 +25,13 @@ function comparisonHTML(c) {
   </div>`;
 }
 
-export function generateFactSheetHTML(geo) {
-  const nameUpper = geo.name.toUpperCase();
+// "under 2 in 5 households" opens a sentence, so it needs a capital.
+function sentenceCase(text) {
+  const t = String(text ?? '');
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
 
+export function generateFactSheetHTML(geo) {
   return `
     <div class="fact-sheet-container">
       <div class="fs-header">
@@ -44,7 +48,7 @@ export function generateFactSheetHTML(geo) {
           <div class="fs-did-you-know-icon">${ICONS.bulb}</div>
           <div>
             <h3>Did you know?</h3>
-            <p><strong class="fs-dyk-fraction">${esc(geo.aliceFraction)}</strong><span class="fs-dyk-rate">${esc(geo.aliceRate)}</span><span class="fs-dyk-context">are employed, yet struggling to make ends meet.</span></p>
+            <p><strong class="fs-dyk-fraction">${esc(sentenceCase(geo.aliceFraction))}</strong><span class="fs-dyk-rate">${esc(geo.aliceRate)}</span><span class="fs-dyk-context">are employed, yet struggling to make ends meet.</span></p>
           </div>
         </div>
 
@@ -88,12 +92,12 @@ export function generateFactSheetHTML(geo) {
             <ul>
               <li>About <strong>${esc(geo.snapRate)}</strong> of households participate in SNAP.</li>
               <li>Participating households receive an average of <span class="fs-hi">${esc(geo.avgMonthlyBenefit)}</span> per month—about <span class="fs-hi">${esc(geo.dailyPerHousehold)}</span> a day.</li>
-              <li>SNAP brought <span class="fs-hi">${esc(geo.snapTotal)}</span> in benefits to ${esc(nameUpper)}.</li>
+              <li>SNAP brought <span class="fs-hi">${esc(geo.snapTotal)}</span> in benefits to ${esc(geo.name)}.</li>
             </ul>
             <h4>School Meals (CEP)</h4>
             <ul>
               <li><strong>${esc(geo.cepPct)}</strong> of schools (${esc(geo.cepSchools)} of ${esc(geo.totalSchools)}) provide free meals to all students through CEP.</li>
-              ${geo.cepDisplay && geo.cepDisplay !== 'N/A' ? `<li>${esc(geo.cepDisplay)}</li>` : ''}
+              ${geo.cepSchools === 'N/A' && geo.cepDisplay !== 'N/A' ? `<li>${esc(geo.cepDisplay)}</li>` : ''}
             </ul>
           </div>
         </div>

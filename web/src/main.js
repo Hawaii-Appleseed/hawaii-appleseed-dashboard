@@ -8,6 +8,7 @@ import { initDiag } from './map/diag.js';
 import { initLegend, renderLegend } from './ui/legend.js';
 import { initSidebar, renderSidebar } from './ui/sidebar.js';
 import { initInfoPanel, showInfoPanel } from './ui/infoPanel.js';
+import { initAreaSearch } from './ui/areaSearch.js';
 import { getState, subscribe } from './state/store.js';
 import { readFromUrl, writeToUrl } from './state/urlSync.js';
 
@@ -27,6 +28,7 @@ async function main() {
   initLegend(config.variables, { embedded: isEmbedded });
   initSidebar(config.variables);
   initInfoPanel(config.variables);
+  initAreaSearch();
   initPopup(config.variables, repData);
   initLayerManager(config.variables);
 

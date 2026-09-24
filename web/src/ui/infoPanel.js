@@ -198,9 +198,13 @@ function cleanName(rawName) {
   return name;
 }
 
-export function showInfoPanel(properties) {
+// Where focus goes back to when a panel opened from the keyboard closes.
+let returnFocus = null;
+
+export function showInfoPanel(properties, { focus = false } = {}) {
   const panel = document.getElementById('info-panel');
   if (!panel) return;
+  if (focus) returnFocus = document.activeElement;
 
   const s = getState();
   const geoid = properties.GEOID || properties.geoid || '';
@@ -269,7 +273,7 @@ export function showInfoPanel(properties) {
 
   panel.innerHTML = `
     <div class="ip-head">
-      <h2 class="ip-title">${escapeHtml(name)}</h2>
+      <h2 class="ip-title" tabindex="-1">${escapeHtml(name)}</h2>
       <button type="button" class="icon-btn ip-close" aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
       </button>
@@ -295,6 +299,8 @@ export function showInfoPanel(properties) {
   panel.classList.add('visible');
 
   panel.querySelector('.ip-close')?.addEventListener('click', hideInfoPanel);
+  // Opened from the keyboard: take focus into the panel so it's read out.
+  if (focus) panel.querySelector('.ip-title')?.focus({ preventScroll: true });
 
   // Bind tooltips for headline + each metric
   const headline = panel.querySelector('.ip-headline');
@@ -327,6 +333,11 @@ document.addEventListener('keydown', (e) => {
 
 export function hideInfoPanel() {
   const panel = document.getElementById('info-panel');
-  if (panel) panel.classList.remove('visible');
+  if (panel) {
+    const hadFocus = panel.contains(document.activeElement);
+    panel.classList.remove('visible');
+    if (hadFocus && returnFocus?.isConnected) returnFocus.focus();
+    returnFocus = null;
+  }
   if (floatingTip) floatingTip.classList.remove('visible');
 }

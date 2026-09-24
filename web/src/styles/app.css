@@ -741,6 +741,86 @@ select {
   }
 }
 
+/* Phones, and phones on their side: the bar folds into one summary row
+   (sidebar.js) that opens it, so the map gets the screen. */
+.controls-toggle {
+  display: none;
+}
+@media (max-width: 760px), (max-height: 500px) {
+  .main-tabs {
+    position: static;
+    align-self: flex-start;
+    margin: 8px 0 0 12px;
+  }
+  #tab-map {
+    position: static;
+  }
+  .fullscreen-btn {
+    top: 8px;
+    right: 12px;
+  }
+  #tab-data {
+    padding: 16px 14px 32px;
+  }
+  .controls-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 10px 0;
+    padding: 8px 12px;
+    min-height: 50px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    font: inherit;
+    text-align: left;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .controls-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  .ct-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+  .ct-var {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-md);
+    font-weight: 600;
+  }
+  .ct-geo {
+    font-size: var(--text-xs);
+    color: var(--ink-2);
+  }
+  .ct-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--accent-ink);
+  }
+  .ct-action svg {
+    width: 16px;
+    height: 16px;
+    transition: transform var(--dur) var(--ease);
+  }
+  .controls-toggle[aria-expanded="true"] .ct-action svg {
+    transform: rotate(180deg);
+  }
+  #tab-map:not(.controls-open) > .controls-bar {
+    display: none;
+  }
+}
+
 /* Finger-sized rows on touch screens. */
 @media (pointer: coarse) {
   .cascade-leaf > a,
@@ -1292,6 +1372,92 @@ select {
   white-space: normal;
 }
 
+/* ========== Find an area (areaSearch.js) ========== */
+.area-search {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1050; /* over the map controls; the info panel pushes it aside */
+  width: 280px;
+  max-width: calc(100% - 64px); /* clear of the zoom buttons */
+}
+.area-search > svg {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+.area-search input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px 0 34px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+.area-search input::placeholder {
+  color: var(--ink-3);
+}
+.area-search input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring), var(--shadow-md);
+}
+.area-list {
+  position: relative; /* offsetParent for scrolling the active option into view */
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 6px;
+  max-height: min(360px, 55vh);
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+.area-list[hidden] {
+  display: none;
+}
+.area-option {
+  display: flex;
+  flex-direction: column;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.area-option[aria-selected="true"] {
+  background: var(--surface-sunken);
+}
+.area-option-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink);
+}
+.area-option-detail {
+  font-size: var(--text-xs);
+  color: var(--ink-2);
+}
+.area-empty {
+  padding: 12px 10px;
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+.map-wrap:has(.info-panel.visible) .area-search {
+  right: 372px;
+}
+@media (max-width: 760px) {
+  /* Phones: the panel is at the bottom, so the box stays put. */
+  .map-wrap:has(.info-panel.visible) .area-search {
+    right: 12px;
+  }
+}
+
 /* ========== Info panel ========== */
 .info-panel {
   position: absolute;
@@ -1339,6 +1505,7 @@ select {
           backdrop-filter: blur(8px);
 }
 .ip-title {
+  outline: none; /* takes focus only from script, when opened by keyboard */
   margin: 0;
   font-size: var(--text-xl);
   font-weight: 700;
@@ -1471,6 +1638,31 @@ select {
   font-size: var(--text-xs);
   line-height: 1.35;
   color: var(--ink-2);
+}
+
+/* Phones: the panel slides up from the bottom over half the map, so the
+   picked district stays in view above it (popup.js frames it there). */
+@media (max-width: 760px) {
+  .info-panel {
+    top: auto;
+    left: 0;
+    width: 100%;
+    height: 55%;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -12px 32px rgba(22, 28, 23, 0.12);
+    transform: translateY(100%);
+  }
+  .info-panel.visible {
+    transform: none;
+  }
+  .ip-head {
+    padding-top: 16px;
+  }
+  .map-wrap:has(.info-panel.visible)::before {
+    right: 0;
+  }
 }
 
 /* Metric tooltip (shares its box with .cascade-tooltip above). */

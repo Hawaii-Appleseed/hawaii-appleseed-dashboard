@@ -274,46 +274,63 @@ export function bindLayerInteraction(map, level) {
 
   map.on('click', fillId, (e) => {
     if (!e.features || !e.features.length) return;
-    const feature = e.features[0];
-    const id = feature.id;
-    if (id == null) return;
-
-    // Drop hover so it doesn't compete with the selected styling.
-    clearHoverFor(map);
-    hideTooltip();
-
-    // Replace existing selection.
-    if (selectedFeature && (selectedFeature.id !== id || selectedFeature.level !== level)) {
-      setSelectedState(map, selectedFeature.level, selectedFeature.id, false);
-    }
-    selectedFeature = { level, id };
-    setSelectedState(map, level, id, true);
-    setShadowFeature(level, feature); // push the new selection into the WebGL shadow layer
-
-    const props = feature.properties;
-    setState({ selectedFeatureId: props.GEOID || String(id) });
-    showInfoPanel(props);
-
-    const bounds = computeBounds(feature.geometry);
-    if (bounds) {
-      const panel = document.getElementById('info-panel');
-      const panelOpen = panel && panel.classList.contains('visible');
-      const sidePad = 70;
-      // Leave room for the panel beside the district, unless the panel
-      // covers most of the map (phones), where there is no room to leave.
-      const panelW = panelOpen ? (panel.getBoundingClientRect().width || 360) : 0;
-      const mapW = map.getContainer().clientWidth;
-      const rightPad = panelW && panelW + sidePad * 2 < mapW * 0.8 ? panelW + sidePad : sidePad;
-      try {
-        map.fitBounds(bounds, {
-          padding: { top: sidePad, bottom: sidePad, left: sidePad, right: rightPad },
-          maxZoom: 13,
-          duration: 600,
-          essential: true,
-        });
-      } catch (_) { /* no-op */ }
-    }
+    if (e.features[0].id == null) return;
+    selectFeature(level, e.features[0]);
   });
+}
+
+// Select a district or county, as a click on it does: highlight it, open the
+// info panel and frame it. Also used by the "Find an area" search, which
+// passes the cached GeoJSON feature (its id is the promoted GEOID).
+export function selectFeature(level, feature, { focusPanel = false } = {}) {
+  const map = getMap();
+  if (!map || !feature) return;
+  const id = feature.id ?? feature.properties?.GEOID;
+  if (id == null) return;
+
+  // Drop hover so it doesn't compete with the selected styling.
+  clearHoverFor(map);
+  hideTooltip();
+
+  // Replace existing selection.
+  if (selectedFeature && (selectedFeature.id !== id || selectedFeature.level !== level)) {
+    setSelectedState(map, selectedFeature.level, selectedFeature.id, false);
+  }
+  selectedFeature = { level, id };
+  setSelectedState(map, level, id, true);
+  setShadowFeature(level, feature); // push the new selection into the WebGL shadow layer
+
+  const props = feature.properties;
+  setState({ selectedFeatureId: props.GEOID || String(id) });
+  showInfoPanel(props, { focus: focusPanel });
+
+  const bounds = computeBounds(feature.geometry);
+  if (bounds) {
+    const panel = document.getElementById('info-panel');
+    const panelOpen = panel && panel.classList.contains('visible');
+    const sidePad = 70;
+    // Leave room for the panel beside the district, unless the panel
+    // covers most of the map (phones), where there is no room to leave.
+    const panelW = panelOpen ? (panel.getBoundingClientRect().width || 360) : 0;
+    const mapW = map.getContainer().clientWidth;
+    const rightPad = panelW && panelW + sidePad * 2 < mapW * 0.8 ? panelW + sidePad : sidePad;
+    // Phones: the panel is a full-width sheet along the bottom, so frame the
+    // district in the space above it.
+    const sheet = panelOpen && panelW >= mapW - 1;
+    const padding = sheet
+      ? { top: 56, left: 24, right: 24, bottom: panel.offsetHeight + 16 }
+      : { top: sidePad, bottom: sidePad, left: sidePad, right: rightPad };
+    try {
+      map.fitBounds(bounds, {
+        padding,
+        // Stop short of filling the screen with a small district, so its
+        // neighbours stay in view and it's clear where it is.
+        maxZoom: 11,
+        duration: 600,
+        essential: true,
+      });
+    } catch (_) { /* no-op */ }
+  }
 }
 
 // ---------------------------------------------------------------------------

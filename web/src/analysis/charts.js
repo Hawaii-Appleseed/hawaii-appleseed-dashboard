@@ -33,9 +33,14 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
   const textFmt = unit === '$' ? '$%{text:,.0f}' : unit === '%' ? '%{text:.1f}%' : '%{text:.1f}';
   const varShort = varMeta?.display_name || varKey;
   const varLong = varMeta?.display_name_long || varShort;
-  const chartTitle = unit === '%'
-    ? `Percentage of ${varShort} (${layerLabel})`
-    : `${varLong} (${layerLabel})`;
+  // "Poverty Rate (%) by county" — the long name already carries the unit.
+  const perArea = {
+    Counties: 'county',
+    'House Districts': 'House district',
+    'Senate Districts': 'Senate district',
+    'State Boundary': 'state',
+  }[layerLabel] || layerLabel.toLowerCase();
+  const chartTitle = `${varLong} by ${perArea}`;
 
   const trace = {
     type: 'bar',
@@ -104,7 +109,7 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
   if (n > 10) {
     const caption = document.createElement('p');
     caption.className = 'da-caption';
-    caption.textContent = `Showing all ${n} ${layerLabel.toLowerCase()} ranked by ${varShort}. Hover for details.`;
+    caption.textContent = `Showing all ${n} ${layerLabel.replace(/Districts/, 'districts')} ranked by ${varShort}. Hover a bar for its value.`;
     document.getElementById(containerId).after(caption);
   }
 

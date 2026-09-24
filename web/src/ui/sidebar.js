@@ -276,9 +276,20 @@ function focusItem(el) {
   else hideTooltip();
 }
 
+// Below 900px menus scroll and sub-menus unfold inside them; stop the menu at
+// the bottom of the screen so its last items can be scrolled to (on a phone
+// held sideways the bar leaves little room below it).
+function fitMenu(menu) {
+  menu.style.maxHeight = '';
+  if (!NARROW?.matches) return;
+  const room = window.innerHeight - menu.getBoundingClientRect().top - 8;
+  menu.style.maxHeight = `${Math.max(120, Math.floor(room))}px`;
+}
+
 function openRoot(bar, root, focus) {
   closeMenus(bar, root);
   setOpen(root, true);
+  fitMenu(root.querySelector(':scope > .cascade-menu'));
   const items = menuItems(root.querySelector(':scope > .cascade-menu'));
   if (focus === 'first') focusItem(items[0]);
   if (focus === 'last') focusItem(items[items.length - 1]);
@@ -292,6 +303,34 @@ function openSubmenu(li, focus) {
   if (focus) focusItem(menuItems(li.querySelector(':scope > .cascade-menu'))[0]);
 }
 
+// Phones (and phones on their side) fold the bar into one summary row that
+// opens it; a pick folds it back so the map has the room. Matches app.css.
+const COMPACT = window.matchMedia?.('(max-width: 760px), (max-height: 500px)');
+
+function setBarOpen(open) {
+  document.getElementById('tab-map')?.classList.toggle('controls-open', open);
+  document.getElementById('controls-toggle')?.setAttribute('aria-expanded', String(open));
+}
+
+function bindToggle() {
+  const toggle = document.getElementById('controls-toggle');
+  if (!toggle) return;
+  toggle.addEventListener('click', () => {
+    setBarOpen(toggle.getAttribute('aria-expanded') !== 'true');
+  });
+}
+
+// The summary row: the variable and geography currently on the map.
+function updateToggle(bar) {
+  const toggle = document.getElementById('controls-toggle');
+  if (!toggle) return;
+  const geo = bar.querySelector('[data-cascade-root="geography"] .cascade-current')?.textContent || '';
+  const variable = [...bar.querySelectorAll('.cascade-current.is-selected')]
+    .find((c) => !c.closest('[data-cascade-root="geography"]'))?.textContent || '';
+  toggle.querySelector('.ct-var').textContent = variable;
+  toggle.querySelector('.ct-geo').textContent = geo;
+}
+
 function pick(bar, leaf, byKeyboard) {
   const root = leaf.closest('.cascade-root');
   const key = leaf.dataset.cascadeKey;
@@ -300,7 +339,11 @@ function pick(bar, leaf, byKeyboard) {
     : { selectedVariable: key };
   const [prop, value] = Object.entries(patch)[0];
   closeMenus(bar);
-  if (byKeyboard) {
+  if (COMPACT?.matches) {
+    // Fold the bar; keyboard focus goes back to the summary row that opened it.
+    setBarOpen(false);
+    if (byKeyboard) document.getElementById('controls-toggle')?.focus();
+  } else if (byKeyboard) {
     // A real change re-renders the bar and destroys the focused item, so the
     // trigger gets focus back after that render; otherwise straight away.
     if (getState()[prop] !== value) focusTriggerAfterRender = root.dataset.cascadeRoot;
@@ -595,8 +638,10 @@ export function renderSidebar() {
 
   if (!menusBound) {
     bindMenus(root);
+    bindToggle();
     menusBound = true;
   }
+  updateToggle(root);
   attachTooltipListeners(root);
 
   if (focusTriggerAfterRender) {
