@@ -7,26 +7,23 @@
     <!-- maplibre-gl.css is imported from JS (in mapInstance.js) so Vite bundles it locally. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/hawaii-appleseed-dashboard/assets/main-CQ9RkcOd.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script type="module" crossorigin src="/hawaii-appleseed-dashboard/assets/main-DayX9eHl.js"></script>
     <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/loader-xgymrUWK.js">
-    <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/store-BvyCeM16.js">
-    <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/store-D5bwX9Js.css">
+    <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/store-BgOovZSP.js">
+    <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/store-Bc_RuCI-.css">
     <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/main-CuCRB34y.css">
   </head>
   <body>
     <!--
-      Apple-style liquid-glass refraction. The trick (per the LogRocket
-      and kube.io tutorials): feed feDisplacementMap a *pre-computed*
-      smooth gradient image, NOT random turbulence. The gradient
-      encodes per-pixel refraction vectors (R = X shift, G = Y shift,
-      with 128 = no shift). For our top/bottom edge strips we need a
-      vertical gradient on the green channel only — strongest near the
-      outer rim, fading to mid-gray (no displacement) at the inner
-      edge. R is held flat at 128 (no horizontal shift), so the glass
-      bends pixels purely vertically, like a horizontal cylindrical
-      lens laid along the rim. This produces clean lensing instead of
-      the wavy/blurry look that turbulence-driven displacement gives.
+      Apple-style liquid-glass refraction for the strip along the map's top
+      edge (.map-wrap::before). The trick (per the LogRocket and kube.io
+      tutorials): feed feDisplacementMap a *pre-computed* smooth gradient
+      image, NOT random turbulence. The gradient encodes per-pixel refraction
+      vectors (R = X shift, G = Y shift, with 128 = no shift): strongest near
+      the outer rim, fading to mid-gray (no displacement) at the inner edge,
+      so the glass bends pixels purely vertically, like a horizontal
+      cylindrical lens laid along the rim.
 
       The displacement map is inline as an SVG data URI; preserveAspectRatio="none"
       stretches the 1x1 viewBox to whatever filter region the strip
@@ -35,108 +32,74 @@
     -->
     <svg class="svg-filter-defs" aria-hidden="true" focusable="false">
       <defs>
-        <!-- TOP strip: G high at outer rim (y=0) → mid at inner edge (y=1).
-             G > 128 ⇒ pixels sampled from BELOW their position ⇒ content
-             appears pulled DOWN at the rim, like light refracting toward
-             the cylinder axis. -->
+        <!-- G high at outer rim (y=0) → mid at inner edge (y=1). G > 128 ⇒
+             pixels sampled from BELOW their position ⇒ content appears
+             pulled DOWN at the rim, like light refracting toward the
+             cylinder axis. -->
         <filter id="liquidGlassTop" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
           <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" result="softSrc"/>
           <feImage preserveAspectRatio="none" result="dispMap"
                    href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1' preserveAspectRatio='none'><linearGradient id='g' x2='0' y2='1'><stop offset='0' stop-color='rgb(128,205,128)'/><stop offset='0.35' stop-color='rgb(128,158,128)'/><stop offset='1' stop-color='rgb(128,128,128)'/></linearGradient><rect width='1' height='1' fill='url(%23g)'/></svg>"/>
           <feDisplacementMap in="softSrc" in2="dispMap" scale="32" xChannelSelector="R" yChannelSelector="G"/>
         </filter>
-        <!-- BOTTOM strip: mirror — G mid at top → low at outer rim (y=1).
-             G < 128 ⇒ pixels sampled from ABOVE ⇒ content pulled UP at
-             the rim. -->
-        <filter id="liquidGlassBottom" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" result="softSrc"/>
-          <feImage preserveAspectRatio="none" result="dispMap"
-                   href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1' preserveAspectRatio='none'><linearGradient id='g' x2='0' y2='1'><stop offset='0' stop-color='rgb(128,128,128)'/><stop offset='0.65' stop-color='rgb(128,98,128)'/><stop offset='1' stop-color='rgb(128,51,128)'/></linearGradient><rect width='1' height='1' fill='url(%23g)'/></svg>"/>
-          <feDisplacementMap in="softSrc" in2="dispMap" scale="32" xChannelSelector="R" yChannelSelector="G"/>
-        </filter>
-        <!-- LEFT strip (info-panel rim): rotated version of the top
-             filter — gradient runs HORIZONTALLY this time, R channel
-             only (X displacement). R high at outer rim (x=0) → mid
-             at inner edge (x=1). R > 128 ⇒ pixels sampled from the
-             RIGHT ⇒ map content is pulled rightward at the panel's
-             left rim, like a vertical cylinder lens laid along the
-             info-panel's edge. -->
-        <filter id="liquidGlassLeft" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" result="softSrc"/>
-          <feImage preserveAspectRatio="none" result="dispMap"
-                   href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1' preserveAspectRatio='none'><linearGradient id='g'><stop offset='0' stop-color='rgb(205,128,128)'/><stop offset='0.35' stop-color='rgb(158,128,128)'/><stop offset='1' stop-color='rgb(128,128,128)'/></linearGradient><rect width='1' height='1' fill='url(%23g)'/></svg>"/>
-          <feDisplacementMap in="softSrc" in2="dispMap" scale="32" xChannelSelector="R" yChannelSelector="G"/>
-        </filter>
-        <!-- WHOLE-PANEL glass (legend + any rectangular UI element):
-             two displacement passes inside one filter. Pass 1 uses a
-             vertical gradient on G (refracts at top/bottom rims).
-             Pass 2 uses a horizontal gradient on R (refracts at left/
-             right rims). Compound effect = pillowed lensing strongest
-             at the perimeter, near-zero in the middle. Lower scale
-             (15) than the edge strips (32) since the legend is small;
-             we don't want over-distortion of its interior. -->
-        <filter id="liquidGlassPanel" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" result="softSrc"/>
-          <feImage preserveAspectRatio="none" result="vMap"
-                   href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1' preserveAspectRatio='none'><linearGradient id='g' x2='0' y2='1'><stop offset='0' stop-color='rgb(128,205,128)'/><stop offset='0.5' stop-color='rgb(128,128,128)'/><stop offset='1' stop-color='rgb(128,51,128)'/></linearGradient><rect width='1' height='1' fill='url(%23g)'/></svg>"/>
-          <feDisplacementMap in="softSrc" in2="vMap" scale="15" xChannelSelector="R" yChannelSelector="G" result="vDisp"/>
-          <feImage preserveAspectRatio="none" result="hMap"
-                   href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1' preserveAspectRatio='none'><linearGradient id='g'><stop offset='0' stop-color='rgb(205,128,128)'/><stop offset='0.5' stop-color='rgb(128,128,128)'/><stop offset='1' stop-color='rgb(51,128,128)'/></linearGradient><rect width='1' height='1' fill='url(%23g)'/></svg>"/>
-          <feDisplacementMap in="vDisp" in2="hMap" scale="15" xChannelSelector="R" yChannelSelector="G"/>
-        </filter>
       </defs>
     </svg>
     <main class="app-main">
-      <nav class="main-tabs" role="tablist">
-        <button class="main-tab active" data-tab="map" role="tab" aria-selected="true">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-          Map
+      <nav class="seg main-tabs" role="tablist" aria-label="View">
+        <button class="seg-btn main-tab active" data-tab="map" role="tab" aria-selected="true" aria-controls="tab-map">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="tab-icon" aria-hidden="true"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+          <span class="seg-label">Map</span>
         </button>
-        <button class="main-tab" data-tab="data" role="tab" aria-selected="false">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
-          Data
+        <button class="seg-btn main-tab" data-tab="data" role="tab" aria-selected="false" aria-controls="tab-data">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="tab-icon" aria-hidden="true"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
+          <span class="seg-label">Data</span>
         </button>
       </nav>
 
       <div id="tab-map" class="tab-pane" role="tabpanel">
         <div id="controls-bar" class="controls-bar">
         </div>
-        <button id="fullscreen-btn" class="fullscreen-btn" type="button" aria-label="Open in full tab" title="Open in new tab" hidden>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <button id="fullscreen-btn" class="btn btn-secondary fullscreen-btn" type="button" aria-label="Open in a new tab" title="Open in a new tab" hidden>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           Open
         </button>
         <section class="map-wrap">
           <div id="main-map" class="map-container"></div>
           <div id="main-map-legend" class="map-legend">
-            <div class="legend-title"></div>
-            <div id="main-map-legend-items"></div>
-            <div class="legend-color-scheme">
-              <label for="color-scheme-select">Color scheme</label>
-              <select id="color-scheme-select"></select>
+            <div class="legend-head">
+              <div class="legend-title"></div>
+              <button type="button" id="map-options-btn" class="icon-btn" aria-expanded="false" aria-controls="map-options" aria-label="Map options" title="Map options">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2.5" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="2.5" fill="currentColor" stroke="none"/></svg>
+              </button>
             </div>
-            <div class="legend-reliability">
-              <label class="legend-reliability-toggle">
-                <input type="checkbox" id="reliability-toggle" />
-                <span>Flag low-reliability areas</span>
-              </label>
-              <div id="reliability-key" class="legend-reliability-key" hidden></div>
+            <div id="main-map-legend-items" class="legend-scale">
+              <div class="legend-bar"></div>
+              <div class="legend-ticks"></div>
             </div>
-            <div class="legend-millionaires">
-              <label class="legend-millionaires-toggle">
-                <input type="checkbox" id="millionaires-toggle" />
-                <span>Show millionaires</span>
+            <div class="legend-source"></div>
+            <div id="reliability-key" class="legend-key" hidden></div>
+            <div id="millionaires-key" class="legend-key" hidden></div>
+            <div id="map-options" class="map-options" role="group" aria-label="Map options" hidden>
+              <div class="mo-section mo-scheme">
+                <div class="mo-label" id="mo-scheme-label">Color scheme</div>
+                <div id="color-scheme-options" class="mo-schemes" role="radiogroup" aria-labelledby="mo-scheme-label"></div>
+              </div>
+              <label class="mo-section mo-switch mo-reliability">
+                <span class="mo-switch-text">
+                  <span class="mo-switch-title">Flag low-reliability areas</span>
+                  <span class="mo-switch-help" id="reliability-help"></span>
+                </span>
+                <input type="checkbox" role="switch" id="reliability-toggle" class="switch" aria-describedby="reliability-help" />
               </label>
-              <div id="millionaires-key" class="legend-millionaires-key" hidden></div>
+              <label class="mo-section mo-switch mo-millionaires">
+                <span class="mo-switch-text">
+                  <span class="mo-switch-title">Show millionaires</span>
+                  <span class="mo-switch-help" id="millionaires-help"></span>
+                </span>
+                <input type="checkbox" role="switch" id="millionaires-toggle" class="switch" aria-describedby="millionaires-help" />
+              </label>
             </div>
           </div>
-          <!-- Three-piece glass frame around the info-panel. All three
-               sit OUTSIDE the panel because the panel has both transform
-               and mask-image, either of which would push children into
-               an offscreen buffer and break their backdrop-filter.
-               The pieces don't overlap (rim runs y=25 → height-25
-               only; strips cover the top and bottom 25px including the
-               rim's outer column) so refraction never compounds. -->
-          <div class="info-panel-glass-rim" aria-hidden="true"></div>
           <aside id="info-panel" class="info-panel"></aside>
         </section>
       </div>
