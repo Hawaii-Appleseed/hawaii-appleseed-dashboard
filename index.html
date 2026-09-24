@@ -8,10 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/hawaii-appleseed-dashboard/assets/main-7lcu8LLB.js"></script>
+    <script type="module" crossorigin src="/hawaii-appleseed-dashboard/assets/main-DrHr0nx3.js"></script>
     <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/loader-xgymrUWK.js">
-    <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/store-DXNtkY_Q.js">
-    <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/store-CwZmorcK.css">
+    <link rel="modulepreload" crossorigin href="/hawaii-appleseed-dashboard/assets/store-P-duZ6C2.js">
+    <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/store-MIB3L6ic.css">
     <link rel="stylesheet" crossorigin href="/hawaii-appleseed-dashboard/assets/main-CuCRB34y.css">
   </head>
   <body>
@@ -58,6 +58,11 @@
       </nav>
 
       <div id="tab-map" class="tab-pane" role="tabpanel">
+        <!-- Phones: one row standing in for the controls bar (sidebar.js). -->
+        <button id="controls-toggle" class="controls-toggle" type="button" aria-expanded="false" aria-controls="controls-bar">
+          <span class="ct-text"><span class="ct-var"></span><span class="ct-geo"></span></span>
+          <span class="ct-action">Change<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
+        </button>
         <div id="controls-bar" class="controls-bar">
         </div>
         <button id="fullscreen-btn" class="btn btn-secondary fullscreen-btn" type="button" aria-label="Open in a new tab" title="Open in a new tab" hidden>
@@ -65,6 +70,11 @@
           Open
         </button>
         <section class="map-wrap">
+          <div id="area-search" class="area-search" role="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="text" role="combobox" aria-expanded="false" aria-controls="area-search-list" aria-autocomplete="list" aria-label="Find a county or district" placeholder="Find a county" autocomplete="off" spellcheck="false" />
+            <ul id="area-search-list" class="area-list" role="listbox" aria-label="Areas" hidden></ul>
+          </div>
           <div id="main-map" class="map-container"></div>
           <div id="main-map-legend" class="map-legend">
             <div class="legend-head">
