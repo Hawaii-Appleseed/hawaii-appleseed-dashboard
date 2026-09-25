@@ -311,7 +311,11 @@
       "info_panel_order": 5,
       "is_special_variable": true,
       "legend_direction": "up",
-      "color_thresholds": [0, 1, 2, 3, 4, 5, 7, 10, 20]
+      "color_thresholds": [0, 1, 2, 3, 4, 5, 7, 10, 20],
+      "color_thresholds_by_level": {
+        "state": [50, 60, 70, 80, 90, 100, 110, 120, 130],
+        "county": [0, 5, 10, 15, 20, 25, 30, 40, 50]
+      }
     },
     "millionaires": {
       "display_name": "Millionaires",
