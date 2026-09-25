@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the tax-credit CSVs (EITC and Child Tax Credit) for all four levels.
 
-Sources, all IRS Statistics of Income (SOI) for tax year 2022, in
+Sources, IRS Statistics of Income (SOI) for tax year 2022, in
 data/raw/tax_credits/ (see the README there for URLs):
 
   * 22zp12hi.xlsx -- SOI ZIP code data for Hawaii. Its state total row gives
@@ -9,9 +9,11 @@ data/raw/tax_credits/ (see the README there for URLs):
     districts (below).
   * 22incyallnoagi_hi.csv -- the Hawaii rows of SOI's county data, used as
     published for the four counties.
-  * geocorr2022_zcta_to_{sldl22,sldu22,county}.csv -- Geocorr 2022 (Missouri
-    Census Data Center): the share of each ZIP code tabulation area's 2020
-    population in each 2022 House / Senate district (and county).
+
+plus data/raw/crosswalks/geocorr2022_zcta_to_{sldl22,sldu22,county}.csv --
+Geocorr 2022 (Missouri Census Data Center): the share of each ZIP code
+tabulation area's 2020 population in each 2022 House / Senate district (and
+county).
 
 Measures (SOI field names):
 
@@ -54,6 +56,7 @@ import openpyxl
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / 'data' / 'raw' / 'tax_credits'
+CROSSWALKS = ROOT / 'data' / 'raw' / 'crosswalks'
 OUT = ROOT / 'data' / 'processed' / 'tax_credits'
 YEAR = 2022
 STATE_EITC_SHARE = 0.40
@@ -108,7 +111,7 @@ def read_county_data() -> dict:
 
 def read_crosswalk(target: str) -> list[tuple[str, str, float, float]]:
     """(zcta, target, afact, pop20) rows; zcta is '' for blocks outside any ZCTA."""
-    with open(RAW / f'geocorr2022_zcta_to_{target}.csv', newline='') as f:
+    with open(CROSSWALKS / f'geocorr2022_zcta_to_{target}.csv', newline='') as f:
         rows = list(csv.reader(f))[2:]  # a names row, then a labels row
     return [(z.strip(), geo.strip(), float(row[-1]), float(row[-2])) for z, geo, *row in rows]
 
