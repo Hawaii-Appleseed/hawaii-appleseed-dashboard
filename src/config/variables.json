@@ -87,7 +87,7 @@
       "fact_sheet_category": "economic",
       "fact_sheet_label": "ALICE Rate",
       "legend_direction": "down",
-      "color_thresholds": [5, 10, 15, 20, 25, 30, 35, 40, 45]
+      "color_thresholds": [18, 21, 24, 27, 30, 33, 36, 39, 42]
     },
     "poverty_rate": {
       "display_name": "Poverty Rate",
@@ -164,7 +164,7 @@
       "fact_sheet_category": "tax_credits",
       "is_special_variable": true,
       "legend_direction": "up",
-      "color_thresholds": [500, 750, 1000, 1250, 1500, 2000, 2500, 3000, 4000]
+      "color_thresholds": [1750, 1800, 1850, 1900, 1950, 2000, 2050, 2100, 2150]
     },
     "ctc_participation_rate": {
       "display_name": "Returns Claiming CTC",
@@ -181,7 +181,7 @@
       "fact_sheet_label": "Share of Returns Claiming CTC",
       "is_special_variable": true,
       "legend_direction": "up",
-      "color_thresholds": [5, 8, 10, 12, 15, 18, 20, 22, 25]
+      "color_thresholds": [1, 3, 5, 7, 9, 11, 13, 15, 17]
     },
     "federal_eitc_avg_amount": {
       "display_name": "Avg Federal EITC",
@@ -197,7 +197,7 @@
       "fact_sheet_category": "tax_credits",
       "is_special_variable": true,
       "legend_direction": "up",
-      "color_thresholds": [500, 750, 1000, 1250, 1500, 2000, 2500, 3000, 4000]
+      "color_thresholds": [1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600]
     },
     "eitc_participation_rate": {
       "display_name": "Returns Claiming EITC",
@@ -214,7 +214,7 @@
       "fact_sheet_label": "Share of Returns Claiming EITC",
       "is_special_variable": true,
       "legend_direction": "up",
-      "color_thresholds": [5, 8, 10, 12, 15, 18, 20, 22, 25]
+      "color_thresholds": [4, 6, 8, 10, 12, 14, 16, 18, 20]
     },
     "state_eitc_avg_amount": {
       "display_name": "Avg State EITC",
@@ -230,7 +230,7 @@
       "fact_sheet_category": "tax_credits",
       "is_special_variable": true,
       "legend_direction": "up",
-      "color_thresholds": [500, 750, 1000, 1250, 1500, 2000, 2500, 3000, 4000]
+      "color_thresholds": [720, 760, 800, 840, 880, 920, 960, 1000, 1040]
     },
     "snap_household_rate": {
       "display_name": "SNAP Households",
