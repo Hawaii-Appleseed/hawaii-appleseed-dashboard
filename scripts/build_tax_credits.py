@@ -51,8 +51,8 @@ returns, and nonresidential ones such as Honolulu PO boxes, into "other"
 own, by population. Its rates are close to the state's, and two rural House
 districts (5 and 17) have about half their people in those areas, so their
 figures lean toward the statewide mix. The ZIP-based county totals come
-within 0.2 points of SOI's county data for the same year on every rate,
-which the script checks. The districts in each county (House and Senate
+within 0.25 points of SOI's county data for the same year on every rate;
+the script fails past 0.5. The districts in each county (House and Senate
 districts each lie within one) are then scaled to that county's 2023 totals,
 measure by measure, so they add up to the counties, as
 scripts/build_alice.py does. Once SOI publishes ZIP code data for YEAR, set
@@ -264,8 +264,8 @@ def main() -> int:
     claims, amount = read_state_eitc_claims()
     estimate = STATE_EITC_SHARE * 1000 * state['eitc_a'] / state['eitc_n']
     print(f'  state EITC {YEAR}: estimated ${estimate:,.0f} per claim, reported ${amount / claims:,.0f}')
-    if abs(estimate / (amount / claims) - 1) > 0.03:
-        print('  ! the state EITC estimate is off by more than 3%; check STATE_EITC_SHARE')
+    if abs(estimate / (amount / claims) - 1) > 0.02:
+        print('  ! the state EITC estimate is off by more than 2%; check STATE_EITC_SHARE')
         return 1
 
     OUT.mkdir(parents=True, exist_ok=True)

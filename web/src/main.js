@@ -56,10 +56,12 @@ async function main() {
   const millionairesVisible = (state) =>
     state.showMillionaires || state.selectedVariable === 'millionaires';
 
-  // The geography picks the scale for variables with one per level. (Not
-  // getCurrentLevel(): on first load setLayer returns before the map has
-  // applied the level.)
-  const drawLegend = (state) => renderLegend(state.selectedVariable, state.colorScheme, state.activeLayer);
+  // The geography on the map picks the scale for variables with one per
+  // level, so a legend redrawn while another geography loads keeps matching
+  // the fills. On first load setLayer returns before the map has applied the
+  // level, so fall back to the one requested.
+  const drawLegend = (state) =>
+    renderLegend(state.selectedVariable, state.colorScheme, getCurrentLevel() ?? state.activeLayer);
 
   subscribe(async (state, changed) => {
     if ('selectedFeatureId' in changed) {
