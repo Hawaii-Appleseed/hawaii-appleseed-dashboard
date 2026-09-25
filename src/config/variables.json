@@ -153,7 +153,7 @@
     "ctc_avg_amount": {
       "display_name": "Avg Child Tax Credit",
       "display_name_long": "Child Tax Credit - Average Amount ($)",
-      "description": "Average federal **Child Tax Credit** dollar amount claimed per qualifying tax return.",
+      "description": "Average **refundable** federal **Child Tax Credit** (the additional child tax credit) per tax return that claims it.",
       "data_type": "currency",
       "data_source": "tax_credits",
       "source": "IRS Statistics of Income 2022",
@@ -169,7 +169,7 @@
     "ctc_participation_rate": {
       "display_name": "Returns Claiming CTC",
       "display_name_long": "Child Tax Credit - Returns Claiming (%)",
-      "description": "Share of tax returns claiming the federal **Child Tax Credit**.",
+      "description": "Share of tax returns claiming the **refundable** federal **Child Tax Credit** (the additional child tax credit).",
       "data_type": "percentage",
       "data_source": "tax_credits",
       "source": "IRS Statistics of Income 2022",
@@ -219,7 +219,7 @@
     "state_eitc_avg_amount": {
       "display_name": "Avg State EITC",
       "display_name_long": "State EITC - Average Amount ($)",
-      "description": "Average **Hawaii State Earned Income Tax Credit** claimed per qualifying return.",
+      "description": "Estimated average **Hawaii State Earned Income Tax Credit** per return claiming the federal EITC: **40% of the federal credit**, the state rate from tax year 2023.",
       "data_type": "currency",
       "data_source": "tax_credits",
       "source": "IRS Statistics of Income 2022",

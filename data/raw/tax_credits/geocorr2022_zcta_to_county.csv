@@ -1,0 +1,100 @@
+"zcta","county","CountyName","ZIPName","pop20","afact"
+"ZIP census tabulation area","County code","County name","ZIP Code name","Total population (2020 Census)","zcta-to-county allocation factor"
+" ","15001","Hawaii HI","[not in a ZCTA]",32,0.2092 
+" ","15007","Kauai HI","[not in a ZCTA]",121,0.7908 
+"96701","15003","Honolulu HI","Aiea, HI",42833,1 
+"96703","15007","Kauai HI","Anahola, HI (PO boxes)",2638,1 
+"96704","15001","Hawaii HI","Captain Cook, HI",6818,1 
+"96705","15007","Kauai HI","Eleele, HI (PO boxes)",2536,1 
+"96706","15003","Honolulu HI","Ewa Beach, HI",80299,1 
+"96707","15003","Honolulu HI","Kapolei, HI",47181,1 
+"96708","15009","Maui HI","Haiku, HI",10993,1 
+"96710","15001","Hawaii HI","Hakalau, HI (PO boxes)",650,1 
+"96712","15003","Honolulu HI","Haleiwa, HI",8259,1 
+"96713","15009","Maui HI","Hana, HI",2264,1 
+"96714","15007","Kauai HI","Hanalei, HI (PO boxes)",1557,1 
+"96716","15007","Kauai HI","Hanapepe, HI (PO boxes)",2784,1 
+"96717","15003","Honolulu HI","Hauula, HI",5441,1 
+"96719","15001","Hawaii HI","Hawi, HI (PO boxes)",2020,1 
+"96720","15001","Hawaii HI","Hilo, HI",46615,1 
+"96722","15007","Kauai HI","Princeville, HI",2328,1 
+"96725","15001","Hawaii HI","Holualoa, HI",4094,1 
+"96726","15001","Hawaii HI","Honaunau, HI (PO boxes)",136,1 
+"96727","15001","Hawaii HI","Honokaa, HI",4990,1 
+"96728","15001","Hawaii HI","Honomu, HI (PO boxes)",606,1 
+"96729","15009","Maui HI","Hoolehua, HI (PO boxes)",1358,1 
+"96730","15003","Honolulu HI","Kaaawa, HI",1584,1 
+"96731","15003","Honolulu HI","Kahuku, HI",3309,1 
+"96732","15009","Maui HI","Kahului, HI",27507,1 
+"96734","15003","Honolulu HI","Kailua, HI",49922,1 
+"96737","15001","Hawaii HI","Ocean View, HI (PO boxes)",4806,1 
+"96738","15001","Hawaii HI","Waikoloa, HI",7447,1 
+"96740","15001","Hawaii HI","Kailua Kona, HI",38234,1 
+"96741","15007","Kauai HI","Kalaheo, HI",6424,1 
+"96742","15005","Kalawao HI","Kalaupapa, HI (PO boxes)",82,1 
+"96743","15001","Hawaii HI","Kamuela, HI",13339,1 
+"96744","15003","Honolulu HI","Kaneohe, HI",57746,1 
+"96746","15007","Kauai HI","Kapaa, HI",19991,1 
+"96747","15007","Kauai HI","Kaumakani, HI (PO boxes)",666,1 
+"96748","15009","Maui HI","Kaunakakai, HI",4441,1 
+"96749","15001","Hawaii HI","Keaau, HI",20503,1 
+"96750","15001","Hawaii HI","Kealakekua, HI",3806,1 
+"96751","15007","Kauai HI","Kealia, HI (PO boxes)",152,1 
+"96752","15007","Kauai HI","Kekaha, HI (PO boxes)",3900,1 
+"96753","15009","Maui HI","Kihei, HI",27611,1 
+"96754","15007","Kauai HI","Kilauea, HI",4378,1 
+"96755","15001","Hawaii HI","Kapaau, HI (PO boxes)",3613,1 
+"96756","15007","Kauai HI","Koloa, HI",5766,1 
+"96757","15009","Maui HI","Kualapuu, HI (PO boxes)",768,1 
+"96759","15003","Honolulu HI","Kunia, HI (PO boxes)",479,1 
+"96760","15001","Hawaii HI","Kurtistown, HI",3923,1 
+"96761","15009","Maui HI","Lahaina, HI",23167,1 
+"96762","15003","Honolulu HI","Laie, HI",6316,1 
+"96763","15009","Maui HI","Lanai City, HI (PO boxes)",3367,1 
+"96764","15001","Hawaii HI","Laupahoehoe, HI (PO boxes)",649,1 
+"96765","15007","Kauai HI","Lawai, HI (PO boxes)",767,1 
+"96766","15007","Kauai HI","Lihue, HI",16937,1 
+"96768","15009","Maui HI","Makawao, HI",18512,1 
+"96769","15007","Kauai HI","Makaweli, HI (PO boxes)",296,1 
+"96770","15009","Maui HI","Maunaloa, HI (PO boxes)",720,1 
+"96771","15001","Hawaii HI","Mountain View, HI",8483,1 
+"96772","15001","Hawaii HI","Naalehu, HI (PO boxes)",2579,1 
+"96773","15001","Hawaii HI","Ninole, HI (PO boxes)",412,1 
+"96774","15001","Hawaii HI","Ookala, HI (PO boxes)",281,1 
+"96776","15001","Hawaii HI","Paauilo, HI (PO boxes)",1782,1 
+"96777","15001","Hawaii HI","Pahala, HI (PO boxes)",1559,1 
+"96778","15001","Hawaii HI","Pahoa, HI",14687,1 
+"96779","15009","Maui HI","Paia, HI",2992,1 
+"96780","15001","Hawaii HI","Papaaloa, HI (PO boxes)",548,1 
+"96781","15001","Hawaii HI","Papaikou, HI",1670,1 
+"96782","15003","Honolulu HI","Pearl City, HI",37437,1 
+"96783","15001","Hawaii HI","Pepeekeo, HI",2222,1 
+"96785","15001","Hawaii HI","Volcano, HI (PO boxes)",4125,1 
+"96786","15003","Honolulu HI","Wahiawa, HI",41217,1 
+"96789","15003","Honolulu HI","Mililani, HI",54732,1 
+"96790","15009","Maui HI","Kula, HI",9115,1 
+"96791","15003","Honolulu HI","Waialua, HI",7987,1 
+"96792","15003","Honolulu HI","Waianae, HI",51965,1 
+"96793","15009","Maui HI","Wailuku, HI",31939,1 
+"96795","15003","Honolulu HI","Waimanalo, HI",11064,1 
+"96796","15007","Kauai HI","Waimea, HI (PO boxes)",2057,1 
+"96797","15003","Honolulu HI","Waipahu, HI",78109,1 
+"96813","15003","Honolulu HI","Honolulu, HI",27372,1 
+"96814","15003","Honolulu HI","Honolulu, HI",24870,1 
+"96815","15003","Honolulu HI","Honolulu, HI",28786,1 
+"96816","15003","Honolulu HI","Honolulu, HI",51586,1 
+"96817","15003","Honolulu HI","Honolulu, HI",56823,1 
+"96818","15003","Honolulu HI","Honolulu, HI",51851,1 
+"96819","15003","Honolulu HI","Honolulu, HI",53334,1 
+"96820","15003","Honolulu HI","Honolulu, HI (PO boxes)",16,1 
+"96821","15003","Honolulu HI","Honolulu, HI",19727,1 
+"96822","15003","Honolulu HI","Honolulu, HI",42231,1 
+"96825","15003","Honolulu HI","Honolulu, HI",31147,1 
+"96826","15003","Honolulu HI","Honolulu, HI",30092,1 
+"96848","15003","Honolulu HI","Honolulu, HI",475,1 
+"96850","15003","Honolulu HI","Honolulu, HI",6,1 
+"96853","15003","Honolulu HI","Jbphh, HI",347,1 
+"96857","15003","Honolulu HI","Schofield Barracks, HI",4058,1 
+"96858","15003","Honolulu HI","Fort Shafter, HI",424,1 
+"96860","15003","Honolulu HI","Jbphh, HI",5025,1 
+"96863","15003","Honolulu HI","Mcbh Kaneohe Bay, HI",2458,1 
