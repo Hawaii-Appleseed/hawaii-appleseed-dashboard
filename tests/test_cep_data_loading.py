@@ -61,17 +61,17 @@ class TestCEPDataLoading(unittest.TestCase):
         self.assertIsNotNone(df)
         self.assertGreater(len(df), 0)
         
-        # Check required columns
-        required_columns = ['district', 'total_schools', 'cep_schools', 'cep_percentage', 'geoid', 'NAME']
+        # Check required columns (counties are keyed by `county`, not `district`)
+        required_columns = ['county', 'total_schools', 'cep_schools', 'cep_percentage', 'geoid', 'NAME']
         for col in required_columns:
             self.assertIn(col, df.columns)
-        
+
         # Check data types
         self.assertTrue(pd.api.types.is_numeric_dtype(df['total_schools']))
         self.assertTrue(pd.api.types.is_numeric_dtype(df['cep_schools']))
         self.assertTrue(pd.api.types.is_numeric_dtype(df['cep_percentage']))
         self.assertTrue(all(df['geoid'].str.startswith('15')))
-    
+
     def test_cep_variables_in_available_variables(self):
         """Test that CEP variables are included in available variables."""
         available_vars = self.data_loader.get_available_variables()

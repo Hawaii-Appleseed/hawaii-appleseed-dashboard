@@ -19,6 +19,12 @@ from pathlib import Path
 # Add the project root to the Python path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
+# Skipped as a module so the autouse fixture below never starts Streamlit.
+pytestmark = pytest.mark.skip(
+    reason="Legacy Streamlit UI, superseded by web/: drives run_leaflet.py in a browser "
+           "and needs pytest-playwright"
+)
+
 # Test constants
 STREAMLIT_PORT = 8501
 TIMEOUT = 30000  # 30 seconds

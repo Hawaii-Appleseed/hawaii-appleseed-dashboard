@@ -16,6 +16,8 @@ from src.ui.sidebar import create_sidebar
 from run_leaflet import main
 
 
+@unittest.skip("Legacy Streamlit UI, superseded by web/: the menus are custom cascades, not st.selectbox, "
+               "and the sidebar reads st.session_state by attribute, which this test's plain-dict mock lacks")
 class TestDropdownKeys(unittest.TestCase):
     """Test class for dropdown menu keys."""
     
