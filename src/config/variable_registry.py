@@ -167,7 +167,9 @@ def get_info_panel_categories() -> Dict[str, List[dict]]:
             "key": key,
             "label": v["info_panel_label"],
             "type": v["data_type"],
-            "_order": v.get("info_panel_order", 999),
+            # _expand() stores None when the entry leaves it out; sort those
+            # last, as the web app does (`info_panel_order || 999`).
+            "_order": v.get("info_panel_order") or 999,
         })
 
     # Sort variables within each category
