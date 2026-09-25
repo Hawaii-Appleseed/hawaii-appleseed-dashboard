@@ -32,7 +32,10 @@ scripts/build_static/02_build_layer_geojsons.py to rebuild the map layers.
 from __future__ import annotations
 
 import csv
+import io
+import re
 import sys
+import zipfile
 from collections import defaultdict
 from pathlib import Path
 
@@ -134,6 +137,21 @@ def build() -> dict[str, list[list]]:
     }
 
 
+def save_stable(wb, path: Path) -> None:
+    """Save without the save-time timestamps openpyxl writes (file dates and
+    docProps created/modified), so rebuilding unchanged data leaves the
+    committed workbook byte for byte the same."""
+    buf = io.BytesIO()
+    wb.save(buf)
+    with zipfile.ZipFile(buf) as src, zipfile.ZipFile(path, 'w') as out:
+        for info in src.infolist():
+            data = src.read(info.filename)
+            if info.filename == 'docProps/core.xml':
+                data = re.sub(rb'(<dcterms:(?:created|modified)[^>]*>)[^<]*', rb'\g<1>2026-01-01T00:00:00Z', data)
+            out.writestr(zipfile.ZipInfo(info.filename, date_time=(2026, 1, 1, 0, 0, 0)), data,
+                         compress_type=zipfile.ZIP_DEFLATED)
+
+
 def main() -> int:
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
@@ -142,8 +160,8 @@ def main() -> int:
         for r in rows:
             ws.append(r)
         print(f'  {name}: {len(rows) - 1} rows, ALICE {min(r[1] for r in rows[1:])}–{max(r[1] for r in rows[1:])}%')
-    wb.save(OUT)
-    print(f'  wrote {OUT.relative_to(ROOT)}')
+    save_stable(wb, OUT)
+    print(f'  wrote {OUT.relative_to(ROOT) if OUT.is_relative_to(ROOT) else OUT}')
     return 0
 
 

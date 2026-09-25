@@ -1,9 +1,9 @@
 """Checks for scripts/build_alice.py and the ALICE workbook it writes, which
 the data pipeline reads."""
+import filecmp
 import importlib.util
 from pathlib import Path
 
-import openpyxl
 import pytest
 
 from data.data_loader import DataLoader, DataType, GeoLevel
@@ -19,10 +19,11 @@ def sheets():
     return build.build()
 
 
-def test_committed_workbook_matches_a_fresh_build(sheets):
-    wb = openpyxl.load_workbook(build.OUT, read_only=True)
-    committed = {ws.title: [list(r) for r in ws.iter_rows(values_only=True)] for ws in wb.worksheets}
-    assert committed == sheets
+def test_committed_workbook_matches_a_fresh_build(tmp_path, monkeypatch):
+    committed = build.OUT
+    monkeypatch.setattr(build, 'OUT', tmp_path / committed.name)
+    assert build.main() == 0
+    assert filecmp.cmp(tmp_path / committed.name, committed, shallow=False)
 
 
 def test_state_and_counties_are_the_published_alice_shares(sheets):
