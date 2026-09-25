@@ -130,8 +130,8 @@ function cvExpression(variable) {
   ];
 }
 
-function reliabilityFilter(variable) {
-  const thresholds = getThresholds(variable) || [];
+function reliabilityFilter(variable, level) {
+  const thresholds = getThresholds(variable, level) || [];
   const floor = (thresholds[0] || 0) * 0.5; // near-zero guard anchored to scale
   return [
     'all',
@@ -228,8 +228,8 @@ function preprocessFeatures(data) {
   return data;
 }
 
-function colorExpression(variable, scheme) {
-  const thresholds = getThresholds(variable);
+function colorExpression(variable, scheme, level) {
+  const thresholds = getThresholds(variable, level);
   const colors = getSchemeColors(scheme);
   if (!variable || !thresholds || thresholds.length === 0 || !colors || colors.length === 0) {
     return '#cccccc';
@@ -450,7 +450,7 @@ function applyColorExpression(map, level) {
       map.setPaintProperty(`${level}-line`, 'line-color', POINTS_MODE_MUTED_LINE);
     }
   } else {
-    map.setPaintProperty(`${level}-fill`, 'fill-color', colorExpression(currentVariable, currentScheme));
+    map.setPaintProperty(`${level}-fill`, 'fill-color', colorExpression(currentVariable, currentScheme, level));
     if (map.getLayer(`${level}-line`)) {
       map.setPaintProperty(`${level}-line`, 'line-color', LINE_COLOR);
     }
@@ -469,7 +469,7 @@ function applyReliability(map, level) {
     map.setLayoutProperty(layerId, 'visibility', 'none');
     return;
   }
-  map.setFilter(layerId, reliabilityFilter(currentVariable));
+  map.setFilter(layerId, reliabilityFilter(currentVariable, level));
   map.setPaintProperty(layerId, 'fill-pattern', reliabilityPatternExpr(currentVariable));
   map.setLayoutProperty(layerId, 'visibility', 'visible');
 }

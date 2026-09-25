@@ -43,6 +43,7 @@ def _expand(key: str, entry: dict) -> dict:
     v.setdefault("csv_column", key)
     v.setdefault("data_source", None)
     v.setdefault("description", "")
+    v.setdefault("color_thresholds_by_level", {})
     return v
 
 

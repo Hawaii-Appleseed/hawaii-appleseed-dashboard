@@ -56,6 +56,11 @@ async function main() {
   const millionairesVisible = (state) =>
     state.showMillionaires || state.selectedVariable === 'millionaires';
 
+  // The geography picks the scale for variables with one per level. (Not
+  // getCurrentLevel(): on first load setLayer returns before the map has
+  // applied the level.)
+  const drawLegend = (state) => renderLegend(state.selectedVariable, state.colorScheme, state.activeLayer);
+
   subscribe(async (state, changed) => {
     if ('selectedFeatureId' in changed) {
       setSelectionFocus(!!state.selectedFeatureId);
@@ -78,14 +83,14 @@ async function main() {
       }
       setVariable(state.selectedVariable);
       setColorScheme(state.colorScheme);
-      renderLegend(state.selectedVariable, state.colorScheme);
+      drawLegend(state);
     }
     if ('selectedVariable' in changed) {
       setVariable(state.selectedVariable);
       // Must follow setVariable: layerManager derives variable-vs-overlay mode
       // (mute + circle colors) from the now-current variable.
       setMillionairesOverlay(millionairesVisible(state));
-      renderLegend(state.selectedVariable, state.colorScheme);
+      drawLegend(state);
       // If a geo is selected and the info panel is open, re-render it so the
       // headline reflects the newly chosen variable.
       const panel = document.getElementById('info-panel');
@@ -96,15 +101,15 @@ async function main() {
     }
     if ('colorScheme' in changed) {
       setColorScheme(state.colorScheme);
-      renderLegend(state.selectedVariable, state.colorScheme);
+      drawLegend(state);
     }
     if ('showReliability' in changed) {
       setReliability(state.showReliability);
-      renderLegend(state.selectedVariable, state.colorScheme);
+      drawLegend(state);
     }
     if ('showMillionaires' in changed) {
       setMillionairesOverlay(millionairesVisible(state));
-      renderLegend(state.selectedVariable, state.colorScheme);
+      drawLegend(state);
     }
     writeToUrl();
     // Only these two show in the bar. Re-rendering it replaces its buttons,
@@ -118,7 +123,7 @@ async function main() {
   setColorScheme(s0.colorScheme);
   setReliability(s0.showReliability);
   setMillionairesOverlay(millionairesVisible(s0));
-  renderLegend(s0.selectedVariable, s0.colorScheme);
+  drawLegend(s0);
   renderSidebar();
   writeToUrl();
 

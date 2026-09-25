@@ -14,9 +14,12 @@ export function getSchemeColors(scheme) {
   return (COLOR_SCHEMES && COLOR_SCHEMES[scheme]) || COLOR_SCHEMES?.blue || [];
 }
 
-export function getThresholds(varKey) {
+// A variable's class boundaries on the map at `level`: its own scale for that
+// geography if variables.json gives one (color_thresholds_by_level, e.g. SNAP
+// dollars for counties, which are ten times a district), else the shared one.
+export function getThresholds(varKey, level) {
   const v = VARIABLES?.[varKey];
-  return (v && v.color_thresholds) || DEFAULT_THRESHOLDS;
+  return (v && (v.color_thresholds_by_level?.[level] || v.color_thresholds)) || DEFAULT_THRESHOLDS;
 }
 
 // Color classes, one per legend row: class i spans [thresholds[i],
@@ -39,9 +42,9 @@ export function stepColorExpression(input, thresholds, colors) {
   return expr;
 }
 
-export function getColorForValue(value, varKey, scheme) {
+export function getColorForValue(value, varKey, scheme, level) {
   const colors = getSchemeColors(scheme);
-  const thresholds = getThresholds(varKey);
+  const thresholds = getThresholds(varKey, level);
   const num = parseFloat(value);
   if (isNaN(num)) return '#cccccc';
   for (let i = thresholds.length - 1; i >= 0; i--) {

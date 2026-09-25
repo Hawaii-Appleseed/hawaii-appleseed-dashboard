@@ -159,14 +159,16 @@ function capitalize(s) {
 
 // ── Render ─────────────────────────────────────────────────────────────────
 
-export function renderLegend(varKey, scheme) {
+// `level` is the geography on the map, which picks the scale for variables
+// with one per level.
+export function renderLegend(varKey, scheme, level) {
   if (!els) return;
   const meta = VARIABLES?.[varKey];
   const dataType = meta?.data_type;
   els.title.textContent = meta?.display_name_long || meta?.display_name || varKey;
 
   const colors = getSchemeColors(scheme);
-  const grades = getThresholds(varKey);
+  const grades = getThresholds(varKey, level);
   const n = grades.length;
   // Circle variables (Millionaires) get dots instead of blocks.
   els.bar.classList.toggle('is-points', meta?.render_type === 'points');

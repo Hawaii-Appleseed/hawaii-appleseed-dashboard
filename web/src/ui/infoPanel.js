@@ -274,10 +274,11 @@ export function showInfoPanel(properties, { focus = false } = {}) {
        </div>`
     : '';
 
-  // The place's own color on the map, beside the headline figure.
+  // The place's own color on the map, beside the headline figure. (The panel
+  // closes when the geography changes, so activeLayer is the one on the map.)
   const rawValue = parseFloat(properties[s.selectedVariable]);
   const swatch = !isNaN(rawValue) && selectedVar?.render_type !== 'points'
-    ? `<span class="ip-swatch" style="background:${getColorForValue(rawValue, s.selectedVariable, s.colorScheme)}" aria-hidden="true"></span>`
+    ? `<span class="ip-swatch" style="background:${getColorForValue(rawValue, s.selectedVariable, s.colorScheme, s.activeLayer)}" aria-hidden="true"></span>`
     : '';
 
   // Points variables (Millionaires) are counted by town, not by area, so an

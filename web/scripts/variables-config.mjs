@@ -25,6 +25,9 @@
 //   csv_column               the variable's key
 //   data_source              null (only for render_type "points")
 //   description              ""
+//   color_thresholds_by_level
+//                            {} (a level listed, e.g. {"county": [...]}, uses those
+//                            thresholds; the other levels use color_thresholds)
 // Always given: display_name, data_type, color_thresholds and source, plus
 // dropdown_group and dropdown_order for anything shown in a dropdown.
 //
@@ -49,7 +52,7 @@ const FIELDS = [
   'info_panel_category', 'info_panel_label', 'info_panel_order', 'show_in_info_panel',
   'fact_sheet_category', 'fact_sheet_label', 'show_in_fact_sheet',
   'show_in_default_metrics', 'is_special_variable', 'legend_direction',
-  'color_thresholds', 'csv_column', 'render_type', 'points_data',
+  'color_thresholds', 'color_thresholds_by_level', 'csv_column', 'render_type', 'points_data',
 ];
 
 export function expandVariable(key, entry) {
@@ -72,6 +75,7 @@ export function expandVariable(key, entry) {
   fill('csv_column', key);
   fill('data_source', null);
   fill('description', '');
+  fill('color_thresholds_by_level', {});
   return v;
 }
 
@@ -176,12 +180,23 @@ export function checkConfig(config, { dataSources, paletteSize, levels, loadPoin
     if (typeof v.source !== 'string' || !v.source.trim()) err('needs a source (the data-year tooltips read it)');
     if (displayed && !String(v.description).trim()) warn('has no description, so its tooltip will be empty');
 
-    const t = v.color_thresholds;
-    if (!Array.isArray(t) || !t.length || !t.every(isNum)) {
-      err('color_thresholds must be a non-empty list of numbers');
+    const checkThresholds = (t, name) => {
+      if (!Array.isArray(t) || !t.length || !t.every(isNum)) {
+        err(`${name} must be a non-empty list of numbers`);
+      } else {
+        if (t.some((x, i) => i > 0 && x <= t[i - 1])) err(`${name} must rise strictly: ${JSON.stringify(t)}`);
+        if (t.length > paletteSize) err(`has ${t.length} ${name} but the color schemes only have ${paletteSize} colors`);
+      }
+    };
+    checkThresholds(v.color_thresholds, 'color_thresholds');
+    const byLevel = v.color_thresholds_by_level;
+    if (byLevel === null || typeof byLevel !== 'object' || Array.isArray(byLevel)) {
+      err('color_thresholds_by_level must be an object from level to thresholds, e.g. {"county": [...]}');
     } else {
-      if (t.some((x, i) => i > 0 && x <= t[i - 1])) err(`color_thresholds must rise strictly: ${JSON.stringify(t)}`);
-      if (t.length > paletteSize) err(`has ${t.length} color_thresholds but the color schemes only have ${paletteSize} colors`);
+      for (const [level, t] of Object.entries(byLevel)) {
+        if (!LEVELS.includes(level)) err(`color_thresholds_by_level has "${level}", which isn't a level (${listOf(LEVELS)})`);
+        else checkThresholds(t, `color_thresholds_by_level.${level}`);
+      }
     }
 
     if (v.data_source === null) {
