@@ -2,27 +2,27 @@ school_id,school_name,address,city,zip,county,longitude,latitude,house_district,
 250,Ahrens Elementary,94-1170 Waipahu Street,Waipahu,96797,,-158.0005815415594,21.393119312862346,H36,19,False,1163,August Ahrens Elementary
 335,Ahuimanu Elementary,47-470 Hui Aeko Place,Kaneohe,96744,,-157.8304066133466,21.435599528809597,H48,23,False,280,Ahuimanu Elementary
 200,Aiea Elementary,99-370 Moanalua Road,Aiea,96701,,-157.92874587327842,21.376078499672648,H32,16,True,303,Aiea Elementary
-202,Aiea High,98-1276 Ulune Street,Aiea,96701,,-157.9305912354723,21.38382418092913,H33,16,True,303,Aiea Elementary
-201,Aiea Intermediate,99-600 Kulawea Street,Aiea,96701,,-157.9227079476523,21.382327994564996,H33,16,True,303,Aiea Elementary
+202,Aiea High,98-1276 Ulune Street,Aiea,96701,,-157.9305912354723,21.38382418092913,H33,16,False,849,Aiea High
+201,Aiea Intermediate,99-600 Kulawea Street,Aiea,96701,,-157.9227079476523,21.382327994564996,H33,16,False,468,Aiea Intermediate
 300,Aikahi Elementary,281 Ilihau Street,Kailua,96734,,-157.7491712390149,21.42443954435242,H50,24,False,0,Aikahi Elementary
 100,Aina Haina Elementary,801 West Hind Drive,Honolulu,96821,,-157.7555688486106,21.27915574829999,H19,9,False,0,Aina Haina Elementary
 101,Ala Wai Elementary,503 Kamoku Street,Honolulu,96826,,-157.82631108824975,21.284908126542355,H24,10,True,386,Ala Wai Elementary
 203,Aliamanu Elementary,3265 Salt Lake Blvd.,Honolulu,96818,,-157.91217647164686,21.342866241938808,H31,15,False,0,Aliamanu Elementary
-204,Aliamanu Middle,3271 Salt Lake Blvd.,Honolulu,96818,,-157.91533206742827,21.344268294237704,H31,15,False,0,Aliamanu Elementary
+204,Aliamanu Middle,3271 Salt Lake Blvd.,Honolulu,96818,,-157.91533206742827,21.344268294237704,H31,15,False,0,Aliamanu Middle
 102,Aliiolani Elementary,1240 7th Avenue,Honolulu,96816,,-157.80413547850335,21.286368069974397,H21,10,False,228,Aliiolani Elementary
 103,Ke Kula Kaiapuni O Anuenue,2528 10th Avenue,Honolulu,96816,,-157.78889612385998,21.30416926966028,H21,10,True,419,Kula Kaiapuni O Anuenue
 400,Baldwin High,1650 Kaahumanu Avenue,Wailuku,96793,,-156.49126071407017,20.888911735770392,H10,5,False,1263,Henry Perrine Baldwin High
 251,Barbers Point Elementary,3001 Boxer Road,Kapolei,96707,,-158.08067662898227,21.323218491137514,H41,21,True,510,Barbers Point Elementary
 252,Campbell High,91-980 North Road,Ewa Beach,96706,,-158.00741273371548,21.315302443823693,H40,20,False,2917,James Campbell High
 301,Castle High,45-386 Kaneohe Bay Drive,Kaneohe,96744,,-157.7949580675514,21.404639454899755,H49,24,False,986,James B. Castle High
-104,Keelikolani Middle,1302 Queen Emma Street,Honolulu,96813,,-157.8568665592002,21.310726561606227,H25,13,False,0,
-351,DeSilva Elementary,278 Ainako Avenue,Hilo,96720,,-155.1144738915455,19.709761018597423,H01,1,False,0,
+104,Keelikolani Middle,1302 Queen Emma Street,Honolulu,96813,,-157.8568665592002,21.310726561606227,H25,13,True,370,Princess Ruth Ke'elikolani Middle
+351,DeSilva Elementary,278 Ainako Avenue,Hilo,96720,,-155.1144738915455,19.709761018597423,H01,1,False,426,Ernest Bowen de Silva Elementary
 105,Dole Middle,1803 Kamehameha IV Road,Honolulu,96819,,-157.87174110214227,21.343413958540655,H29,14,True,549,Sanford B. Dole Middle
 451,Eleele Elementary,4750 Uliuli Road,Eleele,96705,,-159.58386716857467,21.909338894656685,H17,8,False,383,Eleele Elementary
 302,Enchanted Lake Elementary,770 Keolu Drive,Kailua,96734,,-157.73151689594707,21.384040975302725,H51,25,False,267,Enchanted Lake Elementary
-254,Ewa Beach Elementary,91-740 Papipi Road,Ewa Beach,96706,,-158.01436954367387,21.315023845153448,H41,20,False,1255,Ewa Elementary
-253,Ewa Elementary,91-1280 Renton Road,Ewa Beach,96706,,-158.03336394524578,21.345066203188775,H42,21,True,269,Kaewai Elementary
-296,Ewa Makai Middle,91-6291 Kapolei Parkway,Kapolei,96706,,-158.02579085027978,21.322667381835668,H41,20,False,1255,Ewa Elementary
+254,Ewa Beach Elementary,91-740 Papipi Road,Ewa Beach,96706,,-158.01436954367387,21.315023845153448,H41,20,False,708,Ewa Beach Elementary
+253,Ewa Elementary,91-1280 Renton Road,Ewa Beach,96706,,-158.03336394524578,21.345066203188775,H42,21,False,1255,Ewa Elementary
+296,Ewa Makai Middle,91-6291 Kapolei Parkway,Kapolei,96706,,-158.02579085027978,21.322667381835668,H41,20,False,1196,Ewa Makai Middle School
 106,Farrington High,1564 North King Street,Honolulu,96817,,-157.87358614286353,21.330037126094528,H30,14,False,2053,Wallace Rider Farrington High
 107,Fern Elementary,1121 Middle Street,Honolulu,96819,,-157.88213183405182,21.339072344413562,H30,14,True,429,Joseph J. Fern Elementary
 352,Haaheo Elementary,121 Haaheo Road,Hilo,96720,,-155.09236096482883,19.74456030041617,H01,1,False,118,Haaheo Elementary
@@ -30,32 +30,32 @@ school_id,school_name,address,city,zip,county,longitude,latitude,house_district,
 401,Haiku Elementary,105 Pauwela Road,Haiku,96708,,-156.3225007469691,20.928205382420806,H13,7,False,346,Haiku Elementary
 206,Haleiwa Elementary,66-505 Haleiwa Road,Haleiwa,96712,,-158.11327584418456,21.584678297685976,H47,23,False,214,Haleiwa Elementary
 402,Hana High and Elementary,4111 Hana Highway,Hana,96713,,-156.00049988907244,20.77561370245706,H13,7,True,401,Hana High & Elementary
-452,Hanalei Elementary,5-5415 Kuhio Highway,Hanalei,96714,,-159.50203231760113,22.200993988545807,H15,8,True,401,Hana High & Elementary
+452,Hanalei Elementary,5-5415 Kuhio Highway,Hanalei,96714,,-159.50203231760113,22.200993988545807,H15,8,False,194,Hanalei Elementary
 303,Hauula Elementary,54-046 Kamehameha Highway,Hauula,96717,,-157.9079652792266,21.60739631178203,H47,23,True,399,Hauula Elementary
-470,Hawai`i School for the Deaf and the Blind,3440 Leahi Avenue,Honolulu,96815,,-157.8140442607834,21.27330366910218,H20,9,False,0,
-304,Heeia Elementary,46-202 Haiku Road,Kaneohe,96744,,-157.80913445579043,21.419160839851898,H49,24,False,375,Heeia Elementary
+470,Hawai`i School for the Deaf and the Blind,3440 Leahi Avenue,Honolulu,96815,,-157.8140442607834,21.27330366910218,H20,9,True,47,Hawaii School for the Deaf and the Blind
+304,Heeia Elementary,46-202 Haiku Road,Kaneohe,96744,,-157.80913445579043,21.419160839851898,H48,24,False,375,Heeia Elementary
 208,Helemano Elementary,1001 Ihi Ihi Avenue,Wahiawa,96786,,-158.02341784895916,21.513530616044708,H46,17,False,533,Helemano Elementary
 209,Hickam Elementary,Manzelman Circle,Honolulu,96818,,-157.96222814940896,21.343291009518655,H30,15,False,0,Horace Meek Hickam Elementary
-255,Highlands Intermediate,1460 Hoolaulea Street,Pearl City,96782,,-157.96206181471035,21.400259373595986,H34,19,False,0,John H. Wilson Elementary
+255,Highlands Intermediate,1460 Hoolaulea Street,Pearl City,96782,,-157.96206181471035,21.400259373595986,H34,16,False,834,Highlands Intermediate
 355,Hilo High,556 Waianuenue Avenue,Hilo,96720,,-155.0958754644343,19.722827415838204,H01,1,True,1167,Hilo High
-356,Hilo Intermediate,587 Waianuenue Avenue,Hilo,96720,,-155.0952703798536,19.72107671808455,H02,1,True,1167,Hilo High
-357,Hilo Union Elementary,506 Waianuenue Avenue,Hilo,96720,,-155.09069128336384,19.72287380844371,H02,1,True,1167,Hilo High
+356,Hilo Intermediate,587 Waianuenue Avenue,Hilo,96720,,-155.0952703798536,19.72107671808455,H02,1,True,551,Hilo Intermediate
+357,Hilo Union Elementary,506 Waianuenue Avenue,Hilo,96720,,-155.09069128336384,19.72287380844371,H02,1,True,460,Hilo Union Elementary
 109,Hokulani Elementary,2940 Kamakini Street,Honolulu,96816,,-157.81341895425754,21.290798264036656,H22,10,False,0,Hokulani Elementary
 280,Holomua Elementary,91-1561 Keaunui Drive,Ewa Beach,96706,,-158.02113223179794,21.339080500100692,H40,20,False,1118,Holomua Elementary
 358,Holualoa Elementary,76-5957 Mamalahoa Highway,Holualoa,96725,,-155.94912194842868,19.6171301825344,H06,3,False,448,Holualoa Elementary
 359,Honaunau Elementary,83-5360 Mamalahoa Highway,Captain Cook,96704,,-155.8796607901965,19.450723424917793,H05,3,True,173,Honaunau Elementary
-361,Honokaa Elementary,45-534 Pakalana Street,Honokaa,96727,,-155.46554995880044,20.075333101593582,H01,4,True,686,Honokaa High & Intermediate
+361,Honokaa Elementary,45-534 Pakalana Street,Honokaa,96727,,-155.46554995880044,20.075333101593582,H01,4,True,407,Honokaa Elementary
 360,Honokaa High and Intermediate,45-527 Pakalana Street,Honokaa,96727,,-155.46249133921953,20.07689424295902,H01,4,True,686,Honokaa High & Intermediate
 276,Honowai Elementary,94-600 Honowai Street,Waipahu,96797,,-158.0265076750435,21.38420880508402,H39,18,True,608,Honowai Elementary
 293,Hookele Elementary,511 Kunehi Street,Kapolei,96707,,-158.0709326984886,21.326844671658847,H43,21,False,709,Hookele Elementary
 363,Hookena Elementary,86-4355 Mamalahoa Highway,Captain Cook,96704,,-155.87802903877818,19.38693259284846,H05,3,True,113,Hookena Elementary
 404,Iao Intermediate,260 South Market Street,Wailuku,96793,,-156.5012280809015,20.88497522478033,H10,5,False,890,Iao Intermediate
 210,Iliahi Elementary,2035 California Avenue,Wahiawa,96786,,-157.99963746167748,21.50651876458711,H46,17,False,344,Iliahi Elementary
-279,Ilima Intermediate,91-884 Fort Weaver Road,Ewa Beach,96706,,-158.0115958344611,21.31472900163321,H40,20,False,728,Ilima Intermediate
+279,Ilima Intermediate,91-884 Fort Weaver Road,Ewa Beach,96706,,-158.0115958344611,21.31472900163321,H41,20,False,728,Ilima Intermediate
 207,Inouye Elementary,1 Ayres Avenue,Wahiawa,96786,,-158.05561161719237,21.49932359968903,H46,23,False,0,Daniel K. Inouye Elementary
 256,Iroquois Point Elementary,5553 Cormorant Avenue,Ewa Beach,96706,,-157.98150082488044,21.319017418925387,H40,20,False,578,Iroquois Point Elementary
 110,Jarrett Middle,1903 Palolo Avenue,Honolulu,96816,,-157.7981131650795,21.297495422088122,H21,10,True,285,William P. Jarrett Middle
-111,Jefferson Elementary,324 Kapahulu Avenue,Honolulu,96815,,-157.81934919020873,21.272180027239138,H24,12,False,353,Thomas Jefferson Elementary
+111,Jefferson Elementary,324 Kapahulu Avenue,Honolulu,96815,,-157.81934919020873,21.272180027239138,H20,9,False,353,Thomas Jefferson Elementary
 305,Kaaawa Elementary,51-296 Kamehameha Highway,Kaaawa,96730,,-157.84652944490472,21.547449986053728,H48,23,True,124,Kaaawa Elementary
 112,Kaahumanu Elementary,1141 Kinau Street,Honolulu,96814,,-157.8439302978942,21.302847551752166,H26,11,True,477,Queen Kaahumanu Elementary
 211,Kaala Elementary,130 California Avenue,Wahiawa,96786,,-158.03628067943256,21.493309766720536,H46,17,True,388,Kaala Elementary
@@ -64,43 +64,43 @@ school_id,school_name,address,city,zip,county,longitude,latitude,house_district,
 371,Kahakai Elementary,76-147 Royal Poinciana Drive,Kailua-Kona,96740,,-155.9771602092356,19.61334369291329,H06,3,True,552,Kahakai Elementary
 114,Kahala Elementary,4559 Kilauea Avenue,Honolulu,96816,,-157.78530278245515,21.273894527707235,H20,9,False,0,Kahala Elementary
 306,Kahaluu Elementary,47-280 Waihee Road,Kaneohe,96744,,-157.84484757807482,21.457795955347425,H48,23,True,247,Kahaluu Elementary
-331,Kahuku Elementary,56-170 Pualalea Street,Kahuku,96731,,-157.95173993385012,21.674807790706225,H47,23,False,1427,Kahuku High & Intermediate
+331,Kahuku Elementary,56-170 Pualalea Street,Kahuku,96731,,-157.95173993385012,21.674807790706225,H47,23,False,329,Kahuku Elementary
 307,Kahuku High and Intermediate,56-490 Kamehameha Highway,Kahuku,96731,,-157.9470357601778,21.676179703299873,H47,23,False,1427,Kahuku High & Intermediate
 405,Kahului Elementary,410 South Hina Avenue,Kahului,96732,,-156.4699765059847,20.878975046799336,H09,5,False,796,Kahului Elementary
 308,Kailua Elementary,315 Kuulei Road,Kailua,96734,,-157.74166636513448,21.395640369390755,H50,25,False,286,Kailua Elementary
-309,Kailua High,451 Ulumanu Drive,Kailua,96734,,-157.74883384695806,21.384301533348786,H50,24,False,286,Kailua Elementary
-310,Kailua Intermediate,145 South Kainalu Drive,Kailua,96734,,-157.73595275253578,21.395214026876946,H50,25,False,286,Kailua Elementary
+309,Kailua High,451 Ulumanu Drive,Kailua,96734,,-157.74883384695806,21.384301533348786,H50,24,False,769,Kailua High
+310,Kailua Intermediate,145 South Kainalu Drive,Kailua,96734,,-157.73595275253578,21.395214026876946,H50,25,False,0,Kailua Intermediate
 281,Kaimiloa Elementary,91-1028 Kaunolu Street,Ewa Beach,96706,,-158.00848036184559,21.319660374540533,H40,20,False,686,Kaimiloa Elementary
 115,Kaimuki High,2705 Kaimuki Avenue,Honolulu,96816,,-157.8158584175386,21.287851795619115,H23,10,True,527,Kaimuki High
-116,Kaimuki Middle,631 18th Avenue,Honolulu,96816,,-157.7976049924713,21.270099549618784,H20,9,True,527,Kaimuki High
+116,Kaimuki Middle,631 18th Avenue,Honolulu,96816,,-157.7976049924713,21.270099549618784,H20,9,False,0,Kaimuki Middle
 311,Kainalu Elementary,165 Kaiholu Street,Kailua,96734,,-157.74798239316118,21.413928760346064,H50,24,False,0,Kainalu Elementary
 154,Kaiser High,511 Lunalilo Home Road,Honolulu,96825,,-157.69762433730028,21.286080186682366,H18,25,False,0,Henry J. Kaiser High
 117,Kaiulani Elementary,783 North King Street,Honolulu,96817,,-157.8669344392495,21.32140751400901,H28,13,True,240,Princess Victoria Kaiulani Elementary
-453,Kalaheo Elementary,4400 Maka Road,Kalaheo,96741,,-159.52195685783906,21.922912408556122,H17,8,False,0,Kalaheo High
+453,Kalaheo Elementary,4400 Maka Road,Kalaheo,96741,,-159.52195685783906,21.922912408556122,H17,8,False,367,Kalaheo Elementary
 312,Kalaheo High,730 Iliaina Street,Kailua,96734,,-157.75789525963611,21.40797055060348,H50,24,False,0,Kalaheo High
 118,Kalakaua Middle,821 Kalihi Street,Honolulu,96819,,-157.87689975507436,21.329553430278523,H30,15,True,926,King David Kalakaua Middle
 420,Kalama Intermediate,120 Makani Road,Makawao,96768,,-156.32118135986266,20.84960994049638,H12,7,False,931,Samuel Enoka Kalama Intermediate
 119,Kalani High,4680 Kalanianaole Highway,Honolulu,96821,,-157.7737702741684,21.277317091848328,H19,9,False,0,Kalani High
-365,Kalanianaole Elementary and Intermediate,27-330 Old Mamalahoa Highway,Papaikou,96781,,-155.09473059498336,19.790143240790552,H01,1,False,0,Kalani High
+365,Kalanianaole Elementary and Intermediate,27-330 Old Mamalahoa Highway,Papaikou,96781,,-155.09473059498336,19.790143240790552,H01,1,True,180,Kalanianaole Elementary & Intermediate
 287,Kaleiopuu Elementary,94-665 Kaaholo Street,Waipahu,96797,,-158.02718484942525,21.392188050768457,H39,18,False,730,Kaleiopuu Elementary
 120,Kalihi Elementary,2471 Kula Kolea Drive,Honolulu,96819,,-157.86055345980964,21.35222876431052,H29,14,True,212,Kalihi Elementary
-121,Kalihi Kai Elementary,626 McNeil Street,Honolulu,96817,,-157.87748135687073,21.32612326467861,H30,15,True,212,Kalihi Elementary
-122,Kalihi Uka Elementary,2411 Kalihi Street,Honolulu,96819,,-157.86201006020372,21.345607492912766,H29,14,True,212,Kalihi Elementary
-123,Kalihi Waena Elementary,1240 Gulick Avenue,Honolulu,96819,,-157.87556521830862,21.33559672240997,H30,14,True,212,Kalihi Elementary
+121,Kalihi Kai Elementary,626 McNeil Street,Honolulu,96817,,-157.87748135687073,21.32612326467861,H30,15,False,549,Kalihi-Kai Elementary
+122,Kalihi Uka Elementary,2411 Kalihi Street,Honolulu,96819,,-157.86201006020372,21.345607492912766,H29,14,False,274,Kalihi-Uka Elementary
+123,Kalihi Waena Elementary,1240 Gulick Avenue,Honolulu,96819,,-157.87556521830862,21.33559672240997,H30,14,True,439,Kalihi-Waena Elementary
 448,Kamakahelei Middle,4431 Nuhou St.,Lihue,96766,,-159.3875667989441,21.967491916378883,H16,8,False,822,Chiefess Kamakahelei Middle
 431,Kamalii Elementary,180 Kealii Alanui,Kihei,96753,,-156.43910268485314,20.721429271086755,H11,6,False,336,Kamalii Elementary
 406,Kamehameha III Elementary,611 Front Street,Lahaina,96761,,-156.67688479003044,20.87132848818092,H14,6,False,377,King Kamehameha III Elementary
 155,Kamiloiki Elementary,7788 Hawaii Kai Drive,Honolulu,96825,,-157.68603543518932,21.29422726855805,H18,25,False,0,Kamiloiki Elementary
 313,Kaneohe Elementary,45-495 Kamehameha Highway,Kaneohe,96744,,-157.79735207449403,21.395698644050917,H49,24,False,540,Kaneohe Elementary
-283,Kanoelani Elementary,94-1091 Oli Loop,Waipahu,96797,,-157.99895562282975,21.415828573724166,H37,18,False,0,Noelani Elementary
-454,Kapaa Elementary,4886 Kawaihau Road,Kapaa,96746,,-159.31388377600635,22.089017598457534,H15,8,False,501,Kapaa Middle
-455,Kapaa High,4695 Mailihuna Road,Kapaa,96746,,-159.3130717056598,22.091866167652928,H15,8,False,501,Kapaa Middle
+283,Kanoelani Elementary,94-1091 Oli Loop,Waipahu,96797,,-157.99895562282975,21.415828573724166,H37,18,False,730,Kanoelani Elementary
+454,Kapaa Elementary,4886 Kawaihau Road,Kapaa,96746,,-159.31388377600635,22.089017598457534,H15,8,True,854,Kapaa Elementary
+455,Kapaa High,4695 Mailihuna Road,Kapaa,96746,,-159.3130717056598,22.091866167652928,H15,8,False,986,Kapaa High
 447,Kapaa Middle,4867 Olohena Road,Kapaa,96746,,-159.32773143260556,22.07933903661917,H15,8,False,501,Kapaa Middle
-124,Kapalama Elementary,1601 North School Street,Honolulu,96817,,-157.86880279089334,21.335226083748815,H30,14,False,500,Kapalama Elementary
+124,Kapalama Elementary,1601 North School Street,Honolulu,96817,,-157.86880279089334,21.335226083748815,H29,14,False,500,Kapalama Elementary
 367,Kapiolani Elementary,966 Kilauea Avenue,Hilo,96720,,-155.07751831223393,19.713896333237912,H02,1,True,373,Chiefess Kapiolani Elementary
 282,Kapolei Elementary,91-1119 Kamaaha Loop,Kapolei,96707,,-158.06429231580705,21.334429328735066,H42,21,False,663,Kapolei Elementary
-292,Kapolei High,91-5007 Kapolei Parkway,Kapolei,96707,,-158.06828636834877,21.328197443469055,H42,21,False,663,Kapolei Elementary
-291,Kapolei Middle,91-5335 Kapolei Parkway,Kapolei,96707,,-158.0573712034426,21.332366123926505,H42,21,False,663,Kapolei Elementary
+292,Kapolei High,91-5007 Kapolei Parkway,Kapolei,96707,,-158.06828636834877,21.328197443469055,H42,21,False,1781,Kapolei High
+291,Kapolei Middle,91-5335 Kapolei Parkway,Kapolei,96707,,-158.0573712034426,21.332366123926505,H42,21,False,737,Kapolei Middle
 315,Kapunahala Elementary,45-828 Anoi Road,Kaneohe,96744,,-157.8036284744483,21.40878758891901,H49,24,False,453,Kapunahala Elementary
 368,Kau High and Pahala Elementary,96-3150 Pikake Street,Pahala,96777,,-155.47722877161056,19.20248571545267,H05,3,True,483,Kau High & Pahala Elementary
 456,Kauai High,3577 Lala Road,Lihue,96766,,-159.3585531631053,21.959661989464035,H16,8,False,1002,Kauai High
@@ -109,13 +109,13 @@ school_id,school_name,address,city,zip,county,longitude,latitude,house_district,
 457,Kaumualii Elementary,4380 Hanamaulu Road,Lihue,96766,,-159.35117788711537,21.994881429536385,H16,8,False,528,King Kaumualii Elementary
 407,Kaunakakai Elementary,30 Ailoa,Kaunakakai,96748,,-157.01834602408135,21.088634794644353,H13,7,True,297,Kaunakakai Elementary
 126,Kawananakoa Middle,49 Funchal Street,Honolulu,96813,,-157.85109017364027,21.319202324544253,H27,13,False,605,Prince David Kawananakoa Middle
-378,Ke Kula O Ehunuikaimalino,81-1041 Konawaena School Road,Kealakekua,96750,,-155.91718054941632,19.508997253736393,H06,3,True,266,Ke Kula O Ehunuikaimalino
+378,Ke Kula O Ehunuikaimalino,81-1041 Konawaena School Road,Kealakekua,96750,,-155.91718054941632,19.508997253736393,H05,3,True,266,Ke Kula O Ehunuikaimalino
 353,Keaau Elementary,16-680 Keaau-Pahoa Road,Keaau,96749,,-155.03449262854036,19.613175564768902,H03,2,True,886,Keaau Elementary
-354,Keaau High,16-725 Keaau-Pahoa Road,Keaau,96749,,-155.03161981046216,19.610781811840212,H03,2,True,886,Keaau Elementary
-370,Keaau Middle,16-565  Keaau-Pahoa Road,Keaau,96749,,-155.0385169362455,19.62135803444911,H03,2,True,886,Keaau Elementary
+354,Keaau High,16-725 Keaau-Pahoa Road,Keaau,96749,,-155.03161981046216,19.610781811840212,H03,2,True,1050,Keaau High
+370,Keaau Middle,16-565  Keaau-Pahoa Road,Keaau,96749,,-155.0385169362455,19.62135803444911,H03,2,True,699,Keaau Middle
 388,Kealakehe Elementary,74-5118 Kealakaa Street,Kailua-Kona,96740,,-155.98214600639523,19.668964782055234,H07,3,True,934,Kealakehe Elementary
-392,Kealakehe High,74-5000 Puohulihuli Street,Kailua-Kona,96740,,-155.99826668291232,19.670736578316163,H07,3,True,934,Kealakehe Elementary
-390,Kealakehe Intermediate,74-5062 Onipaa Street,Kailua-Kona,96740,,-155.98477017395453,19.670878089315682,H07,3,True,934,Kealakehe Elementary
+392,Kealakehe High,74-5000 Puohulihuli Street,Kailua-Kona,96740,,-155.99826668291232,19.670736578316163,H07,3,False,1417,Kealakehe High
+390,Kealakehe Intermediate,74-5062 Onipaa Street,Kailua-Kona,96740,,-155.98477017395453,19.670878089315682,H07,3,True,680,Kealakehe Intermediate
 372,Keaukaha Elementary,240 Desha Avenue,Hilo,96720,,-155.04525750313763,19.728818663942313,H03,1,True,355,Keaukaha Elementary
 458,Kekaha Elementary,8140 Kekaha Road,Kekaha,96752,,-159.71469828676547,21.9714177244273,H17,8,True,353,Kekaha Elementary
 435,Kekaulike High,121 Kula Highway,Pukalani,96768,,-156.3301606318462,20.827634963835006,H12,7,False,1229,King Kekaulike High
@@ -124,25 +124,25 @@ school_id,school_name,address,city,zip,county,longitude,latitude,house_district,
 294,Keoneula Elementary,91-970 Kaileolea Drive,Ewa Beach,96706,,-158.02019305236564,21.322654453876414,H41,20,False,0,Keoneula Elementary
 409,Kihei Elementary,250 E. Lipoa Street,Kihei,96753,,-156.44677694623022,20.748626918958504,H11,6,False,730,Kihei Elementary
 459,Kilauea Elementary,2440 Kolo Road,Kilauea,96754,,-159.40943804423793,22.20512109445322,H15,8,False,305,Kilauea Elementary
-410,Kilohana Elementary,Kamehameha V Highway,Kaunakakai,96748,,-156.83499023744363,21.059993272017515,H13,7,True,401,Hana High & Elementary
-318,King Intermediate,46-155 Kamehameha Highway,Kaneohe,96744,,-157.80643435522398,21.425724939310093,H48,24,True,926,King David Kalakaua Middle
+410,Kilohana Elementary,Kamehameha V Highway,Kaunakakai,96748,,-156.83499023744363,21.059993272017515,H13,7,True,93,Kilohana Elementary
+318,King Intermediate,46-155 Kamehameha Highway,Kaneohe,96744,,-157.80643435522398,21.425724939310093,H48,24,False,526,Samuel Wilder King Intermediate
 212,Kipapa Elementary,95-076 Kipapa Drive,Mililani,96789,,-158.01340328423544,21.46182847383784,H38,17,False,485,Kipapa Elementary
-395,Kohala Elementary,54-3609 Akoni Pule Highway,Kapaau,96755,,-155.81892369332854,20.23703101251617,H08,4,True,171,Kohala Middle
-373,Kohala High,54-3611 Akoni Pule Highway,Kapaau,96755,,-155.819239678448,20.239878156751363,H08,4,True,171,Kohala Middle
+395,Kohala Elementary,54-3609 Akoni Pule Highway,Kapaau,96755,,-155.81892369332854,20.23703101251617,H08,4,True,399,Kohala Elementary
+373,Kohala High,54-3611 Akoni Pule Highway,Kapaau,96755,,-155.819239678448,20.239878156751363,H08,4,False,253,Kohala High
 366,Kohala Middle,53-4155 Akoni Pule Highway,Kapaau,96755,,-155.77844470425185,20.226860566069384,H08,4,True,171,Kohala Middle
 127,Koko Head Elementary,189 Lunalilo Home Road,Honolulu,96825,,-157.7047281522748,21.275747064559326,H18,25,False,0,Koko Head Elementary
-460,Koloa Elementary,3223 Poipu Road,Koloa,96756,,-159.46617312292634,21.898982404843203,H17,8,True,742,Waikoloa School
-375,Konawaena Elementary,81-901 Onouli Road,Kealakekua,96750,,-155.92315618215676,19.50483682673588,H06,3,False,924,Konawaena High
-374,Konawaena High,81-1043 Konawaena School Road,Kealakekua,96750,,-155.9154939645127,19.50934044973695,H06,3,False,924,Konawaena High
-376,Konawaena Middle,81-1045 Konawaena School Road,Kealakekua,96750,,-155.9138040700443,19.511909311428667,H06,3,False,924,Konawaena High
+460,Koloa Elementary,3223 Poipu Road,Koloa,96756,,-159.46617312292634,21.898982404843203,H17,8,True,360,Koloa Elementary
+375,Konawaena Elementary,81-901 Onouli Road,Kealakekua,96750,,-155.92315618215676,19.50483682673588,H06,3,True,497,Konawaena Elementary
+374,Konawaena High,81-1043 Konawaena School Road,Kealakekua,96750,,-155.9154939645127,19.50934044973695,H05,3,False,924,Konawaena High
+376,Konawaena Middle,81-1045 Konawaena School Road,Kealakekua,96750,,-155.9138040700443,19.511909311428667,H06,3,True,623,Konawaena Middle
 128,Kuhio Elementary,2759 South King Street,Honolulu,96826,,-157.8192547836063,21.290290091722376,H23,10,True,202,Prince Jonah Kuhio Elementary
-412,Kula Elementary,5000 Kula Highway,Kula,96790,,-156.32878996162083,20.76121468812328,H12,7,True,419,Kula Kaiapuni O Anuenue
+412,Kula Elementary,5000 Kula Highway,Kula,96790,,-156.32878996162083,20.76121468812328,H12,7,False,356,Kula Elementary
 413,Lahaina Intermediate,871 Lahainaluna Road,Lahaina,96761,,-156.66119510600691,20.885570749545295,H14,6,False,479,Lahaina Intermediate
-414,Lahainaluna High,980 Lahainaluna Road,Lahaina,96761,,-156.65992161204363,20.889173976442247,H14,6,False,479,Lahaina Intermediate
+414,Lahainaluna High,980 Lahainaluna Road,Lahaina,96761,,-156.65992161204363,20.889173976442247,H14,6,False,790,Lahainaluna High
 319,Laie Elementary,55-109 Kulanui Street,Laie,96762,,-157.9244197410199,21.648446989658126,H47,23,False,659,Laie Elementary
 415,Lanai High and Elementary,555 Fraser Avenue,Lanai City,96763,,-156.92188542796816,20.82645849358854,H13,7,False,624,Lanai High & Elementary
 129,Lanakila Elementary,717 North Kuakini Street,Honolulu,96817,,-157.85975475208042,21.327027716588763,H28,13,False,311,Lanakila Elementary
-268,Lehua Elementary,791 Lehua Avenue,Pearl City,96782,,-157.97217515104592,21.389240415538154,H34,15,False,1515,Leilehua High
+268,Lehua Elementary,791 Lehua Avenue,Pearl City,96782,,-157.97217515104592,21.389240415538154,H34,15,True,267,Lehua Elementary
 271,Leihoku Elementary,86-285 Leihoku Street,Waianae,96792,,-158.174985029539,21.439120599379326,H45,22,True,796,Leihoku Elementary
 214,Leilehua High,1515 California Avenue,Wahiawa,96786,,-158.01227417936167,21.50230652470773,H46,17,False,1515,Leilehua High
 416,Lihikai Elementary,335 South Papa Avenue,Kahului,96732,,-156.48519644114026,20.88020986217357,H09,5,False,640,Lihikai Elementary
@@ -161,31 +161,31 @@ school_id,school_name,address,city,zip,county,longitude,latitude,house_district,
 260,Manana Elementary,1147 Kumano Street,Pearl City,96782,,-157.9721949663115,21.408167520897756,H35,19,False,270,Manana Elementary
 137,Manoa Elementary,3155 Manoa Road,Honolulu,96822,,-157.80900507946095,21.31715098601412,H22,11,False,0,Manoa Elementary
 418,Maui High,660 South Lono Avenue,Kahului,96732,,-156.47128658326304,20.873944353567975,H09,5,False,1670,Maui High
-428,Maui Waena Intermediate,795 Onehee Street,Kahului,96732,,-156.4854004737474,20.87450876887644,H09,5,False,1670,Maui High
+428,Maui Waena Intermediate,795 Onehee Street,Kahului,96732,,-156.4854004737474,20.87450876887644,H09,5,False,1010,Maui Waena Intermediate
 286,Mauka Lani Elementary,92-1300 Panana Street,Kapolei,96707,,-158.08280645388828,21.358006436816385,H43,21,False,543,Mauka Lani Elementary
 419,Maunaloa Elementary,Maunaloa Highway,Maunaloa,96770,,-157.20790421788837,21.13004144940985,H13,7,True,59,Maunaloa Elementary
 321,Maunawili Elementary,1465 Ulupii Street,Kailua,96734,,-157.75310724461949,21.37712702637255,H50,24,False,0,Maunawili Elementary
 138,McKinley High,1039 South King Street,Honolulu,96814,,-157.84754928192964,21.30102698907307,H25,12,False,1228,William McKinley High
 216,Mililani High,95-1200 Meheula Parkway,Mililani,96789,,-158.00815401633778,21.45322006625108,H38,17,False,0,Mililani High
-240,Mililani Ike Elementary,95-1330 Lehiwa Drive,Mililani,96789,,-157.9848584927175,21.47984319208529,H38,17,False,0,Mililani High
-241,Mililani Mauka Elementary,95-1111 Makaikai Street,Mililani,96789,,-158.00074938064083,21.471586548396875,H38,17,False,0,Mililani High
-238,Mililani Middle,95-1140 Lehiwa Drive,Mililani,96789,,-157.99009523520795,21.474557495360887,H38,17,False,0,Mililani High
-242,Mililani Uka Elementary,94-380 Kuahelani Avenue,Mililani,96789,,-158.01545025701304,21.43786415670333,H37,18,False,0,Mililani High
-234,Mililani Waena Elementary,95-502 Kipapa Drive,Mililani,96789,,-158.00979042620548,21.45574694391352,H38,17,False,0,Mililani High
+240,Mililani Ike Elementary,95-1330 Lehiwa Drive,Mililani,96789,,-157.9848584927175,21.47984319208529,H38,17,False,0,Mililani Ike Elementary
+241,Mililani Mauka Elementary,95-1111 Makaikai Street,Mililani,96789,,-158.00074938064083,21.471586548396875,H38,17,False,0,Mililani Mauka Elementary
+238,Mililani Middle,95-1140 Lehiwa Drive,Mililani,96789,,-157.99009523520795,21.474557495360887,H38,17,False,0,Mililani Middle
+242,Mililani Uka Elementary,94-380 Kuahelani Avenue,Mililani,96789,,-158.01545025701304,21.43786415670333,H37,18,False,691,Mililani Uka Elementary
+234,Mililani Waena Elementary,95-502 Kipapa Drive,Mililani,96789,,-158.00979042620548,21.45574694391352,H38,17,False,667,Mililani Waena Elementary
 217,Moanalua Elementary,1337 Mahiole Street,Honolulu,96819,,-157.89128011133155,21.34940713252915,H32,14,False,0,Moanalua Elementary
-218,Moanalua High,2825 Ala Ilima Street,Honolulu,96818,,-157.90096246917076,21.345291230351876,H31,15,False,0,Moanalua Elementary
-219,Moanalua Middle,1289 Mahiole Street,Honolulu,96819,,-157.89221720136766,21.349951436873763,H32,14,False,0,Moanalua Elementary
+218,Moanalua High,2825 Ala Ilima Street,Honolulu,96818,,-157.90096246917076,21.345291230351876,H31,15,False,0,Moanalua High
+219,Moanalua Middle,1289 Mahiole Street,Honolulu,96819,,-157.89221720136766,21.349951436873763,H32,14,False,0,Moanalua Middle
 322,Mokapu Elementary,1193 Mokapu Blvd.   KMCB Bldg.,Kailua,96734,,-157.74951639240854,21.444697373437972,H50,24,False,0,Mokapu Elementary
 220,Mokulele Elementary,250 Aupaka Street,Honolulu,96818,,-157.94100757265397,21.34230970767222,H30,15,False,0,Mokulele Elementary
 421,Molokai High,2140 Farrington Avenue,Hoolehua,96729,,-157.04765042310837,21.162159477243335,H13,7,True,332,Molokai High
-434,Molokai Middle,2175 Lihipali Avenue,Hoolehua,96729,,-157.04783325886376,21.164891594208978,H13,7,True,332,Molokai High
+434,Molokai Middle,2175 Lihipali Avenue,Hoolehua,96729,,-157.04783325886376,21.164891594208978,H13,7,True,167,Molokai Middle
 285,Momilani Elementary,2130 Hookiekie Street,Pearl City,96782,,-157.95553041099166,21.413762733012025,H34,16,False,0,Momilani Elementary
 379,Mountain View Elementary,18-1235 Volcano Highway,Mountain View,96771,,-155.1033021820173,19.55460506357402,H05,2,True,523,Mountain View Elementary
 380,Naalehu Elementary,95-5545 Mamalahoa Highway,Naalehu,96772,,-155.57992161411622,19.062116975205903,H05,3,True,464,Naalehu Elementary
 429,Nahienaena Elementary,816 Niheu Street,Lahaina,96761,,-156.66459237032646,20.888163747358842,H14,6,False,478,Princess Nahienaena Elementary
 261,Nanaikapono Elementary,89-153 Mano Avenue,Waianae,96792,,-158.1421698501353,21.38403103397911,H44,22,True,736,Nanaikapono Elementary
 262,Nanakuli Elementary,89-778 Haleakala Avenue,Waianae,96792,,-158.13661979350175,21.387287888743213,H44,22,True,418,Nanakuli Elementary
-263,Nanakuli High and Intermediate,89-980 Nanakuli Avenue,Waianae,96792,,-158.13102109278793,21.38652238856495,H44,22,True,418,Nanakuli Elementary
+263,Nanakuli High and Intermediate,89-980 Nanakuli Avenue,Waianae,96792,,-158.13102109278793,21.38652238856495,H44,22,True,914,Nanakuli High & Intermediate
 461,Niihau High and Elementary,c/o Waimea High School  9707 Tsuchiya Road,Waimea,96796,,-159.66869821991833,21.957321594153065,H17,8,False,0,
 221,Nimitz Elementary,520 Main Street,Honolulu,96818,,-157.93600280817563,21.340630661514453,H30,15,False,0,Chester W. Nimitz Elementary
 139,Niu Valley Middle,310 Halemaumau Street,Honolulu,96821,,-157.73905906271168,21.28544846651924,H19,9,False,0,Niu Valley Middle
@@ -194,26 +194,26 @@ school_id,school_name,address,city,zip,county,longitude,latitude,house_district,
 475,Olomana School,42-522 Kalanianaole Highway,Kailua,96734,,-157.74869646471623,21.372196239190508,H50,25,True,93,Olomana
 382,Paauilo Elementary and Intermediate,43-1497 Old Main Road,Paauilo,96776,,-155.37326203060596,20.040328546001092,H01,4,True,191,Paauilo Elementary & Intermediate
 381,Pahoa Elementary,15-3030 Pahoa Village Road,Pahoa,96778,,-154.9434855059744,19.49202937408904,H04,2,True,426,Pahoa Elementary
-383,Pahoa High and Intermediate,15-3038 Puna Road,Pahoa,96778,,-154.94182546042475,19.49083963469602,H04,2,True,426,Pahoa Elementary
+383,Pahoa High and Intermediate,15-3038 Puna Road,Pahoa,96778,,-154.94182546042475,19.49083963469602,H04,2,True,724,Pahoa High & Intermediate
 422,Paia Elementary,955 Baldwin Avenue,Paia,96779,,-156.36302052751077,20.899460987475987,H13,7,False,411,Paia Elementary
 264,Palisades Elementary,2306 Auhuhu Street,Pearl City,96782,,-157.9537900213973,21.4247810416807,H34,16,False,355,Palisades Elementary
 142,Palolo Elementary,2106 10th Avenue,Honolulu,96816,,-157.7915302292333,21.29969478474854,H21,10,True,254,Palolo Elementary
 323,Parker Elementary,45-259 Waikalua Road,Kaneohe,96744,,-157.79888008918755,21.413520822175578,H49,24,True,265,Benjamin Parker Elementary
 143,Pauoa Elementary,2301 Pauoa Road,Honolulu,96813,,-157.84393496160328,21.319257103914705,H27,13,False,358,Pauoa Elementary
 265,Pearl City Elementary,1090 Waimano Home Road,Pearl City,96782,,-157.96973055258002,21.395132903122683,H34,16,False,408,Pearl City Elementary
-266,Pearl City High,2100 Hookiekie Street,Pearl City,96782,,-157.95031920601397,21.412088362334853,H34,16,False,408,Pearl City Elementary
-267,Pearl City Highlands Elementary,1419 Waimano Home Road,Pearl City,96782,,-157.96603395470825,21.40359280047725,H34,19,False,834,Highlands Intermediate
+266,Pearl City High,2100 Hookiekie Street,Pearl City,96782,,-157.95031920601397,21.412088362334853,H34,16,False,1471,Pearl City High
+267,Pearl City Highlands Elementary,1419 Waimano Home Road,Pearl City,96782,,-157.96603395470825,21.40359280047725,H34,19,False,529,Pearl City Highlands Elementary
 222,Pearl Harbor Elementary,1 Moanalua Ridge,Honolulu,96818,,-157.9309467780475,21.344795321206963,H31,15,False,408,Pearl Harbor Elementary
-223,Pearl Harbor Kai Elementary,1 C Avenue,Honolulu,96818,,-157.93723967813875,21.348478108668377,H31,15,False,408,Pearl Harbor Elementary
+223,Pearl Harbor Kai Elementary,1 C Avenue,Honolulu,96818,,-157.93723967813875,21.348478108668377,H31,15,False,0,Pearl Harbor Kai Elementary
 243,Pearl Ridge Elementary,98-940 Moanalua Road,Aiea,96701,,-157.94526064495048,21.387789327484327,H33,16,False,0,Pearl Ridge Elementary
-269,Pohakea Elementary,91-750 Fort Weaver Road,Ewa Beach,96706,,-158.0107478962577,21.313338601625507,H40,20,False,518,Pohakea Elementary
+269,Pohakea Elementary,91-750 Fort Weaver Road,Ewa Beach,96706,,-158.0107478962577,21.313338601625507,H41,20,False,518,Pohakea Elementary
 433,Pomaikai Elementary,4650 S. Kamehameha Avenue,Kahului,96732,,-156.4865373722613,20.864597896905185,H09,6,False,0,Pomaikai Elementary School
 324,Pope Elementary,41-133 Huli Street,Waimanalo,96795,,-157.69357506805176,21.328326567894234,H51,25,True,245,Blanche Pope Elementary
-426,Pukalani Elementary,2945 Iolani Street,Pukalani,96768,,-156.34626131547782,20.83933459273935,H12,7,False,0,Kalani High
+426,Pukalani Elementary,2945 Iolani Street,Pukalani,96768,,-156.34626131547782,20.83933459273935,H12,7,False,486,Pukalani Elementary
 314,Puohala Elementary,45-233 Kulauli Street,Kaneohe,96744,,-157.78983787739094,21.409444949355304,H49,24,True,274,Puohala Elementary
-436,Puu Kukui Elementary,3700 Kehalani Mauka Parkway,Wailuku,96793,,-156.5082032547191,20.87598697626779,H10,5,False,0,
+436,Puu Kukui Elementary,3700 Kehalani Mauka Parkway,Wailuku,96793,,-156.5082032547191,20.87598697626779,H10,5,False,770,Pu'u Kukui Elementary
 145,Puuhale Elementary,345 Puuhale Road,Honolulu,96819,,-157.8848498611899,21.327554539028732,H30,15,True,273,Puuhale Elementary
-224,Radford High,4361 Salt Lake Blvd.,Honolulu,96818,,-157.92696875603932,21.358626505549303,H31,15,False,0,Admiral Arthur W. Radford High
+224,Radford High,4361 Salt Lake Blvd.,Honolulu,96818,,-157.92696875603932,21.358626505549303,H32,15,False,0,Admiral Arthur W. Radford High
 225,Red Hill Elementary,1265 Ala Kula Place,Honolulu,96819,,-157.90030017853303,21.368728188832186,H32,14,False,0,Red Hill Elementary
 146,Roosevelt High,1120 Nehoa Street,Honolulu,96822,,-157.83754433834295,21.309866397901715,H26,11,False,1320,Theodore Roosevelt High
 147,Royal School,1519 Queen Emma Street,Honolulu,96813,,-157.85431753727974,21.312108884460425,H25,13,False,298,Royal Elementary
@@ -224,35 +224,35 @@ school_id,school_name,address,city,zip,county,longitude,latitude,house_district,
 148,Stevenson Middle,1202 Prospect Street,Honolulu,96822,,-157.8411705431729,21.309875564653847,H26,11,False,571,Robert Louis Stevenson Middle
 325,Sunset Beach Elementary,59-360 Kamehameha Highway,Haleiwa,96712,,-158.05096013202274,21.66414392672199,H47,23,False,0,Sunset Beach Elementary
 229,Wahiawa Elementary,1402 Glen Avenue,Wahiawa,96786,,-158.01852111435744,21.504074833764953,H46,17,True,461,Wahiawa Elementary
-230,Wahiawa Middle,275 Rose Street,Wahiawa,96786,,-158.01785708717023,21.49501144755961,H46,17,True,461,Wahiawa Elementary
+230,Wahiawa Middle,275 Rose Street,Wahiawa,96786,,-158.01785708717023,21.49501144755961,H46,17,True,692,Wahiawa Middle
 326,Waiahole Elementary,48-215 Waiahole Valley Road,Kaneohe,96744,,-157.85190954812649,21.48267077918226,H48,23,True,117,Waiahole Elementary
 384,Waiakea Elementary,180 West Puainako Street,Hilo,96720,,-155.07457114592674,19.694425597874357,H03,1,True,721,Waiakea Elementary
-389,Waiakea High,155 W. Kawili Street,Hilo,96720,,-155.07745487998997,19.7007821147341,H03,1,True,721,Waiakea Elementary
-385,Waiakea Intermediate,200 West Puainako Street,Hilo,96720,,-155.07725764200336,19.694226237467834,H03,1,True,721,Waiakea Elementary
-386,Waiakeawaena Elementary,2420 Kilauea Avenue,Hilo,96720,,-155.06741896143578,19.683661221169803,H02,1,True,721,Waiakea Elementary
+389,Waiakea High,155 W. Kawili Street,Hilo,96720,,-155.07745487998997,19.7007821147341,H02,1,False,1156,Waiakea High
+385,Waiakea Intermediate,200 West Puainako Street,Hilo,96720,,-155.07725764200336,19.694226237467834,H03,1,False,869,Waiakea Intermediate
+386,Waiakeawaena Elementary,2420 Kilauea Avenue,Hilo,96720,,-155.06741896143578,19.683661221169803,H02,1,True,673,Waiakeawaena Elementary
 231,Waialua Elementary,67-020 Waialua Beach Road,Waialua,96791,,-158.12145634896373,21.5763461569788,H47,23,False,459,Waialua Elementary
-232,Waialua High and Intermediate,67-160 Farrington Highway,Waialua,96791,,-158.12541720984393,21.566957520320496,H46,23,False,459,Waialua Elementary
+232,Waialua High and Intermediate,67-160 Farrington Highway,Waialua,96791,,-158.12541720984393,21.566957520320496,H47,23,False,559,Waialua High & Intermediate
 270,Waianae Elementary,85-220 McArthur Street,Waianae,96792,,-158.18452492320503,21.444670871408377,H45,22,True,436,Waianae Elementary
-272,Waianae High,85-251 Farrington Highway,Waianae,96792,,-158.199457742131,21.455911281181955,H45,22,True,436,Waianae Elementary
-273,Waianae Intermediate,85-626 Farrington Highway,Waianae,96792,,-158.19332470416356,21.451556844956162,H45,22,True,436,Waianae Elementary
+272,Waianae High,85-251 Farrington Highway,Waianae,96792,,-158.199457742131,21.455911281181955,H45,22,True,1509,Waianae High
+273,Waianae Intermediate,85-626 Farrington Highway,Waianae,96792,,-158.19332470416356,21.451556844956162,H45,22,True,752,Waianae Intermediate
 288,Waiau Elementary,98-450 Hookanike Street,Pearl City,96782,,-157.95401496855249,21.398146259961717,H34,16,False,489,Waiau Elementary
 424,Waihee Elementary,2125 Kahekili Highway,Wailuku,96793,,-156.51324734426268,20.934402521271615,H14,5,True,574,Waihee Elementary
-290,Waikele Elementary,94-1035 Kukula Street,Waipahu,96797,,-158.01169956911704,21.402030984116955,H35,18,False,534,Waikele Elementary
+290,Waikele Elementary,94-1035 Kukula Street,Waipahu,96797,,-158.01169956911704,21.402030984116955,H39,18,False,534,Waikele Elementary
 150,Waikiki Elementary,3710 Leahi Avenue,Honolulu,96815,,-157.81519173121674,21.26818807237613,H20,9,False,0,Waikiki Elementary
 393,Waikoloa Elementary and Middle,68-1730 Hooko Street,Waikoloa,96738,,-155.78930047442861,19.946168548519417,H08,4,True,742,Waikoloa School
 425,Wailuku Elementary,355 South High Street,Wailuku,96793,,-156.50507928156918,20.882789186459057,H10,5,True,554,Wailuku Elementary
 233,Waimalu Elementary,98-825 Moanalua Road,Aiea,96701,,-157.9496815144623,21.390735797203348,H34,16,False,316,Waimalu Elementary
 327,Waimanalo Elementary and Intermediate,41-1330 Kalanianaole Highway,Waimanalo,96795,,-157.7158077802642,21.347034139567064,H51,25,True,380,Waimanalo Elementary & Intermediate
-464,Waimea Canyon Middle,9555 Huakai Road,Waimea,96796,,-159.67249436336266,21.960129362755353,H17,8,True,480,Waimea Elementary
+464,Waimea Canyon Middle,9555 Huakai Road,Waimea,96796,,-159.67249436336266,21.960129362755353,H17,8,False,477,Waimea Canyon Middle
 387,Waimea Elementary,67-1225 Mamalahoa Highway,Kamuela,96743,,-155.6700754213934,20.01947899007794,H08,4,True,480,Waimea Elementary
-462,Waimea High,9707 Tsuchiya Road,Waimea,96796,,-159.66869821991833,21.957321594153065,H17,8,True,480,Waimea Elementary
+462,Waimea High,9707 Tsuchiya Road,Waimea,96796,,-159.66869821991833,21.957321594153065,H17,8,False,713,Waimea High
 274,Waipahu Elementary,94-465 Waipahu Street,Waipahu,96797,,-158.01594094594114,21.385508375142088,H36,19,True,823,Waipahu Elementary
-277,Waipahu High,94-1211 Farrington Highway,Waipahu,96797,,-157.9934927658758,21.39031154265762,H35,15,True,823,Waipahu Elementary
-278,Waipahu Intermediate,94-445 Farrington Highway,Waipahu,96797,,-158.01449482557942,21.38186293840703,H36,19,True,823,Waipahu Elementary
-152,Washington Middle,1633 South King Street,Honolulu,96826,,-157.83506991133197,21.296637589087084,H23,12,True,579,George Washington Middle
+277,Waipahu High,94-1211 Farrington Highway,Waipahu,96797,,-157.9934927658758,21.39031154265762,H35,15,False,2508,Waipahu High
+278,Waipahu Intermediate,94-445 Farrington Highway,Waipahu,96797,,-158.01449482557942,21.38186293840703,H36,19,False,1109,Waipahu Intermediate
+152,Washington Middle,1633 South King Street,Honolulu,96826,,-157.83506991133197,21.296637589087084,H23,11,True,579,George Washington Middle
 235,Webling Elementary,99-370 Paihi Street,Aiea,96701,,-157.91948248723244,21.38074632996042,H33,16,False,0,Gustave H. Webling Elementary
 236,Wheeler Elementary,1 Wheeler Army Air Field,Wahiawa,967864198,,-158.03960948217818,21.487772076764347,H46,23,False,0,Major Sheldon Wheeler Elementary
-237,Wheeler Middle,2 Wheeler Army Air Field,Wahiawa,967864199,,-158.03743831193387,21.488307777412803,H46,23,False,0,Major Sheldon Wheeler Elementary
+237,Wheeler Middle,2 Wheeler Army Air Field,Wahiawa,967864199,,-158.03743831193387,21.488307777412803,H46,23,False,0,Major Sheldon Wheeler Middle
 463,Wilcox Elementary,4319 Hardy Street,Lihue,96766,,-159.36403515387076,21.97629177748123,H16,8,False,754,Elsie H. Wilcox Elementary
 153,Wilson Elementary,4945 Kilauea Avenue,Honolulu,96816,,-157.78508874603202,21.28183568244236,H19,9,False,0,John H. Wilson Elementary
 396,Connections PCS,174 Kamehameha Avenue,Hilo,96720,,-155.08624699537415,19.725451436622535,H02,1,False,0,

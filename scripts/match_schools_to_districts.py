@@ -7,6 +7,7 @@ using school location data and district boundary GeoJSON files.
 """
 import json
 import csv
+import math
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
@@ -39,6 +40,25 @@ SENATE_DISTRICTS = GEOJSON_DIR / 'Hawaii_State_Senate_Districts_2022.geojson'
 
 # Output file
 OUTPUT_CSV = PROCESSED_DATA / 'schools_with_districts.csv'
+
+# A school on a district line can land in the sliver between two boundaries
+# (Ilima Intermediate, on Fort Weaver Road); it takes the nearest district
+# within this distance.
+NEAREST_DISTRICT_MAX_M = 100
+
+
+def distance_to_ring_m(point: Tuple[float, float], ring: List[Tuple[float, float]]) -> float:
+    """Approximate distance in metres from a (lon, lat) point to a ring's edges."""
+    lon, lat = point
+    kx = 111_320 * math.cos(math.radians(lat))  # metres per degree of longitude here
+    ky = 110_574                                  # metres per degree of latitude
+    best = math.inf
+    for (x1, y1), (x2, y2) in zip(ring, ring[1:] + ring[:1]):
+        ax, ay = (x1 - lon) * kx, (y1 - lat) * ky
+        dx, dy = (x2 - x1) * kx, (y2 - y1) * ky
+        t = max(0.0, min(1.0, -(ax * dx + ay * dy) / (dx * dx + dy * dy or 1)))
+        best = min(best, math.hypot(ax + t * dx, ay + t * dy))
+    return best
 
 def point_in_polygon(point: Tuple[float, float], polygon: List[Tuple[float, float]]) -> bool:
     """
@@ -220,7 +240,16 @@ def find_district(school_point: Tuple[float, float], districts: Dict[str, dict])
                 
         except Exception as e:
             logger.warning(f"Error checking district {district_id}: {e}", exc_info=True)
-    
+
+    nearest = min(
+        ((distance_to_ring_m(school_point, [(float(c[0]), float(c[1])) for c in d['coordinates']]), district_id)
+         for district_id, d in districts.items() if d.get('coordinates')),
+        default=None,
+    )
+    if nearest and nearest[0] <= NEAREST_DISTRICT_MAX_M:
+        logger.info(f"Point ({lon:.4f}, {lat:.4f}) is in no district; nearest is {nearest[1]}, {nearest[0]:.0f} m away")
+        return nearest[1]
+
     logger.debug(f"No district found for point ({lon:.4f}, {lat:.4f})")
     return None
 
@@ -249,6 +278,7 @@ def main():
         
         # Load CEP data
         cep_schools = load_cep_data()
+        cep_by_id = {row.get('school_id', '').strip(): row for row in cep_schools}
         
         # Load school locations
         logger.info(f"Loading school locations from {SCHOOLS_GEOJSON}")
@@ -279,13 +309,18 @@ def main():
             school_name = props.get('sch_name', '')
             clean_name = clean_school_name(school_name)
             
-            # Find matching CEP data
-            cep_match = None
-            for cep_school in cep_schools:
-                cep_name = clean_school_name(cep_school.get('school_name', ''))
-                if clean_name and cep_name and (clean_name in cep_name or cep_name in clean_name):
-                    cep_match = cep_school
-                    break
+            # Find matching CEP data: by DOE school code first. Name matching
+            # alone paired schools that share a word ("Aiea High" with Aiea
+            # Elementary, "Kalihi Kai" with Kalihi Elementary), mis-flagging 24
+            # schools. It's kept only as a fallback for charter schools, whose
+            # codes in the CEP list ("275-PCS") don't line up with sch_code.
+            cep_match = cep_by_id.get(str(props.get('sch_code', '')).strip())
+            if cep_match is None:
+                for cep_school in cep_schools:
+                    cep_name = clean_school_name(cep_school.get('school_name', ''))
+                    if clean_name and cep_name and (clean_name in cep_name or cep_name in clean_name):
+                        cep_match = cep_school
+                        break
             
             # Find districts
             house_district = find_district((lon, lat), house_districts)
