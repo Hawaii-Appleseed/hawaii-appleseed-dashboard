@@ -2,6 +2,16 @@ import { fetchJson } from './data/loader.js';
 import { buildGeoData } from './factsheet/formatters.js';
 import { generateFactSheetHTML } from './factsheet/template.js';
 
+const LEVELS = ['state', 'county', 'house', 'senate'];
+
+// Messages are set as text: they can carry values from the URL.
+function showError(root, message) {
+  const p = document.createElement('p');
+  p.className = 'fs-error';
+  p.textContent = message;
+  root.replaceChildren(p);
+}
+
 async function main() {
   const params = new URLSearchParams(window.location.search);
   const geoId = params.get('geo_id');
@@ -9,8 +19,8 @@ async function main() {
 
   const root = document.getElementById('factsheet-root');
 
-  if (!geoId) {
-    root.innerHTML = '<p class="fs-error">No geography selected. Open this page from the map by clicking a region.</p>';
+  if (!geoId || !LEVELS.includes(level)) {
+    showError(root, 'No geography selected. Open this page from the map by clicking a region.');
     return;
   }
 
@@ -25,7 +35,7 @@ async function main() {
     );
 
     if (!feature) {
-      root.innerHTML = `<p class="fs-error">Geography not found: ${geoId}</p>`;
+      showError(root, `Geography not found: ${geoId}`);
       return;
     }
 
@@ -34,7 +44,7 @@ async function main() {
     root.innerHTML = generateFactSheetHTML(geo);
   } catch (err) {
     console.error('Fact sheet error:', err);
-    root.innerHTML = `<p class="fs-error">Failed to load fact sheet: ${err.message}</p>`;
+    showError(root, `Failed to load fact sheet: ${err.message}`);
   }
 }
 

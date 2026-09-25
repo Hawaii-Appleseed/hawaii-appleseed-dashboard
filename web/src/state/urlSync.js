@@ -8,7 +8,10 @@ import { getState, setState } from './store.js';
 const KEYS = ['activeLayer', 'colorScheme'];
 const READ_ONLY_KEYS = ['selectedVariable']; // read from URL, never written
 
-export function readFromUrl() {
+// `allowed` lists the accepted values per state key. Anything else (a stale or
+// mistyped link, or markup pasted into one) is ignored, so the dashboard opens
+// on its defaults instead of a geography, variable or scheme it doesn't have.
+export function readFromUrl(allowed) {
   // Accept both hash (#layer=...) and search (?var=...) so embed URLs work
   // even without the # — query strings are more iframe-friendly.
   const sources = [];
@@ -19,7 +22,7 @@ export function readFromUrl() {
   const patch = {};
   for (const k of [...KEYS, ...READ_ONLY_KEYS]) {
     const v = params.get(shortKey(k));
-    if (v) patch[k] = v;
+    if (v && allowed[k].includes(v)) patch[k] = v;
   }
 
   // `?overlay=millionaires` layers the circles on top of whatever variable is

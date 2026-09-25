@@ -1,8 +1,8 @@
 import './map/perfFlags.js'; // must be first — applies CSS kills before paint
 import { loadConfig, loadRepData } from './data/loader.js';
-import { initColors } from './map/colors.js';
+import { initColors, listSchemes } from './map/colors.js';
 import { createMap, getMap, fitHome } from './map/mapInstance.js';
-import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, getFeatureProperties, initLayerManager, setSelectionFocus } from './map/layerManager.js';
+import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, getFeatureProperties, initLayerManager, setSelectionFocus, KNOWN_LEVELS } from './map/layerManager.js';
 import { initPopup, clearSelectedLayer } from './map/popup.js';
 import { initDiag } from './map/diag.js';
 import { initLegend, renderLegend } from './ui/legend.js';
@@ -39,7 +39,13 @@ async function main() {
     initDiag();
   }
 
-  readFromUrl();
+  readFromUrl({
+    activeLayer: KNOWN_LEVELS,
+    colorScheme: listSchemes(),
+    selectedVariable: Object.entries(config.variables.variables)
+      .filter(([, v]) => v.show_in_dropdown)
+      .map(([key]) => key),
+  });
   const s0 = getState();
 
   // The circles are shown for either reason: the user checked "Show
@@ -181,6 +187,14 @@ main().catch((err) => {
   console.error('Dashboard init failed:', err);
   const root = document.querySelector('.map-wrap');
   if (root) {
-    root.innerHTML = `<div class="error-banner">Failed to load dashboard: ${err.message}<br><small>Make sure the data pipeline has run: <code>bash ../scripts/build_static/run_all.sh</code></small></div>`;
+    // Built from text nodes: the message can carry text from the URL.
+    const banner = document.createElement('div');
+    banner.className = 'error-banner';
+    const detail = document.createElement('small');
+    detail.textContent = import.meta.env.DEV
+      ? `${err.message} — make sure the data pipeline has run: bash ../scripts/build_static/run_all.sh`
+      : err.message;
+    banner.append('Couldn’t load the dashboard. Check your connection and reload the page.', document.createElement('br'), detail);
+    root.replaceChildren(banner);
   }
 });
