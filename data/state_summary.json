@@ -16,7 +16,7 @@
     "median_income": "100389",
     "poverty_rate": 10.04,
     "unemployment_rate": 4.92,
-    "alice_rate": 35.0
+    "alice_rate": 33.4
   },
   "housing": {
     "median_home_value": "839100",
@@ -33,11 +33,11 @@
     "snap_benefits_annual_total": 742697232.0
   },
   "tax_credits": {
-    "ctc_avg_amount": 1039.2409240924092,
-    "ctc_participation_rate": 8.98230219666202,
-    "federal_eitc_avg_amount": 2198.428758481133,
-    "eitc_participation_rate": 12.45219814425043,
-    "state_eitc_avg_amount": 879.3715033924533
+    "ctc_avg_amount": 1943.66,
+    "ctc_participation_rate": 8.9823,
+    "federal_eitc_avg_amount": 2198.43,
+    "eitc_participation_rate": 12.4522,
+    "state_eitc_avg_amount": 879.37
   },
   "transportation": {
     "travel_time_to_work_minutes": 26.16,

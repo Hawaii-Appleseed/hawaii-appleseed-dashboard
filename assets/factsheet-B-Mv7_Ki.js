@@ -43,7 +43,7 @@ import{f as $}from"./loader-CrygnVjz.js";function i(e,{isPercent:t=!1,isCurrency
             <h3><span class="fs-card-icon">${h.dollar}</span>Tax Credits</h3>
             <h4>Child Tax Credit (CTC)</h4>
             <ul>
-              <li>Families who claim it receive an average of <span class="fs-hi">${s(e.ctcAvg)}</span> per year. It is claimed on <span class="fs-hi">${s(e.ctcRate)}</span> of all tax returns.</li>
+              <li>Families who get its refundable part receive an average of <span class="fs-hi">${s(e.ctcAvg)}</span> per year. That part is claimed on <span class="fs-hi">${s(e.ctcRate)}</span> of all tax returns.</li>
             </ul>
             <h4>Federal Earned Income Tax Credit (EITC)</h4>
             <ul>
