@@ -25,6 +25,10 @@ description: Interactive data dashboard for Hawaii Appleseed with maps and visua
   too many `color_thresholds`, duplicate keys or dropdown orders, and any
   displayed variable missing from the built GeoJSON in `web/public/data/`.
   `vite build` and the deploy workflow run the same check.
+- The web app's map view and color schemes (`theme.json`) and tab labels
+  (`ui_strings.json`) live in **`web/public/config/`**. The files of those
+  names in `src/config/` belong to the legacy Streamlit app; nothing copies
+  them across, and they differ.
 
 An interactive data visualization dashboard built with Streamlit and Leaflet.js, visualizing demographics, economics, and policy data for Hawaii.
 

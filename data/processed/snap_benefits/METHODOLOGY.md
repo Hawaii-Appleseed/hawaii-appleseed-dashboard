@@ -202,10 +202,9 @@ and break downstream lookups in `data_loader.py`.
 4. Run `python scripts/backfill_snap_2024.py`. Verify the diagnostic at the
    end shows `delta=±0.0` for every county.
 5. Bump `sources.snap.year` in `src/config/data_sources.json`.
-6. Bump three `"USDA SNAP Data <year>"` source labels in each of:
-   * `src/config/variables.json`
-   * `web/src/config/variables.json`
-   * `web/public/config/variables.json`
+6. Bump the three `"USDA SNAP Data <year>"` source labels in
+   `src/config/variables.json` (the web app's copy is built from it), then run
+   `npm run check` in `web/`.
 7. Run `python scripts/build_static/02_build_layer_geojsons.py` to refresh
    `web/public/data/{state,county,house,senate}.geojson`.
 8. Smoke test: `streamlit run run_leaflet.py`, switch the dropdown to each of

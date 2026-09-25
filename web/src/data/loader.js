@@ -16,6 +16,9 @@ export async function fetchJson(path) {
   return promise;
 }
 
+// variables.json is built from src/config/variables.json (see
+// web/scripts/variables-config.mjs). theme.json and ui_strings.json are this
+// app's own, in web/public/config/; src/config/ holds the Streamlit app's.
 export function loadConfig() {
   return Promise.all([
     fetchJson('/config/variables.json'),
