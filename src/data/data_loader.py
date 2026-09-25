@@ -371,10 +371,11 @@ class ACSDataLoader(BaseDataLoader):
                         df = pd.merge(df, tax_credit_data, on=df_geoid_col, how='left', suffixes=('', '_tax'))
                         
                         # Convert participation rates from decimal to percentage format
+                        # (the CSVs carry 6 decimals, so 4 keep them all without float noise)
                         participation_rate_cols = ['ctc_participation_rate', 'eitc_participation_rate']
                         for col in participation_rate_cols:
                             if col in df.columns:
-                                df[col] = df[col] * 100
+                                df[col] = (df[col] * 100).round(4)
                         
                         # Add tax credit variables to the DataFrame
                         tax_credit_vars = ['ctc_avg_amount', 'ctc_participation_rate', 'federal_eitc_avg_amount', 

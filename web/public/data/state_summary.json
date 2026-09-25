@@ -33,11 +33,11 @@
     "snap_benefits_annual_total": 742697232.0
   },
   "tax_credits": {
-    "ctc_avg_amount": 1943.66,
-    "ctc_participation_rate": 8.9823,
-    "federal_eitc_avg_amount": 2198.43,
-    "eitc_participation_rate": 12.4522,
-    "state_eitc_avg_amount": 879.37
+    "ctc_avg_amount": 1988.27,
+    "ctc_participation_rate": 8.4708,
+    "federal_eitc_avg_amount": 2375.07,
+    "eitc_participation_rate": 12.149,
+    "state_eitc_avg_amount": 950.03
   },
   "transportation": {
     "travel_time_to_work_minutes": 26.16,

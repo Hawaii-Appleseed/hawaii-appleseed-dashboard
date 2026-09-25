@@ -136,10 +136,10 @@
     "tax_credits": {
       "label": "IRS Statistics of Income",
       "short_label": "IRS SOI",
-      "year": 2022,
+      "year": 2023,
       "fetch_method": "manual",
-      "description": "IRS Statistics of Income, tax year 2022: the county data for counties, and the ZIP code data for the state and, allocated by 2020 population with Geocorr 2022 ZIP-to-district factors, for House and Senate districts. The CTC is the refundable credit (additional child tax credit); the state EITC is estimated at 40% of the federal credit.",
-      "instructions": "Put the new year's IRS SOI ZIP code workbook for Hawaii (<yy>zp12hi.xlsx) and the Hawaii rows of the county file (<yy>incyallnoagi.csv) in data/raw/tax_credits/ (sources in the README there), set YEAR in scripts/build_tax_credits.py and run it, then scripts/build_static/02_build_layer_geojsons.py. The ZIP-to-district crosswalks in data/raw/crosswalks/ change only with district lines.",
+      "description": "IRS Statistics of Income, tax year 2023: the county data for the state and counties. Districts use the latest ZIP code data (2022), allocated by 2020 population with Geocorr 2022 ZIP-to-district factors and scaled to each county's 2023 totals. The CTC is the refundable credit (additional child tax credit). The state EITC is estimated at 40% of the federal credit, Hawaii's rate from 2023, and checked against the Department of Taxation's EITC report.",
+      "instructions": "For a new year of SOI county data, put its Hawaii rows (<yy>incyallnoagi_hi.csv) and the Department of Taxation's EITC report tables for the same year (act107_earnedincome_txcredit_<year>_tables.xlsx) in data/raw/tax_credits/ (sources in the README there) and set YEAR in scripts/build_tax_credits.py; for a new year of SOI ZIP code data (<yy>zp12hi.xlsx, plus that year's county rows), set ZIP_YEAR. Run the script, then scripts/build_static/02_build_layer_geojsons.py. The ZIP-to-district crosswalks in data/raw/crosswalks/ change only with district lines.",
       "file_patterns": {
         "state": "hawaii_state_tax_credits_{year}.csv",
         "county": "hawaii_county_tax_credits_{year}.csv",

@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Build the tax-credit CSVs (EITC and Child Tax Credit) for all four levels.
 
-Sources, IRS Statistics of Income (SOI) for tax year 2022, in
-data/raw/tax_credits/ (see the README there for URLs):
+Sources, in data/raw/tax_credits/ (see the README there for URLs):
 
-  * 22zp12hi.xlsx -- SOI ZIP code data for Hawaii. Its state total row gives
-    the state figures, and its ZIP rows are allocated to legislative
-    districts (below).
-  * 22incyallnoagi_hi.csv -- the Hawaii rows of SOI's county data, used as
-    published for the four counties.
+  * 23incyallnoagi_hi.csv -- the Hawaii rows (state total and four counties)
+    of IRS Statistics of Income (SOI) county data for tax year 2023, used as
+    published for the state and the counties.
+  * 22zp12hi.xlsx -- SOI ZIP code data for Hawaii, tax year 2022, the latest
+    SOI has published. Its ZIP rows are allocated to legislative districts
+    (below); 22incyallnoagi_hi.csv, the 2022 county rows, checks that.
+  * act107_earnedincome_txcredit_2023_tables.xlsx -- the Hawaii Department of
+    Taxation's report on the state EITC for tax year 2023, which checks the
+    state EITC estimate (below).
 
 plus data/raw/crosswalks/geocorr2022_zcta_to_{sldl22,sldu22,county}.csv --
 Geocorr 2022 (Missouri Census Data Center): the share of each ZIP code
@@ -27,20 +30,36 @@ Measures (SOI field names):
 The dashboard's CTC is the refundable part, the one that reaches families
 with little or no income tax. (The earlier files took the CTC amount from the
 next column over, "earned income credit with one qualifying child", which
-halved every average.) The state EITC is estimated as 40% of the federal
-credit, Hawaii's rate from tax year 2023 on, as in the earlier files.
+halved every average.)
 
-District allocation: each ZIP's totals are split across districts by the
-Geocorr factors, so districts add up to the state. SOI folds ZIP codes with
-few returns, and nonresidential ones such as Honolulu PO boxes, into "other"
+State EITC: from tax year 2023 Hawaii's credit is 40% of the federal EITC,
+refundable (Acts 114, SLH 2022 and 163, SLH 2023; before, 20% and
+nonrefundable), so it is estimated as 40% of the federal credit, on 2023
+returns, the first year at that rate. Statewide the estimate comes within 2%
+of the average new claim in the Department of Taxation's report for the same
+year ($950 against $938); prorated credits for part-year residents pull the
+actual a little lower. The script checks this, so a change in the rate (Act
+163's 40% is set to lapse after 2027) shows up when YEAR moves on. The
+estimated total (40% of all federal EITC dollars) runs about 10% above the
+credits actually claimed, since not every federal claimant claims the state
+credit; the dashboard shows only the average.
+
+Districts: each ZIP's 2022 totals are split across districts by the Geocorr
+factors, so districts add up to the state. SOI folds ZIP codes with few
+returns, and nonresidential ones such as Honolulu PO boxes, into "other"
 (99999); that row is spread over the ZIP code areas that have no row of their
 own, by population. Its rates are close to the state's, and two rural House
 districts (5 and 17) have about half their people in those areas, so their
-figures lean toward the statewide mix. The ZIP-based county totals come within
-0.2 points of SOI's county data on every rate, which the script checks.
+figures lean toward the statewide mix. The ZIP-based county totals come
+within 0.2 points of SOI's county data for the same year on every rate,
+which the script checks. The districts in each county (House and Senate
+districts each lie within one) are then scaled to that county's 2023 totals,
+measure by measure, so they add up to the counties, as
+scripts/build_alice.py does. Once SOI publishes ZIP code data for YEAR, set
+ZIP_YEAR to match.
 
 Outputs data/processed/tax_credits/hawaii_{state,county,house_district,
-senate_district}_tax_credits_2022.csv, with rates as fractions (the data
+senate_district}_tax_credits_<YEAR>.csv, with rates as fractions (the data
 loader converts them to percentages). Then run
 scripts/build_static/02_build_layer_geojsons.py to rebuild the map layers.
 """
@@ -58,11 +77,13 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / 'data' / 'raw' / 'tax_credits'
 CROSSWALKS = ROOT / 'data' / 'raw' / 'crosswalks'
 OUT = ROOT / 'data' / 'processed' / 'tax_credits'
-YEAR = 2022
+YEAR = 2023      # SOI county data and the state EITC report
+ZIP_YEAR = 2022  # SOI ZIP code data, for the district pattern within counties
 STATE_EITC_SHARE = 0.40
 
 MEASURES = ('returns', 'eitc_n', 'eitc_a', 'ctc_n', 'ctc_a')
 COUNTY_NAMES = {'15001': 'Hawaii', '15003': 'Honolulu', '15007': 'Kauai', '15009': 'Maui'}
+KALAWAO, MAUI = '15005', '15009'
 COLUMNS = [
     'NAME', 'state', 'district', 'geoid', 'total_returns', 'eitc_returns', 'eitc_participation_rate',
     'federal_eitc_avg_amount', 'federal_eitc_total_amount', 'state_eitc_avg_amount',
@@ -74,7 +95,7 @@ COLUMNS = [
 def read_zip_data() -> tuple[dict, dict]:
     """State total and per-ZIP totals from the SOI ZIP workbook (amounts in
     thousands of dollars, as published)."""
-    rows = list(openpyxl.load_workbook(RAW / f'{YEAR % 100}zp12hi.xlsx', read_only=True,
+    rows = list(openpyxl.load_workbook(RAW / f'{ZIP_YEAR % 100}zp12hi.xlsx', read_only=True,
                                        data_only=True).active.iter_rows(values_only=True))
     header = [re.sub(r'\s+', ' ', str(h or '')).strip() for h in rows[3]]
     units = [str(h or '').strip() for h in rows[4]]
@@ -102,11 +123,30 @@ def read_zip_data() -> tuple[dict, dict]:
     return state, zips
 
 
-def read_county_data() -> dict:
-    with open(RAW / f'{YEAR % 100}incyallnoagi_hi.csv', newline='') as f:
-        rows = [r for r in csv.DictReader(f) if r['COUNTYFIPS'].strip() not in ('0', '000')]
+def read_county_data(year: int) -> tuple[dict, dict]:
+    """State total and per-county totals from the Hawaii rows of SOI's county
+    data (amounts in thousands of dollars)."""
     fields = {'returns': 'N1', 'eitc_n': 'N59660', 'eitc_a': 'A59660', 'ctc_n': 'N11070', 'ctc_a': 'A11070'}
-    return {f"15{int(r['COUNTYFIPS']):03d}": {m: float(r[k]) for m, k in fields.items()} for r in rows}
+    with open(RAW / f'{year % 100}incyallnoagi_hi.csv', newline='') as f:
+        rows = {f"15{int(r['COUNTYFIPS']):03d}": {m: float(r[k]) for m, k in fields.items()}
+                for r in csv.DictReader(f)}
+    state = rows.pop('15000')
+    assert set(rows) == set(COUNTY_NAMES), f'SOI county rows changed: {sorted(rows)}'
+    return state, rows
+
+
+def read_state_eitc_claims() -> tuple[float, float]:
+    """Number and dollar amount of new state EITC claims for YEAR, from Table 1
+    of the Department of Taxation's EITC report (the rest of that table is
+    earlier years' nonrefundable credits carried forward)."""
+    wb = openpyxl.load_workbook(RAW / f'act107_earnedincome_txcredit_{YEAR}_tables.xlsx', read_only=True,
+                                data_only=True)
+    rows = list(wb['Table 1'].iter_rows(values_only=True))
+    assert rows[2][0] == f'Tax Year {YEAR}', rows[2]
+    header = next(r for r in rows if r[0] == 'Federal Adjusted Gross Income Range')
+    i = next(i for i, h in enumerate(header) if h and h.startswith('Total New Credit Claimed'))
+    total = next(r for r in rows if r[0] == 'Total')
+    return float(total[i]), float(total[i + 1])
 
 
 def read_crosswalk(target: str) -> list[tuple[str, str, float, float]]:
@@ -137,6 +177,33 @@ def allocate(zips: dict, crosswalk: list) -> tuple[dict, dict]:
         for m in MEASURES:
             totals[geo][m] += pop / unlisted_pop * other[m]
     return totals, population
+
+
+def district_counties(crosswalk: list, county_crosswalk: list) -> dict:
+    """Each district's county, from where its population lives."""
+    zcta_county = {z: MAUI if fips == KALAWAO else fips
+                   for z, fips, afact, _ in county_crosswalk if z and afact > 0.5}
+    pop = defaultdict(lambda: defaultdict(float))
+    for z, d, _, p in crosswalk:
+        if z:
+            pop[d][zcta_county[z]] += p
+    out = {}
+    for d, by_county in pop.items():
+        fips, top = max(by_county.items(), key=lambda kv: kv[1])
+        assert top >= 0.99 * sum(by_county.values()), f'district {d} spans counties: {dict(by_county)}'
+        out[d] = fips
+    return out
+
+
+def scale_to_counties(totals: dict, county_of: dict, counties: dict) -> dict:
+    """The districts in each county, scaled measure by measure to add up to
+    that county's totals."""
+    sums = defaultdict(lambda: dict.fromkeys(MEASURES, 0.0))
+    for d, t in totals.items():
+        for m in MEASURES:
+            sums[county_of[d]][m] += t[m]
+    return {d: {m: t[m] * counties[county_of[d]][m] / sums[county_of[d]][m] for m in MEASURES}
+            for d, t in totals.items()}
 
 
 def num(x: float, digits: int) -> float | int:
@@ -179,17 +246,27 @@ def rates(t: dict) -> tuple[float, float]:
 
 
 def main() -> int:
-    state, zips = read_zip_data()
-    counties = read_county_data()
-    county_zip_totals, county_pop = allocate(zips, read_crosswalk('county'))
-    county_pop['15009'] += county_pop.pop('15005', 0)  # Kalawao is mapped with Maui
+    zip_state, zips = read_zip_data()
+    county_crosswalk = read_crosswalk('county')
+    county_zip_totals, county_pop = allocate(zips, county_crosswalk)
+    county_pop[MAUI] += county_pop.pop(KALAWAO, 0)  # Kalawao is mapped with Maui
 
     # The ZIP-based county totals should agree with SOI's own county data.
-    for fips, t in counties.items():
+    for fips, t in read_county_data(ZIP_YEAR)[1].items():
         worst = max(abs(a - b) for a, b in zip(rates(t), rates(county_zip_totals[fips])))
         if worst > 0.5:
             print(f'  ! {fips}: ZIP-based rates differ from SOI county data by {worst:.2f} points')
             return 1
+
+    # The state EITC estimate should match the average new claim the
+    # Department of Taxation reports.
+    state, counties = read_county_data(YEAR)
+    claims, amount = read_state_eitc_claims()
+    estimate = STATE_EITC_SHARE * 1000 * state['eitc_a'] / state['eitc_n']
+    print(f'  state EITC {YEAR}: estimated ${estimate:,.0f} per claim, reported ${amount / claims:,.0f}')
+    if abs(estimate / (amount / claims) - 1) > 0.03:
+        print('  ! the state EITC estimate is off by more than 3%; check STATE_EITC_SHARE')
+        return 1
 
     OUT.mkdir(parents=True, exist_ok=True)
     write('state', [row_for(state, NAME='Hawaii (Statewide)', state=15, geoid='15',
@@ -197,9 +274,11 @@ def main() -> int:
     write('county', [row_for(counties[fips], NAME=COUNTY_NAMES[fips], state=15, geoid=fips,
                              total_population=round(county_pop[fips])) for fips in sorted(counties)])
     for level, target, chamber in [('house_district', 'sldl22', 'House'), ('senate_district', 'sldu22', 'Senate')]:
-        totals, population = allocate(zips, read_crosswalk(target))
+        crosswalk = read_crosswalk(target)
+        totals, population = allocate(zips, crosswalk)
         for m in MEASURES:  # districts add up to the state (within SOI rounding)
-            assert abs(sum(t[m] for t in totals.values()) - state[m]) <= 0.001 * state[m] + 200, (level, m)
+            assert abs(sum(t[m] for t in totals.values()) - zip_state[m]) <= 0.001 * zip_state[m] + 200, (level, m)
+        totals = scale_to_counties(totals, district_counties(crosswalk, county_crosswalk), counties)
         write(level, [
             row_for(totals[d], NAME=f'State {chamber} District {int(d):02d}; Hawaii; Hawaii', state=15,
                     district=int(d), geoid=f'15{int(d):02d}', total_population=round(population[d]))

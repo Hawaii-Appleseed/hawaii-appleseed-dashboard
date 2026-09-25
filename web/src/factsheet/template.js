@@ -82,7 +82,7 @@ export function generateFactSheetHTML(geo) {
             </ul>
             <h4>State Earned Income Tax Credit</h4>
             <ul>
-              <li>Hawaii's state EITC provides an additional <span class="fs-hi">${esc(geo.stateEitcAvg)}</span> on average to working families.</li>
+              <li>Hawaii's state EITC, 40% of the federal credit, adds an estimated <span class="fs-hi">${esc(geo.stateEitcAvg)}</span> on average for working families.</li>
             </ul>
           </div>
 
