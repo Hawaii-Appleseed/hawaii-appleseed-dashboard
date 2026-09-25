@@ -78,7 +78,7 @@
       "description": "Households earning **above the federal poverty line** but below **the cost of basic needs** in Hawaii.",
       "data_type": "percentage",
       "data_source": "alice",
-      "source": "United Way ALICE Report 2023",
+      "source": "United For ALICE 2024",
       "dropdown_group": "economic_security",
       "dropdown_label": "ALICE Households",
       "dropdown_order": 1,

@@ -3,7 +3,7 @@ streamlit
 pandas
 numpy
 plotly
-openpyxl  # Required by ALICEDataLoader to read ALICE By Geography (2023).xlsx
+openpyxl  # Reads the ALICE workbook and the IRS tax-credit workbook
 
 # Removed (confirmed unused in production import chain):
 #   requests  — only imported in src/data/acs_data.py which is never imported

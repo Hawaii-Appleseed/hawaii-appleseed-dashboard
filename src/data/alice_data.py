@@ -16,7 +16,8 @@ class ALICEDataLoader:
             file_path: Path to the ALICE Excel file. If None, will look in the default location.
         """
         if file_path is None:
-            self.file_path = Path(__file__).parent.parent.parent / 'data' / 'ALICE By Geography (2023).xlsx'
+            from data.data_source_registry import get_alice_excel_path
+            self.file_path = get_alice_excel_path()
         else:
             self.file_path = Path(file_path)
             

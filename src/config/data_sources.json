@@ -116,11 +116,11 @@
     },
     "alice": {
       "label": "ALICE (Asset Limited, Income Constrained, Employed)",
-      "short_label": "United Way ALICE Report",
-      "year": 2023,
+      "short_label": "United For ALICE",
+      "year": 2024,
       "fetch_method": "manual",
-      "description": "ALICE data must be obtained from United Way of Hawaii.",
-      "instructions": "Download the ALICE by Geography Excel report from United Way Hawaii (https://www.unitedwayofhawaii.org/alice). Save the file as data/ALICE By Geography ({year}).xlsx. The file must contain sheets named: State, Counties, House, Senate.",
+      "description": "United For ALICE Hawaii data sheet (2026 report, data year 2024): the share of households that are ALICE, above the poverty level but below the cost of basics. Counties as published, the state as their sum; House and Senate districts from its ZIP code figures, allocated with Geocorr 2022 ZIP-to-district factors and scaled to each county's totals.",
+      "instructions": "Download the Hawaii data sheet from https://www.unitedforalice.org/state-overview/hawaii into data/raw/alice/, set SOURCE and YEAR in scripts/build_alice.py and run it (it writes data/ALICE By Geography ({year}).xlsx with sheets State, Counties, House, Senate), then set year here and run scripts/build_static/02_build_layer_geojsons.py.",
       "excel_filename": "ALICE By Geography ({year}).xlsx",
       "excel_directory": "data",
       "sheet_patterns": {

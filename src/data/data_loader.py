@@ -430,36 +430,11 @@ class ALICEDataLoader(BaseDataLoader):
                 logger.error(f"Unsupported geographic level for ALICE: {geo_level}")
                 return None
             
-            # Try multiple possible file locations
-            # Get the project root directory
-            project_root = Path(__file__).parent.parent.parent
-            possible_paths = [
-                project_root / 'data' / 'ALICE By Geography (2023).xlsx',  # Most likely location
-                self.data_dir.parent / 'ALICE By Geography (2023).xlsx',
-                self.data_dir / 'ALICE By Geography (2023).xlsx',
-                Path('data') / 'ALICE By Geography (2023).xlsx',
-                Path('ALICE By Geography (2023).xlsx'),
-                Path('data/raw') / 'ALICE By Geography (2023).xlsx'
-            ]
-            
-            alice_file = None
-            for path in possible_paths:
-                logger.info(f"Checking ALICE file path: {path.absolute()}")
-                if path.exists():
-                    alice_file = path
-                    logger.info(f"Found ALICE file at: {alice_file.absolute()}")
-                    break
-            
-            if alice_file is None:
-                logger.error("ALICE data file not found in any expected location:")
-                for path in possible_paths:
-                    logger.error(f"  - {path.absolute()} (exists: {path.exists()})")
-                # List contents of data directory for debugging
-                try:
-                    data_dir_contents = list(self.data_dir.parent.iterdir())
-                    logger.error(f"Contents of {self.data_dir.parent}: {[f.name for f in data_dir_contents]}")
-                except Exception as e:
-                    logger.error(f"Could not list directory contents: {e}")
+            # data/ALICE By Geography (<year>).xlsx, the year set in
+            # src/config/data_sources.json (built by scripts/build_alice.py)
+            alice_file = get_alice_excel_path()
+            if not alice_file.exists():
+                logger.error(f"ALICE data file not found: {alice_file}")
                 return None
             
             try:
