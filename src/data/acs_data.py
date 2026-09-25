@@ -432,7 +432,7 @@ class ACSDataFetcher:
                 'b15003_019e': 'edu_some_college_lt1',
                 'b15003_020e': 'edu_some_college_1plus',
                 'b15003_021e': 'edu_associates',
-                'b15003_022e': 'bachelors_plus',
+                'b15003_022e': 'edu_bachelors',  # bachelor's only; bachelors_plus adds _023E–_025E
                 'b15003_023e': 'edu_masters',
                 'b15003_024e': 'edu_professional',
                 'b15003_025e': 'edu_doctorate',
@@ -517,8 +517,12 @@ class ACSDataFetcher:
         if 'below_poverty' in df.columns and 'total_population' in df.columns:
             df['poverty_rate'] = _safe_div(df['below_poverty'], df['total_population']).round(2)
 
-        # Bachelor's-or-higher educational attainment
-        if 'bachelors_plus' in df.columns and 'pop_25_plus' in df.columns:
+        # Bachelor's-or-higher attainment: B15003_022E (bachelor's) through
+        # _025E (master's, professional, doctorate) divided by B15003_001E.
+        # _022E alone is bachelor's only, about 13 points short statewide.
+        ba_plus_cols = ['edu_bachelors', 'edu_masters', 'edu_professional', 'edu_doctorate']
+        if all(c in df.columns for c in ba_plus_cols) and 'pop_25_plus' in df.columns:
+            df['bachelors_plus'] = df[ba_plus_cols].sum(axis=1)
             df['bachelors_rate'] = _safe_div(df['bachelors_plus'], df['pop_25_plus']).round(2)
             # Dashboard exposes this under the `college_educated_pct` key too
             df['college_educated_pct'] = df['bachelors_rate']
@@ -527,7 +531,7 @@ class ACSDataFetcher:
         # who has at least a regular HS diploma) divided by B15003_001E.
         hs_plus_cols = [
             'edu_hs_diploma', 'edu_ged', 'edu_some_college_lt1',
-            'edu_some_college_1plus', 'edu_associates', 'bachelors_plus',
+            'edu_some_college_1plus', 'edu_associates', 'edu_bachelors',
             'edu_masters', 'edu_professional', 'edu_doctorate',
         ]
         if all(c in df.columns for c in hs_plus_cols) and 'pop_25_plus' in df.columns:
@@ -702,7 +706,7 @@ class ACSDataFetcher:
         _set_moe('zero_vehicle_household_pct', moe_pct(_moe('b08201_002m'), 'veh_hh_total',   'zero_vehicle_household_pct', _moe('b08201_001m')))
         _set_moe('work_from_home_pct',    moe_pct(_moe('b08301_021m'), 'total_workers',       'work_from_home_pct',    _moe('b08301_001m')))
         _set_moe('active_transportation_pct', moe_pct(_moe_sum('b08301_018m','b08301_019m'), 'total_workers', 'active_transportation_pct', _moe('b08301_001m')))
-        _set_moe('college_educated_pct',  moe_pct(_moe('b15003_022m'), 'pop_25_plus',         'college_educated_pct',  _moe('b15003_001m')))
+        _set_moe('college_educated_pct',  moe_pct(_moe_sum('b15003_022m','b15003_023m','b15003_024m','b15003_025m'), 'pop_25_plus', 'college_educated_pct', _moe('b15003_001m')))
         _set_moe('high_school_or_higher_pct', moe_pct(_moe_sum('b15003_017m','b15003_018m','b15003_019m','b15003_020m','b15003_021m','b15003_022m','b15003_023m','b15003_024m','b15003_025m'), 'pop_25_plus', 'high_school_or_higher_pct', _moe('b15003_001m')))
         _set_moe('white_pct',             moe_pct(_moe('b02008_001m'), 'race_total_pop',      'white_pct',             _moe('b02001_001m')))
         _set_moe('black_pct',             moe_pct(_moe('b02009_001m'), 'race_total_pop',      'black_pct',             _moe('b02001_001m')))

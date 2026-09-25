@@ -535,7 +535,7 @@
       "info_panel_category": "Education",
       "info_panel_order": 2,
       "legend_direction": "up",
-      "color_thresholds": [5, 10, 15, 20, 25, 30, 35, 40, 45]
+      "color_thresholds": [15, 20, 25, 30, 35, 40, 45, 50, 55]
     },
     "nhpi_pct": {
       "display_name": "Native Hawaiian / Pacific Islander",

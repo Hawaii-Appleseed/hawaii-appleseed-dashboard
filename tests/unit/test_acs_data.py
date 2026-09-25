@@ -38,6 +38,22 @@ def test_derived_metrics(fetcher):
     assert out['vehicles_per_capita'] == pytest.approx(0.6)
 
 
+def test_bachelors_or_higher_includes_graduate_degrees(fetcher):
+    # B15003_022E is bachelor's only; "bachelor's or higher" adds master's,
+    # professional and doctorate (_023E–_025E), and so does its MOE.
+    df = pd.DataFrame([{
+        'edu_bachelors': 200, 'edu_masters': 80, 'edu_professional': 15, 'edu_doctorate': 5,
+        'pop_25_plus': 1000,
+        'b15003_022m': 30, 'b15003_023m': 20, 'b15003_024m': 8, 'b15003_025m': 4,
+        'b15003_001m': 0,
+    }])
+    out = fetcher.calculate_poverty_rate(df).iloc[0]
+    assert out['bachelors_plus'] == 300
+    assert out['college_educated_pct'] == pytest.approx(30.0)
+    expected_moe = math.sqrt(30**2 + 20**2 + 8**2 + 4**2) / 1000 * 100  # ≈ 3.71
+    assert out['college_educated_pct_moe'] == pytest.approx(round(expected_moe, 2), abs=0.01)
+
+
 # ── MOE propagation ──────────────────────────────────────────────────────────
 
 def test_moe_subset_proportion(fetcher):
