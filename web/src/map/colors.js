@@ -16,7 +16,8 @@ export function getSchemeColors(scheme) {
 
 // A variable's class boundaries on the map at `level`: its own scale for that
 // geography if variables.json gives one (color_thresholds_by_level, e.g. SNAP
-// dollars for counties, which are ten times a district), else the shared one.
+// dollars, whose county and state totals dwarf a district's), else the shared
+// one.
 export function getThresholds(varKey, level) {
   const v = VARIABLES?.[varKey];
   return (v && (v.color_thresholds_by_level?.[level] || v.color_thresholds)) || DEFAULT_THRESHOLDS;
