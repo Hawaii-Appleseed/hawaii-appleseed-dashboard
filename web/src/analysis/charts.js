@@ -6,8 +6,42 @@ function token(name, fallback) {
   return value || fallback;
 }
 
+// Values as the map's tooltips and info panel show them, by data_type.
+function formatValue(value, dataType) {
+  if (value == null || value === '') return '';
+  if (dataType === 'text') return String(value);
+  const n = parseFloat(value);
+  if (isNaN(n)) return String(value);
+  switch (dataType) {
+    case 'percentage': return n.toFixed(1) + '%';
+    case 'currency': return '$' + Math.round(n).toLocaleString('en-US');
+    case 'minutes': return n.toFixed(1) + ' min';
+    case 'decimal': return n.toFixed(2);
+    default: return n.toLocaleString('en-US');
+  }
+}
+
+// The same, as a Plotly template for `field` (%{y} or %{text}). A text
+// variable charts the number it starts with (CEP schools: "35/55 …" → 35).
+function plotlyTemplate(field, dataType) {
+  switch (dataType) {
+    case 'percentage': return `%{${field}:.1f}%`;
+    case 'currency': return `$%{${field}:,.0f}`;
+    case 'minutes': return `%{${field}:.1f} min`;
+    case 'decimal': return `%{${field}:.2f}`;
+    default: return `%{${field}:,.0f}`;
+  }
+}
+
+// Plotly skips resizing a chart while its tab is hidden; call this when the
+// Data tab shows again.
+export function resizeChart(containerId) {
+  const el = document.getElementById(containerId);
+  if (el?.data) Plotly.Plots.resize(el);
+}
+
 export function renderChart(containerId, tableId, features, varKey, varMeta, layerLabel, stateFeatures) {
-  const unit = getUnit(varMeta);
+  const dataType = varMeta?.data_type;
   const ink = token('--gray-900', '#161c17');
   const ink2 = token('--gray-600', '#5a625a');
   const grid = token('--gray-100', '#eaece7');
@@ -29,8 +63,8 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
   const values = rows.map((r) => parseFloat(r.value));
   const n = rows.length;
 
-  const hoverFmt = unit === '$' ? '$%{y:,.0f}' : unit === '%' ? '%{y:.1f}%' : '%{y:.1f}';
-  const textFmt = unit === '$' ? '$%{text:,.0f}' : unit === '%' ? '%{text:.1f}%' : '%{text:.1f}';
+  const hoverFmt = plotlyTemplate('y', dataType);
+  const textFmt = plotlyTemplate('text', dataType);
   const varShort = varMeta?.display_name || varKey;
   const varLong = varMeta?.display_name_long || varShort;
   // "Poverty Rate (%) by county" — the long name already carries the unit.
@@ -40,7 +74,21 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
     'Senate Districts': 'Senate district',
     'State Boundary': 'state',
   }[layerLabel] || layerLabel.toLowerCase();
-  const chartTitle = `${varLong} by ${perArea}`;
+  let chartTitle = `${varLong} by ${perArea}`;
+
+  // The statewide figure as a dotted line — only where it is a benchmark for
+  // one area: a rate or median lies within the areas' range, while a
+  // statewide total (SNAP dollars, CEP schools) is far above every area and
+  // would squash the bars. Its label goes under the title, clear of the
+  // values printed over the bars.
+  const shapes = [];
+  const sv = parseFloat(stateFeatures?.[0]?.properties[varKey]);
+  if (!isNaN(sv) && sv >= Math.min(...values) && sv <= Math.max(...values)) {
+    const ref = token('--chart-ref', '#2b322c');
+    // Under the bars, so it doesn't strike through the values printed on them.
+    shapes.push({ type: 'line', layer: 'below', xref: 'paper', x0: 0, x1: 1, y0: sv, y1: sv, line: { color: ref, width: 1.5, dash: 'dot' } });
+    chartTitle += `<br><span style="font-size:12px;color:${ref}">Dotted line: State ${formatValue(sv, dataType)}</span>`;
+  }
 
   const trace = {
     type: 'bar',
@@ -70,7 +118,9 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
       zeroline: false,
       title: { text: varLong, font: { size: 12, color: ink2 } },
       tickfont: { size: 12, color: ink2 },
-      tickformat: unit === '$' ? '$,d' : undefined,
+      tickformat: dataType === 'currency' ? '$,d' : undefined,
+      // Widen the left margin to fit long ticks ($400,000,000).
+      automargin: true,
     },
     xaxis: {
       title: { text: '' },
@@ -79,23 +129,12 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
       tickangle: n <= 10 ? -40 : 0,
       tickfont: { size: 12, color: ink2 },
     },
-    // Room under the bars for the slanted names at 12px.
-    margin: { l: 55, r: 20, t: 50, b: n <= 10 ? 90 : 28 },
+    // Room under the bars for the slanted names at 12px, and above them for
+    // a second title line.
+    margin: { l: 55, r: 20, t: shapes.length ? 70 : 50, b: n <= 10 ? 90 : 28 },
     uniformtext: { minsize: 7, mode: 'hide' },
   };
-
-  const shapes = [];
-  const annotations = [];
-  if (stateFeatures && stateFeatures.length > 0) {
-    const sv = parseFloat(stateFeatures[0].properties[varKey]);
-    if (!isNaN(sv)) {
-      const lbl = unit === '%' ? `State: ${sv.toFixed(1)}%` : unit === '$' ? `State: $${sv.toLocaleString()}` : `State: ${sv.toFixed(1)}`;
-      const ref = token('--chart-ref', '#2b322c');
-      shapes.push({ type: 'line', xref: 'paper', x0: 0, x1: 1, y0: sv, y1: sv, line: { color: ref, width: 1.5, dash: 'dot' } });
-      annotations.push({ xref: 'paper', x: 1, y: sv, text: lbl, showarrow: false, font: { size: 12, color: ref }, xanchor: 'right', yanchor: 'bottom' });
-    }
-  }
-  if (shapes.length) { layout.shapes = shapes; layout.annotations = annotations; }
+  if (shapes.length) layout.shapes = shapes;
 
   const config = {
     displaylogo: false,
@@ -117,17 +156,10 @@ export function renderChart(containerId, tableId, features, varKey, varMeta, lay
 }
 
 function renderTable(tableId, rows, varKey, varMeta) {
-  const unit = getUnit(varMeta);
   const varLabel = varMeta?.display_name_long || varKey;
   const el = document.getElementById(tableId);
   if (!el) return;
-  const fmt = (v) => {
-    const n = parseFloat(v);
-    if (isNaN(n)) return v;
-    if (unit === '$') return '$' + Math.round(n).toLocaleString();
-    if (unit === '%') return n.toFixed(1) + '%';
-    return n.toFixed(1);
-  };
+  const fmt = (v) => formatValue(v, varMeta?.data_type);
   el.innerHTML = `
     <table class="da-table">
       <thead><tr><th>Area</th><th>${escapeHtml(varLabel)}</th></tr></thead>
@@ -150,16 +182,20 @@ export function renderFullTable(containerId, features, variablesConfig, layerKey
   const el = document.getElementById(containerId);
   if (!el) return;
   const vars = variablesConfig?.variables || {};
+  const groups = variablesConfig?.dropdown_groups || {};
+  const groupOrder = (v) => groups[v.dropdown_group]?.order ?? 999;
   const showCols = Object.entries(vars)
-    .filter(([, v]) => v.show_in_dropdown)
-    .sort(([, a], [, b]) => (a.dropdown_order || 999) - (b.dropdown_order || 999));
+    // Points variables (Millionaires) are counted by town: no column of
+    // values per area.
+    .filter(([, v]) => v.show_in_dropdown && v.render_type !== 'points')
+    // Topic by topic, as in the variable menus (dropdown_order restarts in
+    // each group).
+    .sort(([, a], [, b]) => groupOrder(a) - groupOrder(b) || (a.dropdown_order || 999) - (b.dropdown_order || 999));
 
+  // Natural order, so District 2 comes before District 10.
   const rows = features
     .map((f) => f.properties)
-    .sort((a, b) => {
-      const na = cleanName(a), nb = cleanName(b);
-      return na.localeCompare(nb);
-    });
+    .sort((a, b) => cleanName(a).localeCompare(cleanName(b), undefined, { numeric: true }));
 
   const headers = ['Area', ...showCols.map(([, v]) => v.display_name)];
   const tableHtml = `
@@ -169,7 +205,7 @@ export function renderFullTable(containerId, features, variablesConfig, layerKey
         const nameCell = `<td>${escapeHtml(cleanName(p))}</td>`;
         const valCells = showCols.map(([k, v]) => {
           const val = p[k];
-          return `<td>${escapeHtml(formatCell(val, v.data_type))}</td>`;
+          return `<td>${escapeHtml(formatValue(val, v.data_type))}</td>`;
         }).join('');
         return `<tr>${nameCell}${valCells}</tr>`;
       }).join('')}</tbody>
@@ -183,9 +219,13 @@ export function renderFullTable(containerId, features, variablesConfig, layerKey
       const csvHeaders = ['Area', ...showCols.map(([, v]) => v.display_name_long || v.display_name)];
       const csvRows = rows.map((p) => [
         cleanName(p),
-        ...showCols.map(([k, v]) => formatCell(p[k], v.data_type)),
+        ...showCols.map(([k, v]) => formatValue(p[k], v.data_type)),
       ]);
-      const stamp = new Date().toISOString().slice(0, 10);
+      // Today's date where the reader is (toISOString gives UTC's, which is
+      // already tomorrow from 2 pm in Hawaiʻi).
+      const d = new Date();
+      const pad = (x) => String(x).padStart(2, '0');
+      const stamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
       const layerSlug = (layerKey || 'data').replace(/\s+/g, '_').toLowerCase();
       downloadCsv(`hawaii_${layerSlug}_${stamp}.csv`, csvHeaders, csvRows);
     };
@@ -216,29 +256,11 @@ function downloadCsv(filename, headers, rows) {
   }, 100);
 }
 
-function getUnit(meta) {
-  const long = meta?.display_name_long || '';
-  if (long.includes('($)') || long.includes('($')) return '$';
-  if (long.includes('(%)') || meta?.data_type === 'percentage') return '%';
-  return '';
-}
-
 function cleanName(props) {
   if (typeof props === 'string') return props;
   let name = props.display_name || props.NAME || props.name || '';
   name = name.replace(/[,;]\s*Hawaii/g, '').replace(/\s*\(\d{4}\)\s*/g, '').trim();
   return name || 'Unknown';
-}
-
-function formatCell(value, dataType) {
-  if (value == null || value === '') return '';
-  const n = parseFloat(value);
-  if (isNaN(n)) return String(value);
-  if (dataType === 'percentage' || /rate|pct|percent/.test(dataType || '')) return n.toFixed(1) + '%';
-  if (dataType === 'currency' || /income|value|benefit|amount/.test(dataType || '')) return '$' + Math.round(n).toLocaleString();
-  if (dataType === 'minutes') return n.toFixed(1) + ' min';
-  if (dataType === 'count') return n.toLocaleString();
-  return n.toLocaleString();
 }
 
 function escapeHtml(s) {

@@ -1,5 +1,5 @@
 import { loadConfig, loadLayer } from './data/loader.js';
-import { renderChart, renderFullTable } from './analysis/charts.js';
+import { renderChart, renderFullTable, resizeChart } from './analysis/charts.js';
 import { getState, setState } from './state/store.js';
 
 const LAYERS = [
@@ -42,6 +42,10 @@ export async function initAnalysis(sharedConfig) {
     layerSel.value = activeLayer;
     varSel.value = activeVar;
     await refreshChart();
+  } else {
+    // The chart may have been drawn, or the window resized, while the tab
+    // was hidden, which Plotly doesn't track.
+    resizeChart('da-chart');
   }
 }
 
@@ -54,8 +58,10 @@ function isChartable(key) {
 async function main() {
   config = await loadConfig();
   const params = new URLSearchParams(window.location.search);
-  if (params.get('layer')) activeLayer = params.get('layer');
-  if (params.get('var')) activeVar = params.get('var');
+  const layer = params.get('layer');
+  const variable = params.get('var');
+  if (LAYERS.some((l) => l.key === layer)) activeLayer = layer;
+  if (isChartable(variable)) activeVar = variable;
 
   buildControls();
   await refreshChart();
@@ -91,7 +97,9 @@ function buildControls() {
     if (!byGroup[v.dropdown_group]) byGroup[v.dropdown_group] = [];
     byGroup[v.dropdown_group].push({ key, ...v });
   }
-  for (const [grpKey, items] of Object.entries(byGroup)) {
+  // Topics in their configured order, as in the map's variable menus.
+  const groupOrder = ([key]) => groups[key]?.order ?? 999;
+  for (const [grpKey, items] of Object.entries(byGroup).sort((a, b) => groupOrder(a) - groupOrder(b))) {
     const label = groups[grpKey]?.label || grpKey;
     const og = document.createElement('optgroup');
     og.label = label;
