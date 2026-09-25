@@ -14,8 +14,9 @@ export function formatNumber(value, { isPercent = false, isCurrency = false, dec
 // Returns a structured comparison object so the template can style
 // the arrow / value / percentage / descriptor independently:
 //   { direction: 'up'|'down'|'same', value: '+$5,806', pct: '5.8%',
-//     descriptor: 'above state avg' }
-// or null when comparison can't be computed.
+//     descriptor: 'above state median' }
+// or null when comparison can't be computed. Both uses (income, rent)
+// compare medians, so the descriptor says median.
 export function getComparison(currentValue, comparisonValue, comparisonType = 'state', isCurrency = true) {
   if (currentValue == null || comparisonValue == null || comparisonValue === 0) return null;
   try {
@@ -23,7 +24,7 @@ export function getComparison(currentValue, comparisonValue, comparisonType = 's
     const comparison = parseFloat(comparisonValue);
     if (isNaN(current) || isNaN(comparison)) return null;
     if (current === comparison) {
-      return { direction: 'same', value: '', pct: '', descriptor: `same as ${comparisonType} avg` };
+      return { direction: 'same', value: '', pct: '', descriptor: `same as ${comparisonType} median` };
     }
     const direction = current > comparison ? 'up' : 'down';
     const diff = Math.abs(current - comparison);
@@ -33,7 +34,7 @@ export function getComparison(currentValue, comparisonValue, comparisonType = 's
       direction,
       value: (direction === 'up' ? '+' : '−') + valueStr,
       pct: pct.toFixed(1) + '%',
-      descriptor: `${direction === 'up' ? 'above' : 'below'} ${comparisonType} avg`,
+      descriptor: `${direction === 'up' ? 'above' : 'below'} ${comparisonType} median`,
     };
   } catch (_) { return null; }
 }
@@ -98,7 +99,9 @@ export function buildGeoData(props, stateSummary) {
 
   return {
     name: cleanGeoName(props.display_name || props.NAME || props.name),
-    population: formatNumber(props.total_population),
+    // total_population is the poverty-status universe (ACS B17001), a few
+    // percent short of everyone; total_resident_population is B01003.
+    population: formatNumber(props.total_resident_population ?? props.total_population),
     medianIncome: formatNumber(medianIncome, { isCurrency: true }),
     incomeVsState: getComparison(medianIncome, stateEcon.median_income, 'state', true),
     medianRent: formatNumber(medianRent, { isCurrency: true }),
@@ -123,7 +126,8 @@ export function buildGeoData(props, stateSummary) {
     severeRentBurdenFraction: getFractionText(parseFloat(severeRentBurden) || 0, 'renters') || 'N/A',
     cepDisplay: props.cep_display || 'N/A',
     cepPct: formatNumber(props.cep_percentage, { isPercent: true }),
-    totalSchools: props.total_schools || 'N/A',
-    cepSchools: props.cep_schools || 'N/A',
+    // ?? not ||: a district with no CEP schools has 0, not N/A.
+    totalSchools: props.total_schools ?? 'N/A',
+    cepSchools: props.cep_schools ?? 'N/A',
   };
 }
