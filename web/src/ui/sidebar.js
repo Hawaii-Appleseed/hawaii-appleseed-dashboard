@@ -360,6 +360,8 @@ function onMenuKeydown(bar, e) {
       e.preventDefault();
       openRoot(bar, root, e.key === 'ArrowDown' ? 'first' : 'last');
     } else if (e.key === 'Escape') {
+      // Closing a menu uses up this Escape; the info panel stays open.
+      if (bar.querySelector('.cascade-root.open')) e.preventDefault();
       closeMenus(bar);
     }
     return;

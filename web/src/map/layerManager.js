@@ -14,6 +14,9 @@ export function initLayerManager(variablesConfig) {
 
 // Tracks the currently-rendered Millionaires circle overlay. Null when off.
 let pointsLayerActive = null; // { layerId, sourceId, countField }
+// Whether the circles should be up, as last asked; checked again once their
+// data has loaded, in case they were turned off in the meantime.
+let millionairesWanted = false;
 
 const MILLIONAIRES_VAR_KEY = 'millionaires';
 
@@ -63,6 +66,9 @@ const LEVELS = ['state', 'county', 'house', 'senate'];
 const cachedGeoJson = new Map();
 const registeredLevels = new Set();
 let currentLevel = null;
+// The geography asked for last. Loads can finish out of order (house.geojson
+// is the largest), so only this one may take over the map.
+let requestedLevel = null;
 let currentVariable = null;
 let currentScheme = null;
 let reliabilityOn = false;
@@ -257,6 +263,7 @@ async function ensureCoastline(map) {
     data = await loadLayer('county');
   } catch (err) {
     console.warn('coastline: county outline failed to load', err);
+    coastRequested = false; // try again with the next geography
     return;
   }
   if (map.getLayer(COAST_LAYER_ID)) return;
@@ -547,6 +554,8 @@ async function showMillionairesOverlay(map) {
     console.error('Millionaires overlay load failed:', err);
     return;
   }
+  // Turned off while loading, or already put up by an overlapping call.
+  if (!millionairesWanted || pointsLayerActive) return;
 
   if (!map.getSource(sourceId)) {
     map.addSource(sourceId, { type: 'geojson', data });
@@ -611,6 +620,7 @@ export function isPointsModeActive() {
 // case rather than silently no-op'ing — this is exactly what left the embed
 // showing a bare choropleth with no circles before that guard existed.
 export function setMillionairesOverlay(on) {
+  millionairesWanted = on;
   const map = getMap();
   if (!map) return;
 
@@ -630,6 +640,7 @@ export function setMillionairesOverlay(on) {
 }
 
 export async function setLayer(level) {
+  requestedLevel = level;
   if (level === currentLevel) return;
   if (!cachedGeoJson.has(level)) {
     const data = await loadLayer(level);
@@ -640,6 +651,8 @@ export async function setLayer(level) {
   if (!map) return;
 
   const apply = () => {
+    // Another geography was picked while this one loaded; it has the map.
+    if (level !== requestedLevel || level === currentLevel) return;
     ensureSourceAndLayers(map, level, cachedGeoJson.get(level));
 
     // Register the global shadow layer (idempotent) and pre-warm it so the

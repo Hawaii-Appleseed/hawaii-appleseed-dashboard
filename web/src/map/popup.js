@@ -1,7 +1,8 @@
 import { getState, setState } from '../state/store.js';
 import { showInfoPanel } from '../ui/infoPanel.js';
-import { getMap } from './mapInstance.js';
+import { getMap, releaseHome } from './mapInstance.js';
 import { setShadowFeature } from './shadowLayer.js';
+import { getFeatureById } from './layerManager.js';
 
 let VARIABLES = null;
 let REP_DATA = {};
@@ -115,7 +116,7 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function buildTooltipContent(properties) {
+function buildTooltipContent(properties, level) {
   const s = getState();
   const name = cleanName(properties.display_name || properties.NAME || properties.name);
   const varKey = s.selectedVariable;
@@ -123,13 +124,17 @@ function buildTooltipContent(properties) {
   const displayName = meta?.display_name_long || meta?.display_name || varKey || '';
   const value = formatValue(properties[varKey], meta?.data_type);
 
-  let html = `<div class="tt-name">${escapeHtml(name)}</div>` +
-             `<div class="tt-stat-card">` +
-             `<div class="tt-stat-label">${escapeHtml(displayName)}</div>` +
-             `<div class="tt-stat-value">${escapeHtml(value)}</div>` +
-             `</div>`;
+  let html = `<div class="tt-name">${escapeHtml(name)}</div>`;
+  // Points variables (Millionaires) are counted by town — the circles carry
+  // them — so an area has no figure of its own to show.
+  if (meta?.render_type !== 'points') {
+    html += `<div class="tt-stat-card">` +
+            `<div class="tt-stat-label">${escapeHtml(displayName)}</div>` +
+            `<div class="tt-stat-value">${escapeHtml(value)}</div>` +
+            `</div>`;
+  }
 
-  const rep = lookupRep(properties, s.activeLayer);
+  const rep = lookupRep(properties, level);
   if (rep) {
     let areas = (rep.areas || '').trim();
     if (areas.length > 80) {
@@ -234,8 +239,13 @@ export function bindLayerInteraction(map, level) {
 
   const fillId = `${level}-fill`;
 
+  // A geography stays drawn while the next one loads and fades in; only the
+  // one the controls show answers the pointer.
+  const isActive = () => getState().activeLayer === level;
+
   map.on('mousemove', fillId, (e) => {
     if (isAnimating) return;
+    if (!isActive()) return;
     if (!e.features || !e.features.length) return;
     const feature = e.features[0];
     const id = feature.id;
@@ -246,7 +256,7 @@ export function bindLayerInteraction(map, level) {
       if (hoveredFeature) setHoverState(map, hoveredFeature.level, hoveredFeature.id, false);
       hoveredFeature = { level, id };
       setHoverState(map, level, id, true);
-      tooltipEl.innerHTML = buildTooltipContent(feature.properties);
+      tooltipEl.innerHTML = buildTooltipContent(feature.properties, level);
     }
 
     // Position + show: rAF-throttled so layout reads/writes run at most once
@@ -273,6 +283,7 @@ export function bindLayerInteraction(map, level) {
   });
 
   map.on('click', fillId, (e) => {
+    if (!isActive()) return;
     if (!e.features || !e.features.length) return;
     if (e.features[0].id == null) return;
     selectFeature(level, e.features[0]);
@@ -306,8 +317,13 @@ export function selectFeature(level, feature, { focusPanel = false } = {}) {
   setState({ selectedFeatureId: props.GEOID || String(id) });
   showInfoPanel(props, { focus: focusPanel });
 
-  const bounds = computeBounds(feature.geometry);
+  // A clicked feature's geometry is only the part inside the map tile under
+  // the pointer; frame the whole area from the loaded GeoJSON instead.
+  const bounds = computeBounds((getFeatureById(level, id) || feature).geometry);
   if (bounds) {
+    // The camera now belongs to this area: a resize (a tab switch, a phone
+    // rotating) mustn't snap back to the starting view.
+    releaseHome();
     const panel = document.getElementById('info-panel');
     const panelOpen = panel && panel.classList.contains('visible');
     const sidePad = 70;
@@ -386,5 +402,8 @@ export function bindPointsInteraction(map, layerId) {
     _lastMovePoint = null;
     map.getCanvas().style.cursor = '';
     hideTooltip();
+    // The tooltip still holds this circle's text; drop the district hover so
+    // the district under the pointer writes its own on the next move.
+    clearHoverFor(map);
   });
 }

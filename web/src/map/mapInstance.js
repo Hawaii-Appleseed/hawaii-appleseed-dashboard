@@ -91,6 +91,12 @@ function goHome(animate) {
   else mapInstance.jumpTo(cam);
 }
 
+// Hand the camera over, as moving the map by hand does: stop re-fitting the
+// starting view when the map resizes (until Reset view).
+export function releaseHome() {
+  followHome = false;
+}
+
 // Snap to the starting view, unless the user has already moved the map.
 export function fitHome() {
   if (!mapInstance || !followHome) return;

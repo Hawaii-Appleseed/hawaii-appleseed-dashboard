@@ -2,14 +2,14 @@ import './map/perfFlags.js'; // must be first — applies CSS kills before paint
 import { loadConfig, loadRepData } from './data/loader.js';
 import { initColors, listSchemes } from './map/colors.js';
 import { createMap, getMap, fitHome } from './map/mapInstance.js';
-import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, getFeatureProperties, initLayerManager, setSelectionFocus, KNOWN_LEVELS } from './map/layerManager.js';
+import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, getFeatureProperties, initLayerManager, setSelectionFocus, getCurrentLevel, KNOWN_LEVELS } from './map/layerManager.js';
 import { initPopup, clearSelectedLayer } from './map/popup.js';
 import { initDiag } from './map/diag.js';
 import { initLegend, renderLegend } from './ui/legend.js';
 import { initSidebar, renderSidebar } from './ui/sidebar.js';
 import { initInfoPanel, showInfoPanel, hideInfoPanel } from './ui/infoPanel.js';
 import { initAreaSearch } from './ui/areaSearch.js';
-import { getState, subscribe } from './state/store.js';
+import { getState, setState, subscribe } from './state/store.js';
 import { readFromUrl, writeToUrl } from './state/urlSync.js';
 
 // Detect iframe embedding — drives the "Open" button and the legend's reduced
@@ -64,7 +64,18 @@ async function main() {
     if ('activeLayer' in changed) {
       // The panel describes an area of the old geography; close it.
       hideInfoPanel();
-      await setLayer(state.activeLayer);
+      const level = state.activeLayer;
+      try {
+        await setLayer(level);
+      } catch (err) {
+        // Couldn't load it (offline?): go back to the geography still on the
+        // map, so the controls match it and picking this one again retries.
+        console.error(`Couldn't load the ${level} layer:`, err);
+        if (getState().activeLayer === level && getCurrentLevel()) {
+          setState({ activeLayer: getCurrentLevel() });
+        }
+        return;
+      }
       setVariable(state.selectedVariable);
       setColorScheme(state.colorScheme);
       renderLegend(state.selectedVariable, state.colorScheme);
@@ -96,7 +107,10 @@ async function main() {
       renderLegend(state.selectedVariable, state.colorScheme);
     }
     writeToUrl();
-    renderSidebar();
+    // Only these two show in the bar. Re-rendering it replaces its buttons,
+    // which would drop keyboard focus on unrelated changes (e.g. closing the
+    // info panel with Escape).
+    if ('activeLayer' in changed || 'selectedVariable' in changed) renderSidebar();
   });
 
   await setLayer(s0.activeLayer);

@@ -5,10 +5,22 @@ import { getColorForValue } from '../map/colors.js';
 let VARIABLES = null;
 let CATEGORIES = null;
 let floatingTip = null;
+let tipHideTimer = null;
+
+function cancelTipHide() {
+  clearTimeout(tipHideTimer);
+  tipHideTimer = null;
+}
 
 export function initInfoPanel(variablesConfig) {
   VARIABLES = variablesConfig.variables;
   CATEGORIES = variablesConfig.info_panel_categories;
+  // The panel element stays put while its contents are replaced, so this is
+  // bound once here rather than on every showInfoPanel.
+  document.getElementById('info-panel')?.addEventListener('scroll', () => {
+    cancelTipHide();
+    floatingTip?.classList.remove('visible');
+  }, { passive: true });
 }
 
 function extractYear(source) {
@@ -53,16 +65,14 @@ function positionTip(target) {
 
 function bindMetricTooltips(panel) {
   const tip = ensureFloatingTip();
-  let hideTimer = null;
 
-  const cancelHide = () => { clearTimeout(hideTimer); hideTimer = null; };
   const scheduleHide = () => {
-    cancelHide();
-    hideTimer = setTimeout(() => tip.classList.remove('visible'), 200);
+    cancelTipHide();
+    tipHideTimer = setTimeout(() => tip.classList.remove('visible'), 200);
   };
 
   const showFor = (el) => {
-    cancelHide();
+    cancelTipHide();
     const html = tipHtml(el);
     if (!html) return;
     tip.innerHTML = html;
@@ -76,7 +86,6 @@ function bindMetricTooltips(panel) {
     el.addEventListener('focus', () => showFor(el));
     el.addEventListener('blur', scheduleHide);
   });
-  panel.addEventListener('scroll', () => { cancelHide(); tip.classList.remove('visible'); }, { passive: true });
 }
 
 function formatValue(value, dataType) {
@@ -271,13 +280,9 @@ export function showInfoPanel(properties, { focus = false } = {}) {
     ? `<span class="ip-swatch" style="background:${getColorForValue(rawValue, s.selectedVariable, s.colorScheme)}" aria-hidden="true"></span>`
     : '';
 
-  panel.innerHTML = `
-    <div class="ip-head">
-      <h2 class="ip-title" tabindex="-1">${escapeHtml(name)}</h2>
-      <button type="button" class="icon-btn ip-close" aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
-      </button>
-    </div>
+  // Points variables (Millionaires) are counted by town, not by area, so an
+  // area has no headline figure for them.
+  const headlineHtml = selectedVar?.render_type === 'points' ? '' : `
     <div class="ip-headline"
          tabindex="0"
          data-desc="${escapeHtml(selectedDesc)}"
@@ -288,7 +293,16 @@ export function showInfoPanel(properties, { focus = false } = {}) {
       <div class="ip-headline-label">${swatch}${escapeHtml(selectedDisplayName)}</div>
       <div class="ip-headline-value">${escapeHtml(selectedValue)}</div>
       ${selectedYear ? `<div class="ip-headline-meta">Data year ${escapeHtml(selectedYear)}</div>` : ''}
+    </div>`;
+
+  panel.innerHTML = `
+    <div class="ip-head">
+      <h2 class="ip-title" tabindex="-1">${escapeHtml(name)}</h2>
+      <button type="button" class="icon-btn ip-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
     </div>
+    ${headlineHtml}
     ${repHtml}
     <a class="btn btn-primary ip-btn" href="${factsheetUrl}" target="_blank" rel="noopener">
       <span>View / print fact sheet</span>

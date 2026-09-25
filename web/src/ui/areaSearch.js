@@ -43,6 +43,8 @@ function buildOptions() {
 }
 
 function render(query) {
+  // Opened while the geography was still loading: its areas may be in now.
+  if (!options.length) options = buildOptions();
   const words = fold(query).split(/\s+/).filter(Boolean);
   const shown = options.filter((o) => words.every((w) => o.terms.includes(w)));
   els.list.innerHTML = shown.length
@@ -75,7 +77,6 @@ function setActive(i) {
 }
 
 function open() {
-  if (!options.length) options = buildOptions();
   render(els.input.value);
   els.list.hidden = false;
   els.input.setAttribute('aria-expanded', 'true');
@@ -148,7 +149,7 @@ export function initAreaSearch() {
         break;
       case 'ArrowUp':
         e.preventDefault();
-        if (n) setActive((active - 1 + n) % n);
+        if (list.hidden) open(); else if (n) setActive((active - 1 + n) % n);
         break;
       case 'Enter':
         if (!list.hidden && active >= 0) { e.preventDefault(); choose(items()[active], true); }
@@ -185,7 +186,8 @@ export function initAreaSearch() {
 
   // A new geography means a new list of areas.
   const placeholder = (level) => {
-    const text = level === 'house' || level === 'senate' ? 'Find a district or legislator' : 'Find a county';
+    const text = level === 'house' || level === 'senate' ? 'Find a district or legislator'
+      : level === 'county' ? 'Find a county' : 'Find an area';
     input.placeholder = text;
   };
   placeholder(getState().activeLayer);

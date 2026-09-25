@@ -11,6 +11,8 @@ export async function fetchJson(path) {
     return r.json();
   });
   cache.set(url, promise);
+  // Forget a failure, so the next request tries the network again.
+  promise.catch(() => cache.delete(url));
   return promise;
 }
 
