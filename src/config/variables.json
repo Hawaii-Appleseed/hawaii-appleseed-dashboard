@@ -102,7 +102,7 @@
       "info_panel_order": 2,
       "fact_sheet_category": "economic",
       "legend_direction": "down",
-      "color_thresholds": [5, 10, 15, 20, 25, 30, 35, 40, 45]
+      "color_thresholds": [3, 5, 7, 9, 11, 13, 15, 17, 19]
     },
     "medicaid_rate": {
       "display_name": "Medicaid Enrollment",
@@ -133,7 +133,7 @@
       "fact_sheet_category": "economic",
       "is_special_variable": true,
       "legend_direction": "up",
-      "color_thresholds": [40000, 50000, 60000, 70000, 80000, 90000, 100000, 110000, 120000]
+      "color_thresholds": [60000, 70000, 80000, 90000, 100000, 110000, 120000, 130000, 140000]
     },
     "unemployment_rate": {
       "display_name": "Unemployment Rate",
@@ -148,7 +148,7 @@
       "info_panel_order": 4,
       "fact_sheet_category": "economic",
       "legend_direction": "down",
-      "color_thresholds": [5, 10, 15, 20, 25, 30, 35, 40, 45]
+      "color_thresholds": [2, 3, 4, 5, 6, 7, 8, 9, 10]
     },
     "ctc_avg_amount": {
       "display_name": "Avg Child Tax Credit",
@@ -245,7 +245,7 @@
       "fact_sheet_category": "snap",
       "fact_sheet_label": "SNAP Households Rate",
       "is_special_variable": true,
-      "color_thresholds": [5, 10, 15, 20, 25, 30, 35, 40, 45]
+      "color_thresholds": [4, 8, 12, 16, 20, 24, 28, 32, 36]
     },
     "snap_benefit_annual_per_household": {
       "display_name": "Avg Annual SNAP Benefit",
@@ -277,7 +277,7 @@
       "fact_sheet_category": "snap",
       "fact_sheet_label": "Total Annual Benefits",
       "is_special_variable": true,
-      "color_thresholds": [1000000, 2000000, 5000000, 10000000, 15000000, 20000000, 30000000, 50000000, 75000000]
+      "color_thresholds": [5000000, 7500000, 10000000, 12500000, 15000000, 20000000, 25000000, 35000000, 50000000]
     },
     "cep_percentage": {
       "display_name": "Schools with CEP",
@@ -291,7 +291,7 @@
       "info_panel_order": 4,
       "is_special_variable": true,
       "legend_direction": "up",
-      "color_thresholds": [10, 20, 30, 40, 50, 60, 70, 80, 90]
+      "color_thresholds": [0, 10, 20, 30, 40, 50, 60, 70, 80]
     },
     "cep_display": {
       "display_name": "CEP Schools",
@@ -307,7 +307,7 @@
       "info_panel_order": 5,
       "is_special_variable": true,
       "legend_direction": "up",
-      "color_thresholds": [1, 2, 3, 5, 8, 12, 20, 35, 50]
+      "color_thresholds": [0, 1, 2, 3, 4, 5, 7, 10, 20]
     },
     "millionaires": {
       "display_name": "Millionaires",
@@ -338,7 +338,7 @@
       "fact_sheet_category": "housing",
       "show_in_default_metrics": false,
       "is_special_variable": true,
-      "color_thresholds": [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
+      "color_thresholds": [1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250]
     },
     "median_home_value": {
       "display_name": "Median Home Value",
@@ -351,7 +351,7 @@
       "info_panel_category": "Housing",
       "info_panel_order": 1,
       "fact_sheet_category": "housing",
-      "color_thresholds": [400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1200000, 1400000]
+      "color_thresholds": [400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1100000, 1200000]
     },
     "renter_rate": {
       "display_name": "Renter-Occupied",
@@ -379,7 +379,7 @@
       "info_panel_order": 4,
       "fact_sheet_category": "housing",
       "legend_direction": "down",
-      "color_thresholds": [5, 10, 15, 20, 25, 30, 35, 40, 45]
+      "color_thresholds": [34, 38, 42, 46, 50, 54, 58, 62, 66]
     },
     "severe_rent_burden_rate": {
       "display_name": "Severe Housing Cost Burden",
@@ -393,7 +393,7 @@
       "info_panel_order": 5,
       "show_in_default_metrics": false,
       "legend_direction": "down",
-      "color_thresholds": [10, 15, 18, 20, 22, 25, 28, 32, 35]
+      "color_thresholds": [16, 18, 20, 22, 24, 26, 28, 30, 32]
     },
     "vacancy_rate": {
       "display_name": "Vacancy Rate",
@@ -422,7 +422,7 @@
       "info_panel_label": "Avg Commute Time",
       "info_panel_order": 1,
       "is_special_variable": true,
-      "color_thresholds": [20, 23, 26, 29, 32, 36, 40]
+      "color_thresholds": [18, 20, 22, 24, 26, 28, 30, 32, 34]
     },
     "public_transportation_pct": {
       "display_name": "Public Transportation %",
@@ -436,7 +436,7 @@
       "info_panel_category": "Transportation",
       "info_panel_order": 2,
       "show_in_default_metrics": false,
-      "color_thresholds": [0.5, 1, 2, 4, 6]
+      "color_thresholds": [0.5, 1, 1.5, 2, 3, 4, 6, 8, 12]
     },
     "avg_vehicles_per_household": {
       "display_name": "Vehicles per Household",
@@ -450,7 +450,7 @@
       "info_panel_category": "Transportation",
       "info_panel_order": 3,
       "show_in_default_metrics": false,
-      "color_thresholds": [1, 1.4, 1.8, 1.9, 2, 2.1, 2.2]
+      "color_thresholds": [1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3]
     },
     "vehicles_per_capita": {
       "display_name": "Vehicles per Capita",
@@ -478,7 +478,7 @@
       "info_panel_category": "Transportation",
       "info_panel_order": 5,
       "show_in_default_metrics": false,
-      "color_thresholds": [3, 5, 7, 9, 12, 16, 20]
+      "color_thresholds": [2, 3, 4, 5, 6, 8, 10, 15, 20]
     },
     "active_transportation_pct": {
       "display_name": "Active Commuting %",
@@ -547,7 +547,7 @@
       "dropdown_order": 12,
       "info_panel_category": "Race & Ethnicity",
       "info_panel_order": 1,
-      "color_thresholds": [10, 15, 20, 25, 30, 35, 40, 50, 60]
+      "color_thresholds": [8, 12, 16, 20, 24, 28, 32, 36, 40]
     },
     "asian_pct": {
       "display_name": "Asian",
@@ -559,7 +559,7 @@
       "dropdown_order": 13,
       "info_panel_category": "Race & Ethnicity",
       "info_panel_order": 2,
-      "color_thresholds": [30, 35, 40, 45, 50, 55, 60, 65, 75]
+      "color_thresholds": [30, 36, 42, 48, 54, 60, 66, 72, 78]
     },
     "white_pct": {
       "display_name": "White",
@@ -595,7 +595,7 @@
       "dropdown_order": 16,
       "info_panel_category": "Race & Ethnicity",
       "info_panel_order": 5,
-      "color_thresholds": [5, 7, 9, 10.5, 12, 13.5, 15, 17, 20]
+      "color_thresholds": [4, 5.5, 7, 8.5, 10, 11.5, 13, 14.5, 16]
     },
     "cep_schools": {
       "display_name": "Number of CEP Schools",
