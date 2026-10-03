@@ -1260,6 +1260,17 @@ select {
   }
 }
 
+/* ?smooth=1 (crossfade.js): the frame before a variable or color scheme
+   change, fading out over the restyled map. Same curve as MapLibre's own
+   paint transitions, which fade a new geography in. */
+.map-crossfade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  transition: opacity 300ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
 /* ========== Map hover tooltip (popup.js) ========== */
 .custom-tooltip {
   min-width: 180px;

@@ -4,6 +4,7 @@ import { loadLayer, fetchJson } from '../data/loader.js';
 import { bindLayerInteraction, bindPointsInteraction, clearSelectedLayer } from './popup.js';
 import { registerShadowLayer, prewarmShadowLayer, setShadowFeature, SHADOW_LAYER_ID } from './shadowLayer.js';
 import { FLAGS } from './perfFlags.js';
+import { whenTilesReady, crossfadeMap } from './crossfade.js';
 
 // Variables config — needed to look up render_type / points_data per variable.
 // Set once at boot via initLayerManager(config.variables).
@@ -506,35 +507,12 @@ function restoreTargetOpacities(map, level) {
 // the new level's tiles, so it isn't spent on an empty or grey level.
 const revealed = new Set(); // levels fading in or faded in
 let hideOthersTimer = null;
-const TILES_TIMEOUT_MS = 1500; // fade in regardless after this long
 
 // A level's layers, bottom to top.
 const levelStack = (level) => [
   `${level}-fill`, `${level}-lift`, `${level}-reliability`, `${level}-line`,
   `${level}-hover-casing`, `${level}-hover`, `${level}-selected`,
 ];
-
-// Run `fn` once `sourceId`'s tiles have loaded with the paint they have now.
-// A paint change that re-tiles the source starts on the next render, so look
-// then; give up waiting after TILES_TIMEOUT_MS.
-function whenTilesReady(map, sourceId, fn) {
-  let done = false;
-  const finish = () => {
-    if (done) return;
-    done = true;
-    clearTimeout(timer);
-    map.off('sourcedata', onData);
-    fn();
-  };
-  const onData = (e) => {
-    if (e.sourceId === sourceId && map.isSourceLoaded(sourceId)) finish();
-  };
-  const timer = setTimeout(finish, TILES_TIMEOUT_MS);
-  map.once('render', () => {
-    if (map.isSourceLoaded(sourceId)) finish();
-    else map.on('sourcedata', onData);
-  });
-}
 
 function showLevelSmoothly(map, level) {
   revealed.delete(level);
@@ -558,10 +536,12 @@ function showLevelSmoothly(map, level) {
 
 function hideLevelSmoothly(map, level) {
   revealed.delete(level);
+  // The hatching too: refreshReliability leaves it to this, so it stays with
+  // its level while the new one fades in over both.
   for (const id of [...fillLayerIds(level), `${level}-reliability`]) {
     const layer = map.getLayer(id);
     if (!layer) continue;
-    if (id !== `${level}-reliability`) map.setLayoutProperty(id, 'visibility', 'none');
+    map.setLayoutProperty(id, 'visibility', 'none');
     // Back to nothing, for the next fade-in. (The -lift opacity reads feature
     // state, so it can't fade and needn't.)
     if (layer.type === 'line') map.setPaintProperty(id, 'line-opacity', 0);
@@ -657,6 +637,9 @@ function refreshReliability() {
   if (!map) return;
   for (const level of registeredLevels) {
     if (level === currentLevel) applyReliability(map, level);
+    // ?smooth=1: a level on its way out keeps its hatching until the whole
+    // level hides, once the new one has faded in over it (hideLevelSmoothly).
+    else if (FLAGS.smooth) continue;
     else if (map.getLayer(`${level}-reliability`)) {
       map.setLayoutProperty(`${level}-reliability`, 'visibility', 'none');
     }
@@ -891,18 +874,35 @@ export async function preloadAll() {
   }
 }
 
+// Restyle the level on the map with `change()`. ?smooth=1 crossfades to the
+// new look when `changed` (crossfade.js: new colors read each area's data, so
+// MapLibre can't fade them), unless the level is still waiting to fade in,
+// which will show the new look anyway.
+function restyle(map, changed, change) {
+  if (!FLAGS.smooth || !changed || !revealed.has(currentLevel)) {
+    change();
+    return;
+  }
+  const sources = [currentLevel];
+  if (pointsLayerActive) sources.push(pointsLayerActive.sourceId);
+  crossfadeMap(map, change, sources);
+}
+
 export function setVariable(varKey) {
+  const changed = varKey !== currentVariable;
   currentVariable = varKey;
   const map = getMap();
   if (!map) return;
 
   const apply = () => {
     if (!currentLevel) return;
-    applyColorExpression(map, currentLevel);
-    // Switching into or out of Millionaires flips the circles between the
-    // scheme ramp (variable mode) and the accent ramp (overlay mode).
-    if (pointsLayerActive) updatePointsPaint(map);
-    refreshReliability();
+    restyle(map, changed, () => {
+      applyColorExpression(map, currentLevel);
+      // Switching into or out of Millionaires flips the circles between the
+      // scheme ramp (variable mode) and the accent ramp (overlay mode).
+      if (pointsLayerActive) updatePointsPaint(map);
+      refreshReliability();
+    });
   };
 
   // Initial-load race: setVariable may fire before setLayer's deferred
@@ -927,11 +927,14 @@ export function setVariable(varKey) {
 }
 
 export function setColorScheme(scheme) {
+  const changed = scheme !== currentScheme;
   currentScheme = scheme;
   const map = getMap();
   if (!map || !currentLevel) return;
-  applyColorExpression(map, currentLevel);
-  if (pointsLayerActive) updatePointsPaint(map);
+  restyle(map, changed, () => {
+    applyColorExpression(map, currentLevel);
+    if (pointsLayerActive) updatePointsPaint(map);
+  });
 }
 
 // Fade the unpicked areas (on) or bring them back (off).

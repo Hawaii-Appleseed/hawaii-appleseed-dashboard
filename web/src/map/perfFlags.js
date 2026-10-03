@@ -17,8 +17,9 @@
 //                  wheel, trackpad, +/− buttons and double-click
 //                  (zoomEngine.js; it takes over from ?stock), camera trips
 //                  paced by distance (motion.js), a new geography fading in
-//                  over the old, and the map dimming around a picked area
-//                  gradually (layerManager.js)
+//                  over the old, the map dimming around a picked area
+//                  gradually (layerManager.js), and a new variable or color
+//                  scheme crossfading in (crossfade.js)
 
 const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
 
