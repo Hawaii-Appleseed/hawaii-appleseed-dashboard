@@ -153,27 +153,8 @@ function reliabilityPatternExpr(variable) {
 }
 
 const FADE_MS = 300;
-const pendingHide = new Map(); // level → setTimeout id
 
-// Opacity expressions as constants so fade-in can restore them after zeroing out.
-// Solid fills (the legend shows the same colors), lightening a touch under
-// the cursor. The change snaps: MapLibre's fill-opacity-transition skips
-// values that depend on feature state. The selected area stays solid.
-const FILL_OPACITY_EXPR = [
-  'case',
-  ['boolean', ['feature-state', 'selected'], false], 1.0,
-  ['boolean', ['feature-state', 'hover'], false], 0.82,
-  1.0,
-];
-// While an area is picked, the others fade back so it stands out whatever
-// its color (a dark outline alone vanishes on the darkest classes).
-const FILL_OPACITY_FOCUS_EXPR = [
-  'case',
-  ['boolean', ['feature-state', 'selected'], false], 1.0,
-  ['boolean', ['feature-state', 'hover'], false], 0.7,
-  0.45,
-];
-// ?smooth=1 (perfFlags.js): hover is a number from 0 to 1 that featureFade.js
+// Hover is a number from 0 to 1 that featureFade.js
 // steps every frame, since MapLibre snaps any style driven by feature state.
 // The hover leaves the fill alone, so colors always match the legend
 // (lightening it was invisible on the palest classes and about a class
@@ -182,7 +163,7 @@ const FILL_OPACITY_FOCUS_EXPR = [
 const HOVER_T = ['number', ['feature-state', 'hover'], 0];
 const IS_SELECTED = ['boolean', ['feature-state', 'selected'], false];
 
-// ?smooth=1 dimming. The fill's opacity is a plain number, so MapLibre's own
+// Dimming. The fill's opacity is a plain number, so MapLibre's own
 // transition fades it: in as a level appears, and down to FOCUS_OPACITY and
 // back as an area is picked and let go. (An opacity that reads feature state
 // snaps, and swapping one for another re-tiles the whole source.) The picked
@@ -199,18 +180,17 @@ const LIFT_OPACITY_EXPR = ['max', ['number', ['feature-state', 'lift'], 0], ['*'
 
 let selectionFocus = false;
 const fillOpacity = () => {
-  if (FLAGS.smooth) return selectionFocus ? FOCUS_OPACITY : 1;
-  return selectionFocus ? FILL_OPACITY_FOCUS_EXPR : FILL_OPACITY_EXPR;
+  return selectionFocus ? FOCUS_OPACITY : 1;
 };
 
-// ?smooth=1 hover outline: a dark line in a white casing, which shows on the
+// Hover outline: a dark line in a white casing, which shows on the
 // palest and the darkest classes alike. Widths in px at full hover, by zoom.
 const HOVER_LINE_WIDTHS = [[6, 1.1], [9, 1.6], [12, 2.2]];
 const HOVER_CASING_WIDTHS = [[6, 3.1], [9, 3.8], [12, 4.6]];
 // The outline grows from this share of its width as it fades in.
 const HOVER_GROW_FROM = 0.5;
 // The fade is in the line color, so the layers themselves stay opaque.
-const HOVER_LINE_OPACITY = FLAGS.smooth ? 1 : 0.45;
+const HOVER_LINE_OPACITY = 1;
 
 // Width by zoom, scaled by how far the hover has faded in.
 function hoverWidth(stops) {
@@ -239,10 +219,10 @@ const COAST_COLOR = '#5b645b';
 const COAST_WIDTH_EXPR = ['interpolate', ['linear'], ['zoom'], 6, 0.6, 9, 1, 12, 1.5];
 
 // Coastline over the level's fill and borders, under its selection and hover
-// outlines (?smooth=1 draws the hover below the selection, so it starts at
-// the hover's casing).
+// outlines (the hover draws below the selection, so it starts at the hover's
+// casing).
 function placeCoastline(map, level) {
-  const below = FLAGS.smooth ? `${level}-hover-casing` : `${level}-selected`;
+  const below = `${level}-hover-casing`;
   if (map.getLayer(COAST_LAYER_ID) && map.getLayer(below)) {
     map.moveLayer(COAST_LAYER_ID, below);
   }
@@ -324,12 +304,10 @@ async function ensureCoastline(map) {
     id: COAST_LAYER_ID,
     type: 'line',
     source: COAST_LAYER_ID,
-    paint: { 'line-color': COAST_COLOR, 'line-width': COAST_WIDTH_EXPR, 'line-opacity': FLAGS.smooth ? 0 : 0.9 },
+    paint: { 'line-color': COAST_COLOR, 'line-width': COAST_WIDTH_EXPR, 'line-opacity': 0 },
   });
-  // ?smooth=1: fades in like the areas do, rather than popping onto the map.
-  if (FLAGS.smooth) {
-    whenTilesReady(map, COAST_LAYER_ID, () => map.setPaintProperty(COAST_LAYER_ID, 'line-opacity', 0.9));
-  }
+  // Fades in like the areas do, rather than popping onto the map.
+  whenTilesReady(map, COAST_LAYER_ID, () => map.setPaintProperty(COAST_LAYER_ID, 'line-opacity', 0.9));
   if (currentLevel) placeCoastline(map, currentLevel);
   if (pointsLayerActive && map.getLayer(pointsLayerActive.layerId)) map.moveLayer(pointsLayerActive.layerId);
 }
@@ -340,7 +318,8 @@ function fillLayerIds(level) {
     `${level}-line`,
     `${level}-selected`,
     `${level}-hover`,
-    ...(FLAGS.smooth ? [`${level}-hover-casing`, `${level}-lift`] : []),
+    `${level}-hover-casing`,
+    `${level}-lift`,
   ];
 }
 
@@ -355,11 +334,10 @@ function ensureSourceAndLayers(map, level, data) {
     promoteId: 'GEOID',
   });
 
-  // ?smooth=1 starts every layer at nothing, to fade in from
-  // (showLevelSmoothly), and the fill in its colors, so its first tiles are
-  // its last instead of being re-tiled as soon as the colors arrive.
-  const startOpacity = (target) => (FLAGS.smooth ? 0 : target);
-  const fillColor = FLAGS.smooth ? levelFillColor(level) : '#cccccc';
+  // Every layer starts at nothing, to fade in from (showLevelSmoothly), and
+  // the fill in its colors, so its first tiles are its last instead of being
+  // re-tiled as soon as the colors arrive.
+  const fillColor = levelFillColor(level);
 
   // Fill — colored by current variable. The drop shadow lives in a separate
   // global custom WebGL layer (`./shadowLayer.js`); we just make sure it
@@ -371,22 +349,20 @@ function ensureSourceAndLayers(map, level, data) {
     layout: { visibility: 'none' },
     paint: {
       'fill-color': fillColor,
-      'fill-opacity': startOpacity(fillOpacity()),
+      'fill-opacity': 0,
       ...TRANSITION_PAINT,
     },
   });
 
-  // ?smooth=1: the picked area, and the hovered one while the map is dimmed,
-  // drawn again over the fill (see LIFT_OPACITY_EXPR).
-  if (FLAGS.smooth) {
-    map.addLayer({
-      id: `${level}-lift`,
-      type: 'fill',
-      source: level,
-      layout: { visibility: 'none' },
-      paint: { 'fill-color': fillColor, 'fill-opacity': LIFT_OPACITY_EXPR },
-    });
-  }
+  // The picked area, and the hovered one while the map is dimmed, drawn
+  // again over the fill (see LIFT_OPACITY_EXPR).
+  map.addLayer({
+    id: `${level}-lift`,
+    type: 'fill',
+    source: level,
+    layout: { visibility: 'none' },
+    paint: { 'fill-color': fillColor, 'fill-opacity': LIFT_OPACITY_EXPR },
+  });
 
   // Reliability hatch overlay — sits above the colored fill, below the
   // outlines. Hidden by default; shown (and filtered to flagged features for
@@ -398,7 +374,7 @@ function ensureSourceAndLayers(map, level, data) {
     layout: { visibility: 'none' },
     paint: {
       'fill-pattern': RELIABILITY_PATTERN_CAUTION,
-      'fill-opacity': startOpacity(0.9),
+      'fill-opacity': 0,
     },
     filter: ['==', ['get', 'GEOID'], '\u0000'], // matches nothing until applied
   });
@@ -412,31 +388,29 @@ function ensureSourceAndLayers(map, level, data) {
     paint: {
       'line-color': LINE_COLOR,
       'line-width': LINE_WIDTH_EXPR,
-      'line-opacity': startOpacity(LINE_OPACITY),
+      'line-opacity': 0,
       ...LINE_TRANSITION_PAINT,
     },
   });
 
-  // ?smooth=1 hover: casing, then line, both below the selection outline so a
+  // Hover: casing, then line, both below the selection outline so a
   // hovered neighbour doesn't cut into it along their shared border.
-  if (FLAGS.smooth) {
-    for (const [id, color, widths] of [
-      [`${level}-hover-casing`, hoverColor('255,255,255', 0.9), HOVER_CASING_WIDTHS],
-      [`${level}-hover`, hoverColor('22,28,23', 0.85), HOVER_LINE_WIDTHS],
-    ]) {
-      map.addLayer({
-        id,
-        type: 'line',
-        source: level,
-        layout: { visibility: 'none', 'line-join': 'round' },
-        paint: {
-          'line-color': color,
-          'line-width': hoverWidth(widths),
-          'line-opacity': startOpacity(HOVER_LINE_OPACITY),
-          ...LINE_TRANSITION_PAINT,
-        },
-      });
-    }
+  for (const [id, color, widths] of [
+    [`${level}-hover-casing`, hoverColor('255,255,255', 0.9), HOVER_CASING_WIDTHS],
+    [`${level}-hover`, hoverColor('22,28,23', 0.85), HOVER_LINE_WIDTHS],
+  ]) {
+    map.addLayer({
+      id,
+      type: 'line',
+      source: level,
+      layout: { visibility: 'none', 'line-join': 'round' },
+      paint: {
+        'line-color': color,
+        'line-width': hoverWidth(widths),
+        'line-opacity': 0,
+        ...LINE_TRANSITION_PAINT,
+      },
+    });
   }
 
   // Selected: thin, soft inner outline. Kept subtle so the drop shadow
@@ -454,35 +428,10 @@ function ensureSourceAndLayers(map, level, data) {
         ['boolean', ['feature-state', 'selected'], false], 2,
         0,
       ],
-      'line-opacity': startOpacity(0.9),
+      'line-opacity': 0,
       ...LINE_TRANSITION_PAINT,
     },
   });
-
-  // Hover: thin, light inner ring + opacity bump on the fill (see
-  // FILL_OPACITY_EXPR). Suppressed when selected so the selection
-  // outline doesn't fight a hover ring.
-  if (!FLAGS.smooth) {
-    map.addLayer({
-      id: `${level}-hover`,
-      type: 'line',
-      source: level,
-      layout: { visibility: 'none' },
-      paint: {
-        'line-color': '#1a1a1a',
-        'line-width': [
-          'case',
-          ['all',
-            ['boolean', ['feature-state', 'hover'], false],
-            ['!', ['boolean', ['feature-state', 'selected'], false]],
-          ], 1.25,
-          0,
-        ],
-        'line-opacity': HOVER_LINE_OPACITY,
-        ...LINE_TRANSITION_PAINT,
-      },
-    });
-  }
 
   if (!FLAGS.noHover) bindLayerInteraction(map, level);
   registeredLevels.add(level);
@@ -501,7 +450,7 @@ function restoreTargetOpacities(map, level) {
     map.setPaintProperty(`${level}-hover-casing`, 'line-opacity', HOVER_LINE_OPACITY);
 }
 
-// ?smooth=1 geography switches. The new level fades in on top of the old one,
+// Geography switches. The new level fades in on top of the old one,
 // which stays as it is underneath until it's covered and then hides. (Fading
 // both at once lets the background show through halfway.) The fade waits for
 // the new level's tiles, so it isn't spent on an empty or grey level.
@@ -550,46 +499,7 @@ function hideLevelSmoothly(map, level) {
 }
 
 function fadeInLevel(map, level) {
-  // Cancel any in-flight hide for this level
-  if (pendingHide.has(level)) {
-    clearTimeout(pendingHide.get(level));
-    pendingHide.delete(level);
-  }
-  if (FLAGS.smooth) {
-    showLevelSmoothly(map, level);
-    return;
-  }
-
-  const ids = fillLayerIds(level);
-  for (const id of ids) {
-    if (!map.getLayer(id)) continue;
-    const layerType = map.getLayer(id).type;
-    if (layerType === 'fill') map.setPaintProperty(id, 'fill-opacity', 0);
-    else map.setPaintProperty(id, 'line-opacity', 0);
-    map.setLayoutProperty(id, 'visibility', 'visible');
-  }
-
-  // Restore target opacities on the next frame so MapLibre animates from 0.
-  requestAnimationFrame(() => restoreTargetOpacities(map, level));
-}
-
-function fadeOutLevel(map, level) {
-  // ?smooth=1 leaves it be: the new level fades in over it, then hides it.
-  if (FLAGS.smooth) return;
-  const ids = fillLayerIds(level);
-  for (const id of ids) {
-    if (!map.getLayer(id)) continue;
-    const layerType = map.getLayer(id).type;
-    if (layerType === 'fill') map.setPaintProperty(id, 'fill-opacity', 0);
-    else map.setPaintProperty(id, 'line-opacity', 0);
-  }
-  const tid = setTimeout(() => {
-    pendingHide.delete(level);
-    for (const id of ids) {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
-    }
-  }, FADE_MS + 50);
-  pendingHide.set(level, tid);
+  showLevelSmoothly(map, level);
 }
 
 // Variable mode mutes the choropleth to a backdrop (the circles are the
@@ -607,7 +517,7 @@ function applyColorExpression(map, level) {
   if (!map.getLayer(`${level}-fill`)) return;
   const color = levelFillColor(level);
   map.setPaintProperty(`${level}-fill`, 'fill-color', color);
-  // ?smooth=1: the -lift layer draws areas again, in the same colors.
+  // The -lift layer draws areas again, in the same colors.
   if (map.getLayer(`${level}-lift`)) map.setPaintProperty(`${level}-lift`, 'fill-color', color);
   if (map.getLayer(`${level}-line`)) {
     map.setPaintProperty(`${level}-line`, 'line-color', millionairesIsVariable() ? POINTS_MODE_MUTED_LINE : LINE_COLOR);
@@ -637,12 +547,8 @@ function refreshReliability() {
   if (!map) return;
   for (const level of registeredLevels) {
     if (level === currentLevel) applyReliability(map, level);
-    // ?smooth=1: a level on its way out keeps its hatching until the whole
+    // A level on its way out keeps its hatching until the whole
     // level hides, once the new one has faded in over it (hideLevelSmoothly).
-    else if (FLAGS.smooth) continue;
-    else if (map.getLayer(`${level}-reliability`)) {
-      map.setLayoutProperty(`${level}-reliability`, 'visibility', 'none');
-    }
   }
 }
 
@@ -827,7 +733,6 @@ export async function setLayer(level) {
     }
 
     if (currentLevel && currentLevel !== level) {
-      fadeOutLevel(map, currentLevel);
     }
 
     fadeInLevel(map, level);
@@ -874,12 +779,12 @@ export async function preloadAll() {
   }
 }
 
-// Restyle the level on the map with `change()`. ?smooth=1 crossfades to the
+// Restyle the level on the map with `change()`, crossfading to the
 // new look when `changed` (crossfade.js: new colors read each area's data, so
 // MapLibre can't fade them), unless the level is still waiting to fade in,
 // which will show the new look anyway.
 function restyle(map, changed, change) {
-  if (!FLAGS.smooth || !changed || !revealed.has(currentLevel)) {
+  if (!changed || !revealed.has(currentLevel)) {
     change();
     return;
   }
@@ -942,8 +847,8 @@ export function setSelectionFocus(on) {
   selectionFocus = on;
   const map = getMap();
   if (!map || !currentLevel || !map.getLayer(`${currentLevel}-fill`)) return;
-  // ?smooth=1: a level still waiting to fade in takes this up when it does.
-  if (FLAGS.smooth && !revealed.has(currentLevel)) return;
+  // A level still waiting to fade in takes this up when it does.
+  if (!revealed.has(currentLevel)) return;
   map.setPaintProperty(`${currentLevel}-fill`, 'fill-opacity', fillOpacity());
 }
 

@@ -1,9 +1,9 @@
-// Zoom engine for ?smooth=1 (see perfFlags.js): one animation loop behind
+// Zoom engine: one animation loop behind
 // every zoom the user asks for — wheel, trackpad, pinch, the +/− buttons and
 // double-click — so they all move alike and add up. A second click while the
 // first is still settling lengthens the same glide instead of restarting it.
 //
-// What changes from smoothWheelZoom.js, which it stands in for:
+// What changes from smoothWheelZoom.js (now only a fallback):
 //   • The easing is timed, not counted in frames. Each frame closes
 //     1 − e^(−dt/τ) of the gap to the target, so a glide takes as long at
 //     120Hz as at 60Hz, and a late frame catches up instead of lurching.

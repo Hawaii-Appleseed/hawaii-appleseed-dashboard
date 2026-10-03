@@ -89,9 +89,8 @@ function homeCamera() {
 function goHome(animate) {
   const cam = homeCamera();
   mapInstance.setMinZoom(Math.min(MIN_ZOOM, cam.zoom));
-  if (!animate) mapInstance.jumpTo(cam);
-  else if (FLAGS.smooth) cameraTrip(mapInstance, cam);
-  else mapInstance.easeTo({ ...cam, duration: 400 });
+  if (animate) cameraTrip(mapInstance, cam);
+  else mapInstance.jumpTo(cam);
 }
 
 // Hand the camera over, as moving the map by hand does: stop re-fitting the
@@ -200,9 +199,9 @@ export function createMap(containerId, theme) {
     }
   }
 
-  // ?smooth=1: one zoom engine behind the wheel, trackpad, +/− buttons and
-  // double-click (zoomEngine.js). Null if this MapLibre can't host it.
-  const zoomEngine = FLAGS.smooth ? installZoomEngine(mapInstance) : null;
+  // One zoom engine behind the wheel, trackpad, +/− buttons and double-click
+  // (zoomEngine.js). Null if this MapLibre can't host it.
+  const zoomEngine = installZoomEngine(mapInstance);
 
   if (!FLAGS.noNav) {
     mapInstance.addControl(zoomEngine
@@ -211,11 +210,10 @@ export function createMap(containerId, theme) {
     mapInstance.addControl(new ResetControl(), 'top-left');
   }
 
-  // Replace MapLibre's built-in wheel-zoom handler with a custom rAF-driven
-  // one that produces 0% zoom-progression stalls (the built-in handler
-  // stalls every ~3rd frame during continuous wheel input). Opt out with
-  // ?stock=1 for A/B testing.
-  if (!zoomEngine && !FLAGS.stockWheelZoom) {
+  // Without the engine, fall back to the older rAF-driven wheel handler,
+  // which still beats MapLibre's built-in one (that stalls every ~3rd frame
+  // during continuous wheel input).
+  if (!zoomEngine) {
     installSmoothWheelZoom(mapInstance);
   }
 

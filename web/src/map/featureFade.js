@@ -1,4 +1,4 @@
-// Feature-state fades for ?smooth=1 (see perfFlags.js).
+// Feature-state fades.
 //
 // MapLibre can't fade a style that depends on feature state: its paint
 // transitions skip any value that reads it, so a state change shows in a

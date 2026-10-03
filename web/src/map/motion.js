@@ -1,4 +1,4 @@
-// Motion shared by the ?smooth=1 map (see perfFlags.js): the easing curves,
+// Motion shared across the map: the easing curves,
 // the reduced-motion check, and the camera trip that frames a picked area or
 // goes back to the starting view.
 

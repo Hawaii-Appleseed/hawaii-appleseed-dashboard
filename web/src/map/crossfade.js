@@ -1,4 +1,4 @@
-// Crossfades for ?smooth=1 (see perfFlags.js), for changes MapLibre can't fade
+// Crossfades for changes MapLibre can't fade
 // itself: new colors for every area (a variable or a color scheme), which read
 // each area's data, along with the reliability hatching and the Millionaires
 // circles that change with them.

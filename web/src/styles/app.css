@@ -1260,7 +1260,7 @@ select {
   }
 }
 
-/* ?smooth=1 (crossfade.js): the frame before a variable or color scheme
+/* crossfade.js: the frame before a variable or color scheme
    change, fading out over the restyled map. Same curve as MapLibre's own
    paint transitions, which fade a new geography in. */
 .map-crossfade {
@@ -1287,7 +1287,7 @@ select {
   white-space: nowrap;
   pointer-events: none;
 }
-/* ?smooth=1 (popup.js): one width for every area, so the card doesn't jump
+/* popup.js: one width for every area, so the card doesn't jump
    sideways as its text changes, and a short rise as it appears. The card
    (buildCardContent) leads with the place and shows the area's map color
    beside the figure, like the info panel's headline. */

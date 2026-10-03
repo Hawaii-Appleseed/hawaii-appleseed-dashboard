@@ -3,7 +3,6 @@ import { showInfoPanel } from '../ui/infoPanel.js';
 import { getMap, releaseHome } from './mapInstance.js';
 import { setShadowFeature } from './shadowLayer.js';
 import { getFeatureById } from './layerManager.js';
-import { FLAGS } from './perfFlags.js';
 import { fadeHover, fadeFeatureState } from './featureFade.js';
 import { cameraTrip } from './motion.js';
 import { getColorForValue } from './colors.js';
@@ -24,18 +23,18 @@ let animationListenersBound = false;
 let _moveRafId = null;
 let _lastMovePoint = null;
 
-// ?smooth=1 (perfFlags.js) tooltip timing. The first card waits a moment, so
+// Tooltip timing. The first card waits a moment, so
 // a pointer just crossing the map doesn't flash one; back within REGROUP_MS
 // of one hiding, the next shows at once.
 const SHOW_DELAY_MS = 70;
 const REGROUP_MS = 300;
 let showTimer = null;
 let hiddenAt = -Infinity;
-// ?smooth=1: where the pointer last was over the map (null once it leaves),
+// Where the pointer last was over the map (null once it leaves),
 // and whether to re-hover there when the current pan or zoom stops.
 let pointer = null;
 let resyncAfterMove = false;
-// ?smooth=1: areas drawn solid over the dimmed map (the -lift layer in
+// Areas drawn solid over the dimmed map (the -lift layer in
 // layerManager.js), as `${level}|${id}` → { level, id }, and how long one
 // takes to sink back once another area is picked.
 const lifted = new Map();
@@ -56,11 +55,9 @@ function ensureTooltipEl(map) {
     'top:0',
     'pointer-events:none',
     'z-index:1100',
-    // ?smooth=1 fades and lifts the card in CSS instead (.is-smooth, app.css).
-    ...(FLAGS.smooth ? [] : ['opacity:0', 'transition:opacity 0.12s ease-out']),
     'will-change:transform',
   ].join(';');
-  if (FLAGS.smooth) tooltipEl.classList.add('is-smooth');
+  tooltipEl.classList.add('is-smooth'); // fades and lifts in CSS (app.css)
   const container = map.getContainer();
   container.appendChild(tooltipEl);
   return tooltipEl;
@@ -68,40 +65,32 @@ function ensureTooltipEl(map) {
 
 function hideTooltip() {
   if (!tooltipEl) return;
-  if (FLAGS.smooth) {
-    clearTimeout(showTimer);
-    showTimer = null;
-    if (tooltipEl.classList.contains('is-visible')) hiddenAt = performance.now();
-    tooltipEl.classList.remove('is-visible');
-    return;
-  }
-  tooltipEl.style.opacity = '0';
+  clearTimeout(showTimer);
+  showTimer = null;
+  if (tooltipEl.classList.contains('is-visible')) hiddenAt = performance.now();
+  tooltipEl.classList.remove('is-visible');
 }
 
 function showTooltip() {
   if (!tooltipEl) return;
-  if (FLAGS.smooth) {
-    if (showTimer || tooltipEl.classList.contains('is-visible')) return;
-    if (performance.now() - hiddenAt < REGROUP_MS) {
+  if (showTimer || tooltipEl.classList.contains('is-visible')) return;
+  if (performance.now() - hiddenAt < REGROUP_MS) {
+    tooltipEl.classList.add('is-visible');
+  } else {
+    showTimer = setTimeout(() => {
+      showTimer = null;
       tooltipEl.classList.add('is-visible');
-    } else {
-      showTimer = setTimeout(() => {
-        showTimer = null;
-        tooltipEl.classList.add('is-visible');
-      }, SHOW_DELAY_MS);
-    }
-    return;
+    }, SHOW_DELAY_MS);
   }
-  tooltipEl.style.opacity = '1';
 }
 
 function ensureAnimationListeners(map) {
   if (animationListenersBound) return;
   map.on('movestart', () => {
     isAnimating = true;
-    // ?smooth=1: a pan or zoom that starts over an area ends over another;
+    // A pan or zoom that starts over an area ends over another;
     // show that one when it stops rather than waiting for the pointer to move.
-    resyncAfterMove = FLAGS.smooth && !!hoveredFeature;
+    resyncAfterMove = !!hoveredFeature;
     hideTooltip();
   });
   map.on('zoomstart', () => { isAnimating = true; hideTooltip(); });
@@ -113,10 +102,8 @@ function ensureAnimationListeners(map) {
     }
   });
   map.on('zoomend', () => { isAnimating = false; });
-  if (FLAGS.smooth) {
-    map.on('mousemove', (e) => { pointer = e.point; });
-    map.on('mouseout', () => { pointer = null; });
-  }
+  map.on('mousemove', (e) => { pointer = e.point; });
+  map.on('mouseout', () => { pointer = null; });
   animationListenersBound = true;
 }
 
@@ -173,10 +160,10 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// ?smooth=1 card: the place first, with its color on the map beside the
+// The card: the place first, with its color on the map beside the
 // figure, as in the info panel's headline, and the representative on one
 // line. A district leads with its neighbourhoods, its number above them.
-function buildCardContent(properties, level) {
+function buildTooltipContent(properties, level) {
   const s = getState();
   const name = cleanName(properties.display_name || properties.NAME || properties.name);
   const varKey = s.selectedVariable;
@@ -219,43 +206,6 @@ function buildCardContent(properties, level) {
   return html;
 }
 
-function buildTooltipContent(properties, level) {
-  if (FLAGS.smooth) return buildCardContent(properties, level);
-  const s = getState();
-  const name = cleanName(properties.display_name || properties.NAME || properties.name);
-  const varKey = s.selectedVariable;
-  const meta = VARIABLES?.[varKey];
-  const displayName = meta?.display_name_long || meta?.display_name || varKey || '';
-  const value = formatValue(properties[varKey], meta?.data_type);
-
-  let html = `<div class="tt-name">${escapeHtml(name)}</div>`;
-  // Points variables (Millionaires) are counted by town — the circles carry
-  // them — so an area has no figure of its own to show.
-  if (meta?.render_type !== 'points') {
-    html += `<div class="tt-stat-card">` +
-            `<div class="tt-stat-label">${escapeHtml(displayName)}</div>` +
-            `<div class="tt-stat-value">${escapeHtml(value)}</div>` +
-            `</div>`;
-  }
-
-  const rep = lookupRep(properties, level);
-  if (rep) {
-    let areas = (rep.areas || '').trim();
-    if (areas.length > 80) {
-      const list = areas.split(', ');
-      areas = list.slice(0, 2).join(', ');
-      if (list.length > 2) areas += `, +${list.length - 2} more`;
-    }
-    html += `<div class="tt-rep-card">` +
-            `<div class="tt-rep-label">${escapeHtml(rep.title)}</div>` +
-            `<div class="tt-rep-name">${escapeHtml(rep.name)} <span class="tt-rep-party">${escapeHtml(rep.party)}</span></div>` +
-            `<div class="tt-areas">${escapeHtml(areas)}</div>` +
-            `</div>`;
-  }
-
-  return html;
-}
-
 function positionTooltip(map, point) {
   if (!tooltipEl) return;
   const w = tooltipEl.offsetWidth || 220;
@@ -287,17 +237,16 @@ function positionTooltip(map, point) {
 
 function setHoverState(map, level, id, on) {
   if (id == null) return;
-  if (FLAGS.smooth) fadeHover(map, level, id, on);
-  else map.setFeatureState({ source: level, id }, { hover: on });
+  fadeHover(map, level, id, on);
 }
 
 function setSelectedState(map, level, id, on) {
   if (id == null) return;
   map.setFeatureState({ source: level, id }, { selected: on });
-  if (FLAGS.smooth && on) liftArea(map, level, id);
+  if (on) liftArea(map, level, id);
 }
 
-// ?smooth=1: draw the picked area solid at once, and let any area picked
+// Draw the picked area solid at once, and let any area picked
 // before sink back into the dimmed map. Letting go of an area leaves it
 // lifted: that shows nothing while the map isn't dimmed, and keeps the area
 // from dipping while the rest of the map brightens back up around it.
@@ -361,7 +310,7 @@ function hoverAt(map, level, feature, point) {
   }
 }
 
-// ?smooth=1: hover whatever is under the pointer now, as moving onto it would.
+// Hover whatever is under the pointer now, as moving onto it would.
 function resyncHover(map) {
   if (!pointer || !tooltipEl) return;
   const level = getState().activeLayer;
@@ -483,14 +432,10 @@ export function selectFeature(level, feature, { focusPanel = false } = {}) {
     // neighbours stay in view and it's clear where it is.
     const maxZoom = 11;
     try {
-      if (FLAGS.smooth) {
-        // Paced by how far it goes, gliding to nearby areas and flying to far
-        // ones (motion.js).
-        const cam = map.cameraForBounds(bounds, { padding, maxZoom });
-        if (cam) cameraTrip(map, cam);
-      } else {
-        map.fitBounds(bounds, { padding, maxZoom, duration: 600, essential: true });
-      }
+      // Paced by how far it goes, gliding to nearby areas and flying to far
+      // ones (motion.js).
+      const cam = map.cameraForBounds(bounds, { padding, maxZoom });
+      if (cam) cameraTrip(map, cam);
     } catch (_) { /* no-op */ }
   }
 }
