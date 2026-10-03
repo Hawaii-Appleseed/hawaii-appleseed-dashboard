@@ -3,6 +3,9 @@ import { showInfoPanel } from '../ui/infoPanel.js';
 import { getMap, releaseHome } from './mapInstance.js';
 import { setShadowFeature } from './shadowLayer.js';
 import { getFeatureById } from './layerManager.js';
+import { FLAGS } from './perfFlags.js';
+import { fadeHover } from './hoverFade.js';
+import { cameraTrip } from './motion.js';
 
 let VARIABLES = null;
 let REP_DATA = {};
@@ -20,6 +23,18 @@ let animationListenersBound = false;
 let _moveRafId = null;
 let _lastMovePoint = null;
 
+// ?smooth=1 (perfFlags.js) tooltip timing. The first card waits a moment, so
+// a pointer just crossing the map doesn't flash one; back within REGROUP_MS
+// of one hiding, the next shows at once.
+const SHOW_DELAY_MS = 70;
+const REGROUP_MS = 300;
+let showTimer = null;
+let hiddenAt = -Infinity;
+// ?smooth=1: where the pointer last was over the map (null once it leaves),
+// and whether to re-hover there when the current pan or zoom stops.
+let pointer = null;
+let resyncAfterMove = false;
+
 export function initPopup(variablesConfig, repData) {
   VARIABLES = variablesConfig.variables;
   REP_DATA = repData || {};
@@ -35,10 +50,11 @@ function ensureTooltipEl(map) {
     'top:0',
     'pointer-events:none',
     'z-index:1100',
-    'opacity:0',
-    'transition:opacity 0.12s ease-out',
+    // ?smooth=1 fades and lifts the card in CSS instead (.is-smooth, app.css).
+    ...(FLAGS.smooth ? [] : ['opacity:0', 'transition:opacity 0.12s ease-out']),
     'will-change:transform',
   ].join(';');
+  if (FLAGS.smooth) tooltipEl.classList.add('is-smooth');
   const container = map.getContainer();
   container.appendChild(tooltipEl);
   return tooltipEl;
@@ -46,20 +62,55 @@ function ensureTooltipEl(map) {
 
 function hideTooltip() {
   if (!tooltipEl) return;
+  if (FLAGS.smooth) {
+    clearTimeout(showTimer);
+    showTimer = null;
+    if (tooltipEl.classList.contains('is-visible')) hiddenAt = performance.now();
+    tooltipEl.classList.remove('is-visible');
+    return;
+  }
   tooltipEl.style.opacity = '0';
 }
 
 function showTooltip() {
   if (!tooltipEl) return;
+  if (FLAGS.smooth) {
+    if (showTimer || tooltipEl.classList.contains('is-visible')) return;
+    if (performance.now() - hiddenAt < REGROUP_MS) {
+      tooltipEl.classList.add('is-visible');
+    } else {
+      showTimer = setTimeout(() => {
+        showTimer = null;
+        tooltipEl.classList.add('is-visible');
+      }, SHOW_DELAY_MS);
+    }
+    return;
+  }
   tooltipEl.style.opacity = '1';
 }
 
 function ensureAnimationListeners(map) {
   if (animationListenersBound) return;
-  map.on('movestart', () => { isAnimating = true; hideTooltip(); });
+  map.on('movestart', () => {
+    isAnimating = true;
+    // ?smooth=1: a pan or zoom that starts over an area ends over another;
+    // show that one when it stops rather than waiting for the pointer to move.
+    resyncAfterMove = FLAGS.smooth && !!hoveredFeature;
+    hideTooltip();
+  });
   map.on('zoomstart', () => { isAnimating = true; hideTooltip(); });
-  map.on('moveend', () => { isAnimating = false; });
+  map.on('moveend', () => {
+    isAnimating = false;
+    if (resyncAfterMove) {
+      resyncAfterMove = false;
+      resyncHover(map);
+    }
+  });
   map.on('zoomend', () => { isAnimating = false; });
+  if (FLAGS.smooth) {
+    map.on('mousemove', (e) => { pointer = e.point; });
+    map.on('mouseout', () => { pointer = null; });
+  }
   animationListenersBound = true;
 }
 
@@ -183,7 +234,8 @@ function positionTooltip(map, point) {
 
 function setHoverState(map, level, id, on) {
   if (id == null) return;
-  map.setFeatureState({ source: level, id }, { hover: on });
+  if (FLAGS.smooth) fadeHover(map, level, id, on);
+  else map.setFeatureState({ source: level, id }, { hover: on });
 }
 
 function setSelectedState(map, level, id, on) {
@@ -209,6 +261,50 @@ function clearHoverFor(map) {
   if (hoveredFeature) {
     setHoverState(map, hoveredFeature.level, hoveredFeature.id, false);
     hoveredFeature = null;
+  }
+}
+
+// Hover `feature` of `level`, under the pointer at `point`: highlight it, fill
+// the tooltip in, and bring the tooltip to the pointer.
+function hoverAt(map, level, feature, point) {
+  const id = feature.id;
+
+  // Hover state + content: update immediately on feature change only.
+  if (!hoveredFeature || hoveredFeature.id !== id || hoveredFeature.level !== level) {
+    if (hoveredFeature) setHoverState(map, hoveredFeature.level, hoveredFeature.id, false);
+    hoveredFeature = { level, id };
+    setHoverState(map, level, id, true);
+    tooltipEl.innerHTML = buildTooltipContent(feature.properties, level);
+  }
+
+  // Position + show: rAF-throttled so layout reads/writes run at most once
+  // per display frame rather than at raw pointer rate (100–200 Hz).
+  // Cursor is set on the map container via a native CSS url() cursor in
+  // mapInstance.js — no per-mousemove style mutation needed here.
+  _lastMovePoint = point;
+  if (!_moveRafId) {
+    _moveRafId = requestAnimationFrame(() => {
+      _moveRafId = null;
+      if (_lastMovePoint) {
+        positionTooltip(map, _lastMovePoint);
+        showTooltip();
+      }
+    });
+  }
+}
+
+// ?smooth=1: hover whatever is under the pointer now, as moving onto it would.
+function resyncHover(map) {
+  if (!pointer || !tooltipEl) return;
+  const level = getState().activeLayer;
+  const fillId = `${level}-fill`;
+  if (!map.getLayer(fillId)) return;
+  const feature = map.queryRenderedFeatures([pointer.x, pointer.y], { layers: [fillId] })[0];
+  if (feature?.id != null) {
+    hoverAt(map, level, feature, pointer);
+  } else {
+    clearHoverFor(map);
+    hideTooltip();
   }
 }
 
@@ -248,31 +344,8 @@ export function bindLayerInteraction(map, level) {
     if (!isActive()) return;
     if (!e.features || !e.features.length) return;
     const feature = e.features[0];
-    const id = feature.id;
-    if (id == null) return;
-
-    // Hover state + content: update immediately on feature change only.
-    if (!hoveredFeature || hoveredFeature.id !== id || hoveredFeature.level !== level) {
-      if (hoveredFeature) setHoverState(map, hoveredFeature.level, hoveredFeature.id, false);
-      hoveredFeature = { level, id };
-      setHoverState(map, level, id, true);
-      tooltipEl.innerHTML = buildTooltipContent(feature.properties, level);
-    }
-
-    // Position + show: rAF-throttled so layout reads/writes run at most once
-    // per display frame rather than at raw pointer rate (100–200 Hz).
-    // Cursor is set on the map container via a native CSS url() cursor in
-    // mapInstance.js — no per-mousemove style mutation needed here.
-    _lastMovePoint = e.point;
-    if (!_moveRafId) {
-      _moveRafId = requestAnimationFrame(() => {
-        _moveRafId = null;
-        if (_lastMovePoint) {
-          positionTooltip(map, _lastMovePoint);
-          showTooltip();
-        }
-      });
-    }
+    if (feature.id == null) return;
+    hoverAt(map, level, feature, e.point);
   });
 
   map.on('mouseleave', fillId, () => {
@@ -338,15 +411,18 @@ export function selectFeature(level, feature, { focusPanel = false } = {}) {
     const padding = sheet
       ? { top: 56, left: 24, right: 24, bottom: panel.offsetHeight + 16 }
       : { top: sidePad, bottom: sidePad, left: sidePad, right: rightPad };
+    // Stop short of filling the screen with a small district, so its
+    // neighbours stay in view and it's clear where it is.
+    const maxZoom = 11;
     try {
-      map.fitBounds(bounds, {
-        padding,
-        // Stop short of filling the screen with a small district, so its
-        // neighbours stay in view and it's clear where it is.
-        maxZoom: 11,
-        duration: 600,
-        essential: true,
-      });
+      if (FLAGS.smooth) {
+        // Paced by how far it goes, gliding to nearby areas and flying to far
+        // ones (motion.js).
+        const cam = map.cameraForBounds(bounds, { padding, maxZoom });
+        if (cam) cameraTrip(map, cam);
+      } else {
+        map.fitBounds(bounds, { padding, maxZoom, duration: 600, essential: true });
+      }
     } catch (_) { /* no-op */ }
   }
 }

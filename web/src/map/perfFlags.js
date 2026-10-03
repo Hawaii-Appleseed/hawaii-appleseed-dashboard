@@ -12,6 +12,11 @@
 //   ?nofade=1    — disable the 300ms layer-switch fade animation
 //   ?nonav=1     — don't add NavigationControl / ResetControl
 //   ?lowdpr=N    — clamp pixelRatio to N (e.g. ?lowdpr=1)
+//   ?smooth=1    — smoother map motion, on trial: hover outlines that fade in
+//                  and out (hoverFade.js), one timed zoom engine behind the
+//                  wheel, trackpad, +/− buttons and double-click
+//                  (zoomEngine.js; it takes over from ?stock), and camera trips
+//                  paced by distance (motion.js)
 
 const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
 
@@ -28,6 +33,7 @@ export const FLAGS = {
   noNav: flag('nonav'),
   lowDpr: params.has('lowdpr') ? parseFloat(params.get('lowdpr')) : null,
   stockWheelZoom: flag('stock'), // ?stock=1 keeps MapLibre's built-in wheel handler (for A/B)
+  smooth: flag('smooth'),
 };
 
 if (typeof window !== 'undefined') {

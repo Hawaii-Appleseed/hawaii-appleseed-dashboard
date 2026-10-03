@@ -2,6 +2,8 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { FLAGS } from './perfFlags.js';
 import { installSmoothWheelZoom } from './smoothWheelZoom.js';
+import { installZoomEngine, ZoomControl } from './zoomEngine.js';
+import { cameraTrip } from './motion.js';
 
 let mapInstance = null;
 let mapReady = false; // MapLibre's one-time 'load' has fired: the style is in
@@ -87,8 +89,9 @@ function homeCamera() {
 function goHome(animate) {
   const cam = homeCamera();
   mapInstance.setMinZoom(Math.min(MIN_ZOOM, cam.zoom));
-  if (animate) mapInstance.easeTo({ ...cam, duration: 400 });
-  else mapInstance.jumpTo(cam);
+  if (!animate) mapInstance.jumpTo(cam);
+  else if (FLAGS.smooth) cameraTrip(mapInstance, cam);
+  else mapInstance.easeTo({ ...cam, duration: 400 });
 }
 
 // Hand the camera over, as moving the map by hand does: stop re-fitting the
@@ -197,8 +200,14 @@ export function createMap(containerId, theme) {
     }
   }
 
+  // ?smooth=1: one zoom engine behind the wheel, trackpad, +/− buttons and
+  // double-click (zoomEngine.js). Null if this MapLibre can't host it.
+  const zoomEngine = FLAGS.smooth ? installZoomEngine(mapInstance) : null;
+
   if (!FLAGS.noNav) {
-    mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: false, visualizePitch: false }), 'top-left');
+    mapInstance.addControl(zoomEngine
+      ? new ZoomControl(zoomEngine)
+      : new maplibregl.NavigationControl({ showCompass: false, visualizePitch: false }), 'top-left');
     mapInstance.addControl(new ResetControl(), 'top-left');
   }
 
@@ -206,7 +215,7 @@ export function createMap(containerId, theme) {
   // one that produces 0% zoom-progression stalls (the built-in handler
   // stalls every ~3rd frame during continuous wheel input). Opt out with
   // ?stock=1 for A/B testing.
-  if (!FLAGS.stockWheelZoom) {
+  if (!zoomEngine && !FLAGS.stockWheelZoom) {
     installSmoothWheelZoom(mapInstance);
   }
 

@@ -1276,6 +1276,26 @@ select {
   white-space: nowrap;
   pointer-events: none;
 }
+/* ?smooth=1 (popup.js): one width for every area, so the card doesn't jump
+   sideways as its text changes, and a short rise as it appears. */
+.custom-tooltip.is-smooth {
+  width: 256px;
+  min-width: 0;
+  max-width: none;
+  white-space: normal;
+  opacity: 0;
+  translate: 0 4px;
+  transition: opacity var(--dur-fast) var(--ease), translate var(--dur) var(--ease);
+}
+.custom-tooltip.is-smooth.is-visible {
+  opacity: 1;
+  translate: 0 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .custom-tooltip.is-smooth {
+    translate: none;
+  }
+}
 .tt-name {
   font-weight: 600;
   white-space: normal;

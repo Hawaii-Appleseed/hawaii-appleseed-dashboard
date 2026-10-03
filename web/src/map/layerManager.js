@@ -156,8 +156,8 @@ const pendingHide = new Map(); // level → setTimeout id
 
 // Opacity expressions as constants so fade-in can restore them after zeroing out.
 // Solid fills (the legend shows the same colors), lightening a touch under
-// the cursor; with the 300ms fill-opacity-transition that reads as a soft
-// hover cue. The selected area stays solid.
+// the cursor. The change snaps: MapLibre's fill-opacity-transition skips
+// values that depend on feature state. The selected area stays solid.
 const FILL_OPACITY_EXPR = [
   'case',
   ['boolean', ['feature-state', 'selected'], false], 1.0,
@@ -172,8 +172,51 @@ const FILL_OPACITY_FOCUS_EXPR = [
   ['boolean', ['feature-state', 'hover'], false], 0.7,
   0.45,
 ];
+// ?smooth=1 (perfFlags.js): hover is a number from 0 to 1 that hoverFade.js
+// steps every frame, since MapLibre snaps any style driven by feature state.
+// The hover leaves the fill alone, so colors always match the legend
+// (lightening it was invisible on the palest classes and about a class
+// lighter on the darkest); an outline marks it instead (see the hover layers
+// below).
+const HOVER_T = ['number', ['feature-state', 'hover'], 0];
+const IS_SELECTED = ['boolean', ['feature-state', 'selected'], false];
+// Reads feature state, like the focus expression, so switching between the
+// two snaps. MapLibre holds a data-driven value for the whole transition
+// before handing over to a constant, which would leave the map dimmed for
+// 300ms after a deselect.
+const FILL_OPACITY_SMOOTH_EXPR = ['case', IS_SELECTED, 1.0, 1.0];
+const FILL_OPACITY_FOCUS_SMOOTH_EXPR = [
+  'case',
+  IS_SELECTED, 1.0,
+  ['interpolate', ['linear'], HOVER_T, 0, 0.45, 1, 0.7],
+];
 let selectionFocus = false;
-const fillOpacity = () => (selectionFocus ? FILL_OPACITY_FOCUS_EXPR : FILL_OPACITY_EXPR);
+const fillOpacity = () => {
+  if (FLAGS.smooth) return selectionFocus ? FILL_OPACITY_FOCUS_SMOOTH_EXPR : FILL_OPACITY_SMOOTH_EXPR;
+  return selectionFocus ? FILL_OPACITY_FOCUS_EXPR : FILL_OPACITY_EXPR;
+};
+
+// ?smooth=1 hover outline: a dark line in a white casing, which shows on the
+// palest and the darkest classes alike. Widths in px at full hover, by zoom.
+const HOVER_LINE_WIDTHS = [[6, 1.1], [9, 1.6], [12, 2.2]];
+const HOVER_CASING_WIDTHS = [[6, 3.1], [9, 3.8], [12, 4.6]];
+// The outline grows from this share of its width as it fades in.
+const HOVER_GROW_FROM = 0.5;
+// The fade is in the line color, so the layers themselves stay opaque.
+const HOVER_LINE_OPACITY = FLAGS.smooth ? 1 : 0.45;
+
+// Width by zoom, scaled by how far the hover has faded in.
+function hoverWidth(stops) {
+  const grow = ['+', HOVER_GROW_FROM, ['*', 1 - HOVER_GROW_FROM, HOVER_T]];
+  return ['interpolate', ['linear'], ['zoom'], ...stops.flatMap(([z, w]) => [z, ['*', w, grow]])];
+}
+
+// A color that fades in with the hover. None on the picked area, whose own
+// outline shows instead.
+function hoverColor(rgb, alpha) {
+  return ['case', IS_SELECTED, 'rgba(0,0,0,0)',
+    ['interpolate', ['linear'], HOVER_T, 0, `rgba(${rgb},0)`, 1, `rgba(${rgb},${alpha})`]];
+}
 
 // Borders between areas: thin white lines that thicken as you zoom in, so
 // Honolulu's small districts don't blur into a mesh at the statewide view.
@@ -189,10 +232,12 @@ const COAST_COLOR = '#5b645b';
 const COAST_WIDTH_EXPR = ['interpolate', ['linear'], ['zoom'], 6, 0.6, 9, 1, 12, 1.5];
 
 // Coastline over the level's fill and borders, under its selection and hover
-// outlines.
+// outlines (?smooth=1 draws the hover below the selection, so it starts at
+// the hover's casing).
 function placeCoastline(map, level) {
-  if (map.getLayer(COAST_LAYER_ID) && map.getLayer(`${level}-selected`)) {
-    map.moveLayer(COAST_LAYER_ID, `${level}-selected`);
+  const below = FLAGS.smooth ? `${level}-hover-casing` : `${level}-selected`;
+  if (map.getLayer(COAST_LAYER_ID) && map.getLayer(below)) {
+    map.moveLayer(COAST_LAYER_ID, below);
   }
 }
 
@@ -284,6 +329,7 @@ function fillLayerIds(level) {
     `${level}-line`,
     `${level}-selected`,
     `${level}-hover`,
+    ...(FLAGS.smooth ? [`${level}-hover-casing`] : []),
   ];
 }
 
@@ -342,6 +388,28 @@ function ensureSourceAndLayers(map, level, data) {
     },
   });
 
+  // ?smooth=1 hover: casing, then line, both below the selection outline so a
+  // hovered neighbour doesn't cut into it along their shared border.
+  if (FLAGS.smooth) {
+    for (const [id, color, widths] of [
+      [`${level}-hover-casing`, hoverColor('255,255,255', 0.9), HOVER_CASING_WIDTHS],
+      [`${level}-hover`, hoverColor('22,28,23', 0.85), HOVER_LINE_WIDTHS],
+    ]) {
+      map.addLayer({
+        id,
+        type: 'line',
+        source: level,
+        layout: { visibility: 'none', 'line-join': 'round' },
+        paint: {
+          'line-color': color,
+          'line-width': hoverWidth(widths),
+          'line-opacity': HOVER_LINE_OPACITY,
+          ...LINE_TRANSITION_PAINT,
+        },
+      });
+    }
+  }
+
   // Selected: thin, soft inner outline. Kept subtle so the drop shadow
   // does the heavy visual lifting and the polygon "lifts off" the map
   // without a heavy black border competing for attention.
@@ -365,25 +433,27 @@ function ensureSourceAndLayers(map, level, data) {
   // Hover: thin, light inner ring + opacity bump on the fill (see
   // FILL_OPACITY_EXPR). Suppressed when selected so the selection
   // outline doesn't fight a hover ring.
-  map.addLayer({
-    id: `${level}-hover`,
-    type: 'line',
-    source: level,
-    layout: { visibility: 'none' },
-    paint: {
-      'line-color': '#1a1a1a',
-      'line-width': [
-        'case',
-        ['all',
-          ['boolean', ['feature-state', 'hover'], false],
-          ['!', ['boolean', ['feature-state', 'selected'], false]],
-        ], 1.25,
-        0,
-      ],
-      'line-opacity': 0.45,
-      ...LINE_TRANSITION_PAINT,
-    },
-  });
+  if (!FLAGS.smooth) {
+    map.addLayer({
+      id: `${level}-hover`,
+      type: 'line',
+      source: level,
+      layout: { visibility: 'none' },
+      paint: {
+        'line-color': '#1a1a1a',
+        'line-width': [
+          'case',
+          ['all',
+            ['boolean', ['feature-state', 'hover'], false],
+            ['!', ['boolean', ['feature-state', 'selected'], false]],
+          ], 1.25,
+          0,
+        ],
+        'line-opacity': HOVER_LINE_OPACITY,
+        ...LINE_TRANSITION_PAINT,
+      },
+    });
+  }
 
   if (!FLAGS.noHover) bindLayerInteraction(map, level);
   registeredLevels.add(level);
@@ -397,7 +467,9 @@ function restoreTargetOpacities(map, level) {
   if (map.getLayer(`${level}-selected`))
     map.setPaintProperty(`${level}-selected`, 'line-opacity', 0.9);
   if (map.getLayer(`${level}-hover`))
-    map.setPaintProperty(`${level}-hover`, 'line-opacity', 0.45);
+    map.setPaintProperty(`${level}-hover`, 'line-opacity', HOVER_LINE_OPACITY);
+  if (map.getLayer(`${level}-hover-casing`))
+    map.setPaintProperty(`${level}-hover-casing`, 'line-opacity', HOVER_LINE_OPACITY);
 }
 
 function fadeInLevel(map, level) {
