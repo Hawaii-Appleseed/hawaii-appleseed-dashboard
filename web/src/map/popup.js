@@ -4,7 +4,7 @@ import { getMap, releaseHome } from './mapInstance.js';
 import { setShadowFeature } from './shadowLayer.js';
 import { getFeatureById } from './layerManager.js';
 import { FLAGS } from './perfFlags.js';
-import { fadeHover } from './hoverFade.js';
+import { fadeHover, fadeFeatureState } from './featureFade.js';
 import { cameraTrip } from './motion.js';
 
 let VARIABLES = null;
@@ -34,6 +34,11 @@ let hiddenAt = -Infinity;
 // and whether to re-hover there when the current pan or zoom stops.
 let pointer = null;
 let resyncAfterMove = false;
+// ?smooth=1: areas drawn solid over the dimmed map (the -lift layer in
+// layerManager.js), as `${level}|${id}` → { level, id }, and how long one
+// takes to sink back once another area is picked.
+const lifted = new Map();
+const LIFT_DROP_MS = 250;
 
 export function initPopup(variablesConfig, repData) {
   VARIABLES = variablesConfig.variables;
@@ -241,6 +246,21 @@ function setHoverState(map, level, id, on) {
 function setSelectedState(map, level, id, on) {
   if (id == null) return;
   map.setFeatureState({ source: level, id }, { selected: on });
+  if (FLAGS.smooth && on) liftArea(map, level, id);
+}
+
+// ?smooth=1: draw the picked area solid at once, and let any area picked
+// before sink back into the dimmed map. Letting go of an area leaves it
+// lifted: that shows nothing while the map isn't dimmed, and keeps the area
+// from dipping while the rest of the map brightens back up around it.
+function liftArea(map, level, id) {
+  for (const [key, area] of lifted) {
+    if (area.level === level && area.id === id) continue;
+    fadeFeatureState(map, area.level, area.id, 'lift', 0, LIFT_DROP_MS);
+    lifted.delete(key);
+  }
+  fadeFeatureState(map, level, id, 'lift', 1, 0);
+  lifted.set(`${level}|${id}`, { level, id });
 }
 
 export function clearSelectedLayer() {

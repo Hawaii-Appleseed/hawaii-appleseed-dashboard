@@ -13,10 +13,12 @@
 //   ?nonav=1     — don't add NavigationControl / ResetControl
 //   ?lowdpr=N    — clamp pixelRatio to N (e.g. ?lowdpr=1)
 //   ?smooth=1    — smoother map motion, on trial: hover outlines that fade in
-//                  and out (hoverFade.js), one timed zoom engine behind the
+//                  and out (featureFade.js), one timed zoom engine behind the
 //                  wheel, trackpad, +/− buttons and double-click
-//                  (zoomEngine.js; it takes over from ?stock), and camera trips
-//                  paced by distance (motion.js)
+//                  (zoomEngine.js; it takes over from ?stock), camera trips
+//                  paced by distance (motion.js), a new geography fading in
+//                  over the old, and the map dimming around a picked area
+//                  gradually (layerManager.js)
 
 const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
 

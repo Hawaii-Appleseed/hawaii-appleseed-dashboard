@@ -172,7 +172,7 @@ const FILL_OPACITY_FOCUS_EXPR = [
   ['boolean', ['feature-state', 'hover'], false], 0.7,
   0.45,
 ];
-// ?smooth=1 (perfFlags.js): hover is a number from 0 to 1 that hoverFade.js
+// ?smooth=1 (perfFlags.js): hover is a number from 0 to 1 that featureFade.js
 // steps every frame, since MapLibre snaps any style driven by feature state.
 // The hover leaves the fill alone, so colors always match the legend
 // (lightening it was invisible on the palest classes and about a class
@@ -180,19 +180,25 @@ const FILL_OPACITY_FOCUS_EXPR = [
 // below).
 const HOVER_T = ['number', ['feature-state', 'hover'], 0];
 const IS_SELECTED = ['boolean', ['feature-state', 'selected'], false];
-// Reads feature state, like the focus expression, so switching between the
-// two snaps. MapLibre holds a data-driven value for the whole transition
-// before handing over to a constant, which would leave the map dimmed for
-// 300ms after a deselect.
-const FILL_OPACITY_SMOOTH_EXPR = ['case', IS_SELECTED, 1.0, 1.0];
-const FILL_OPACITY_FOCUS_SMOOTH_EXPR = [
-  'case',
-  IS_SELECTED, 1.0,
-  ['interpolate', ['linear'], HOVER_T, 0, 0.45, 1, 0.7],
-];
+
+// ?smooth=1 dimming. The fill's opacity is a plain number, so MapLibre's own
+// transition fades it: in as a level appears, and down to FOCUS_OPACITY and
+// back as an area is picked and let go. (An opacity that reads feature state
+// snaps, and swapping one for another re-tiles the whole source.) The picked
+// area, and the one under the pointer while the map is dimmed, draw again on
+// top in the -lift layer, whose opacity does read feature state: `lift`
+// (popup.js) for the picked area, and the hover. While nothing is picked the
+// fill is opaque, and the same color over it changes nothing.
+const FOCUS_OPACITY = 0.45;
+const FOCUS_HOVER_OPACITY = 0.7;
+// The -lift opacity that, over the dimmed fill, shows a hovered area at
+// FOCUS_HOVER_OPACITY.
+const HOVER_LIFT = (FOCUS_HOVER_OPACITY - FOCUS_OPACITY) / (1 - FOCUS_OPACITY);
+const LIFT_OPACITY_EXPR = ['max', ['number', ['feature-state', 'lift'], 0], ['*', HOVER_LIFT, HOVER_T]];
+
 let selectionFocus = false;
 const fillOpacity = () => {
-  if (FLAGS.smooth) return selectionFocus ? FILL_OPACITY_FOCUS_SMOOTH_EXPR : FILL_OPACITY_SMOOTH_EXPR;
+  if (FLAGS.smooth) return selectionFocus ? FOCUS_OPACITY : 1;
   return selectionFocus ? FILL_OPACITY_FOCUS_EXPR : FILL_OPACITY_EXPR;
 };
 
@@ -317,8 +323,12 @@ async function ensureCoastline(map) {
     id: COAST_LAYER_ID,
     type: 'line',
     source: COAST_LAYER_ID,
-    paint: { 'line-color': COAST_COLOR, 'line-width': COAST_WIDTH_EXPR, 'line-opacity': 0.9 },
+    paint: { 'line-color': COAST_COLOR, 'line-width': COAST_WIDTH_EXPR, 'line-opacity': FLAGS.smooth ? 0 : 0.9 },
   });
+  // ?smooth=1: fades in like the areas do, rather than popping onto the map.
+  if (FLAGS.smooth) {
+    whenTilesReady(map, COAST_LAYER_ID, () => map.setPaintProperty(COAST_LAYER_ID, 'line-opacity', 0.9));
+  }
   if (currentLevel) placeCoastline(map, currentLevel);
   if (pointsLayerActive && map.getLayer(pointsLayerActive.layerId)) map.moveLayer(pointsLayerActive.layerId);
 }
@@ -329,7 +339,7 @@ function fillLayerIds(level) {
     `${level}-line`,
     `${level}-selected`,
     `${level}-hover`,
-    ...(FLAGS.smooth ? [`${level}-hover-casing`] : []),
+    ...(FLAGS.smooth ? [`${level}-hover-casing`, `${level}-lift`] : []),
   ];
 }
 
@@ -344,6 +354,12 @@ function ensureSourceAndLayers(map, level, data) {
     promoteId: 'GEOID',
   });
 
+  // ?smooth=1 starts every layer at nothing, to fade in from
+  // (showLevelSmoothly), and the fill in its colors, so its first tiles are
+  // its last instead of being re-tiled as soon as the colors arrive.
+  const startOpacity = (target) => (FLAGS.smooth ? 0 : target);
+  const fillColor = FLAGS.smooth ? levelFillColor(level) : '#cccccc';
+
   // Fill — colored by current variable. The drop shadow lives in a separate
   // global custom WebGL layer (`./shadowLayer.js`); we just make sure it
   // remains below this fill via `map.moveLayer` after registration.
@@ -353,11 +369,23 @@ function ensureSourceAndLayers(map, level, data) {
     source: level,
     layout: { visibility: 'none' },
     paint: {
-      'fill-color': '#cccccc',
-      'fill-opacity': fillOpacity(),
+      'fill-color': fillColor,
+      'fill-opacity': startOpacity(fillOpacity()),
       ...TRANSITION_PAINT,
     },
   });
+
+  // ?smooth=1: the picked area, and the hovered one while the map is dimmed,
+  // drawn again over the fill (see LIFT_OPACITY_EXPR).
+  if (FLAGS.smooth) {
+    map.addLayer({
+      id: `${level}-lift`,
+      type: 'fill',
+      source: level,
+      layout: { visibility: 'none' },
+      paint: { 'fill-color': fillColor, 'fill-opacity': LIFT_OPACITY_EXPR },
+    });
+  }
 
   // Reliability hatch overlay — sits above the colored fill, below the
   // outlines. Hidden by default; shown (and filtered to flagged features for
@@ -369,7 +397,7 @@ function ensureSourceAndLayers(map, level, data) {
     layout: { visibility: 'none' },
     paint: {
       'fill-pattern': RELIABILITY_PATTERN_CAUTION,
-      'fill-opacity': 0.9,
+      'fill-opacity': startOpacity(0.9),
     },
     filter: ['==', ['get', 'GEOID'], '\u0000'], // matches nothing until applied
   });
@@ -383,7 +411,7 @@ function ensureSourceAndLayers(map, level, data) {
     paint: {
       'line-color': LINE_COLOR,
       'line-width': LINE_WIDTH_EXPR,
-      'line-opacity': LINE_OPACITY,
+      'line-opacity': startOpacity(LINE_OPACITY),
       ...LINE_TRANSITION_PAINT,
     },
   });
@@ -403,7 +431,7 @@ function ensureSourceAndLayers(map, level, data) {
         paint: {
           'line-color': color,
           'line-width': hoverWidth(widths),
-          'line-opacity': HOVER_LINE_OPACITY,
+          'line-opacity': startOpacity(HOVER_LINE_OPACITY),
           ...LINE_TRANSITION_PAINT,
         },
       });
@@ -425,7 +453,7 @@ function ensureSourceAndLayers(map, level, data) {
         ['boolean', ['feature-state', 'selected'], false], 2,
         0,
       ],
-      'line-opacity': 0.9,
+      'line-opacity': startOpacity(0.9),
       ...LINE_TRANSITION_PAINT,
     },
   });
@@ -472,11 +500,84 @@ function restoreTargetOpacities(map, level) {
     map.setPaintProperty(`${level}-hover-casing`, 'line-opacity', HOVER_LINE_OPACITY);
 }
 
+// ?smooth=1 geography switches. The new level fades in on top of the old one,
+// which stays as it is underneath until it's covered and then hides. (Fading
+// both at once lets the background show through halfway.) The fade waits for
+// the new level's tiles, so it isn't spent on an empty or grey level.
+const revealed = new Set(); // levels fading in or faded in
+let hideOthersTimer = null;
+const TILES_TIMEOUT_MS = 1500; // fade in regardless after this long
+
+// A level's layers, bottom to top.
+const levelStack = (level) => [
+  `${level}-fill`, `${level}-lift`, `${level}-reliability`, `${level}-line`,
+  `${level}-hover-casing`, `${level}-hover`, `${level}-selected`,
+];
+
+// Run `fn` once `sourceId`'s tiles have loaded with the paint they have now.
+// A paint change that re-tiles the source starts on the next render, so look
+// then; give up waiting after TILES_TIMEOUT_MS.
+function whenTilesReady(map, sourceId, fn) {
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    clearTimeout(timer);
+    map.off('sourcedata', onData);
+    fn();
+  };
+  const onData = (e) => {
+    if (e.sourceId === sourceId && map.isSourceLoaded(sourceId)) finish();
+  };
+  const timer = setTimeout(finish, TILES_TIMEOUT_MS);
+  map.once('render', () => {
+    if (map.isSourceLoaded(sourceId)) finish();
+    else map.on('sourcedata', onData);
+  });
+}
+
+function showLevelSmoothly(map, level) {
+  revealed.delete(level);
+  for (const id of levelStack(level)) if (map.getLayer(id)) map.moveLayer(id);
+  if (map.getLayer(SHADOW_LAYER_ID)) map.moveLayer(SHADOW_LAYER_ID, `${level}-fill`);
+  for (const id of fillLayerIds(level)) {
+    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
+  }
+  whenTilesReady(map, level, () => {
+    if (level !== currentLevel) return; // another geography took over meanwhile
+    revealed.add(level);
+    restoreTargetOpacities(map, level);
+    if (map.getLayer(`${level}-reliability`)) map.setPaintProperty(`${level}-reliability`, 'fill-opacity', 0.9);
+    clearTimeout(hideOthersTimer);
+    hideOthersTimer = setTimeout(() => {
+      if (level !== currentLevel) return;
+      for (const other of registeredLevels) if (other !== level) hideLevelSmoothly(map, other);
+    }, FADE_MS + 50);
+  });
+}
+
+function hideLevelSmoothly(map, level) {
+  revealed.delete(level);
+  for (const id of [...fillLayerIds(level), `${level}-reliability`]) {
+    const layer = map.getLayer(id);
+    if (!layer) continue;
+    if (id !== `${level}-reliability`) map.setLayoutProperty(id, 'visibility', 'none');
+    // Back to nothing, for the next fade-in. (The -lift opacity reads feature
+    // state, so it can't fade and needn't.)
+    if (layer.type === 'line') map.setPaintProperty(id, 'line-opacity', 0);
+    else if (id !== `${level}-lift`) map.setPaintProperty(id, 'fill-opacity', 0);
+  }
+}
+
 function fadeInLevel(map, level) {
   // Cancel any in-flight hide for this level
   if (pendingHide.has(level)) {
     clearTimeout(pendingHide.get(level));
     pendingHide.delete(level);
+  }
+  if (FLAGS.smooth) {
+    showLevelSmoothly(map, level);
+    return;
   }
 
   const ids = fillLayerIds(level);
@@ -493,6 +594,8 @@ function fadeInLevel(map, level) {
 }
 
 function fadeOutLevel(map, level) {
+  // ?smooth=1 leaves it be: the new level fades in over it, then hides it.
+  if (FLAGS.smooth) return;
   const ids = fillLayerIds(level);
   for (const id of ids) {
     if (!map.getLayer(id)) continue;
@@ -509,23 +612,25 @@ function fadeOutLevel(map, level) {
   pendingHide.set(level, tid);
 }
 
+// Variable mode mutes the choropleth to a backdrop (the circles are the
+// data). Overlay mode leaves the real variable's fill untouched underneath.
+// Note this is gated on the variable, NOT on the overlay being up yet:
+// adding the circle layer is async (it fetches GeoJSON), and keying off
+// pointsLayerActive would flash a gray "no data" choropleth in between.
+function levelFillColor(level) {
+  return millionairesIsVariable()
+    ? POINTS_MODE_MUTED_FILL
+    : colorExpression(currentVariable, currentScheme, level);
+}
+
 function applyColorExpression(map, level) {
   if (!map.getLayer(`${level}-fill`)) return;
-  // Variable mode mutes the choropleth to a backdrop (the circles are the
-  // data). Overlay mode leaves the real variable's fill untouched underneath.
-  // Note this is gated on the variable, NOT on the overlay being up yet:
-  // adding the circle layer is async (it fetches GeoJSON), and keying off
-  // pointsLayerActive would flash a gray "no data" choropleth in between.
-  if (millionairesIsVariable()) {
-    map.setPaintProperty(`${level}-fill`, 'fill-color', POINTS_MODE_MUTED_FILL);
-    if (map.getLayer(`${level}-line`)) {
-      map.setPaintProperty(`${level}-line`, 'line-color', POINTS_MODE_MUTED_LINE);
-    }
-  } else {
-    map.setPaintProperty(`${level}-fill`, 'fill-color', colorExpression(currentVariable, currentScheme, level));
-    if (map.getLayer(`${level}-line`)) {
-      map.setPaintProperty(`${level}-line`, 'line-color', LINE_COLOR);
-    }
+  const color = levelFillColor(level);
+  map.setPaintProperty(`${level}-fill`, 'fill-color', color);
+  // ?smooth=1: the -lift layer draws areas again, in the same colors.
+  if (map.getLayer(`${level}-lift`)) map.setPaintProperty(`${level}-lift`, 'fill-color', color);
+  if (map.getLayer(`${level}-line`)) {
+    map.setPaintProperty(`${level}-line`, 'line-color', millionairesIsVariable() ? POINTS_MODE_MUTED_LINE : LINE_COLOR);
   }
 }
 
@@ -834,6 +939,8 @@ export function setSelectionFocus(on) {
   selectionFocus = on;
   const map = getMap();
   if (!map || !currentLevel || !map.getLayer(`${currentLevel}-fill`)) return;
+  // ?smooth=1: a level still waiting to fade in takes this up when it does.
+  if (FLAGS.smooth && !revealed.has(currentLevel)) return;
   map.setPaintProperty(`${currentLevel}-fill`, 'fill-opacity', fillOpacity());
 }
 
