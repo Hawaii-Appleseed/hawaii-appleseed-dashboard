@@ -6,6 +6,7 @@ import { getFeatureById } from './layerManager.js';
 import { FLAGS } from './perfFlags.js';
 import { fadeHover, fadeFeatureState } from './featureFade.js';
 import { cameraTrip } from './motion.js';
+import { getColorForValue } from './colors.js';
 
 let VARIABLES = null;
 let REP_DATA = {};
@@ -172,7 +173,54 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// ?smooth=1 card: the place first, with its color on the map beside the
+// figure, as in the info panel's headline, and the representative on one
+// line. A district leads with its neighbourhoods, its number above them.
+function buildCardContent(properties, level) {
+  const s = getState();
+  const name = cleanName(properties.display_name || properties.NAME || properties.name);
+  const varKey = s.selectedVariable;
+  const meta = VARIABLES?.[varKey];
+  const rep = lookupRep(properties, level);
+
+  const places = (rep?.areas || '').split(', ').map((p) => p.trim()).filter(Boolean);
+  let html;
+  if (places.length) {
+    const more = places.length - 2;
+    html = `<div class="tt-eyebrow">${escapeHtml(name.replace(/^State\s+/, ''))}</div>` +
+           `<div class="tt-title">${escapeHtml(places.slice(0, 2).join(', '))}` +
+           (more > 0 ? ` <span class="tt-more">+${more} more</span>` : '') + `</div>`;
+  } else {
+    html = `<div class="tt-title">${escapeHtml(name)}</div>`;
+  }
+
+  // Points variables (Millionaires) are counted by town — the circles carry
+  // them — so an area has no figure of its own to show.
+  if (meta?.render_type !== 'points') {
+    const raw = properties[varKey];
+    const num = parseFloat(raw);
+    const swatch = isNaN(num)
+      ? ''
+      : `<span class="ip-swatch" style="background:${getColorForValue(num, varKey, s.colorScheme, level)}" aria-hidden="true"></span>`;
+    const label = meta?.info_panel_label || meta?.display_name || varKey || '';
+    const value = formatValue(raw, meta?.data_type);
+    // A unit after the figure (%, min) sits smaller beside it.
+    const [, figure, unit] = /^(.*?)(%| min)?$/.exec(value);
+    html += `<div class="tt-label">${swatch}${escapeHtml(label)}</div>` +
+            (value === 'N/A'
+              ? `<div class="tt-value is-empty">No data</div>`
+              : `<div class="tt-value">${escapeHtml(figure)}${unit ? `<span class="tt-unit">${escapeHtml(unit)}</span>` : ''}</div>`);
+  }
+
+  if (rep) {
+    html += `<div class="tt-rep-line">${rep.title === 'Senator' ? 'Sen.' : 'Rep.'} ${escapeHtml(rep.name)}` +
+            ` <span class="tt-party">${escapeHtml(rep.party)}</span></div>`;
+  }
+  return html;
+}
+
 function buildTooltipContent(properties, level) {
+  if (FLAGS.smooth) return buildCardContent(properties, level);
   const s = getState();
   const name = cleanName(properties.display_name || properties.NAME || properties.name);
   const varKey = s.selectedVariable;

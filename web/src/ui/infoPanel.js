@@ -293,7 +293,6 @@ export function showInfoPanel(properties, { focus = false } = {}) {
          data-moe-note="${escapeHtml(selectedMoe.note)}">
       <div class="ip-headline-label">${swatch}${escapeHtml(selectedDisplayName)}</div>
       <div class="ip-headline-value">${escapeHtml(selectedValue)}</div>
-      ${selectedYear ? `<div class="ip-headline-meta">Data year ${escapeHtml(selectedYear)}</div>` : ''}
     </div>`;
 
   panel.innerHTML = `
