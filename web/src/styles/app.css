@@ -1075,6 +1075,35 @@ select {
   border-radius: 50%;
   border-color: #1f2d3d;
 }
+/* Statewide wealth ranges under the millionaires circle key. */
+.key-tiers {
+  border-collapse: collapse;
+  margin-top: 4px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.key-tiers caption {
+  text-align: left;
+  color: var(--ink-3);
+  padding-bottom: 2px;
+}
+.key-tiers th,
+.key-tiers td {
+  padding: 1px 0;
+  font-weight: normal;
+  text-align: right;
+}
+.key-tiers th[scope="row"],
+.key-tiers thead th:first-child {
+  text-align: left;
+}
+.key-tiers td,
+.key-tiers thead th + th {
+  padding-left: 12px;
+}
+.key-tiers thead th {
+  color: var(--ink-3);
+}
 /* Mirror the on-map hatch tiers (layerManager.js draws them in this ink):
    single diagonal for caution, cross-hatch for unreliable. */
 .key-swatch.rel-caution {

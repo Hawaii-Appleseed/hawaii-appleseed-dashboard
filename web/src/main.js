@@ -55,6 +55,7 @@ async function main() {
   // the only place the two entry points need to be OR'd together.
   const millionairesVisible = (state) =>
     state.showMillionaires || state.selectedVariable === 'millionaires';
+  let prevVariable = s0.selectedVariable;
 
   // The geography on the map picks the scale for variables with one per
   // level, so a legend redrawn while another geography loads keeps matching
@@ -88,7 +89,13 @@ async function main() {
       drawLegend(state);
     }
     if ('selectedVariable' in changed) {
+      const leftMillionaires = prevVariable === 'millionaires';
+      prevVariable = state.selectedVariable;
       setVariable(state.selectedVariable);
+      // Leaving Millionaires keeps its circles up as the overlay, so a reader
+      // who came in on the millionaire map (the Wealth Tax Report embed) can
+      // set it against any other variable. The switch still turns them off.
+      if (leftMillionaires && !state.showMillionaires) setState({ showMillionaires: true });
       // Must follow setVariable: layerManager derives variable-vs-overlay mode
       // (mute + circle colors) from the now-current variable.
       setMillionairesOverlay(millionairesVisible(state));

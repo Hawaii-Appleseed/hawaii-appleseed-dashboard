@@ -310,6 +310,28 @@ function updateMillionairesControl() {
   const color = isVariable ? (getSchemeColors(s.colorScheme)[6] || '#2171b5') : '#ec7014';
   els.milKey.hidden = !on;
   els.milKey.innerHTML = on
-    ? `<div class="key-row"><span class="key-swatch is-circle" style="background-color:${color}"></span>Circle size = number of millionaires</div>`
+    ? `<div class="key-row"><span class="key-swatch is-circle" style="background-color:${color}"></span>Circle size = number of millionaires</div>${tiersTable()}`
     : '';
+}
+
+// Statewide millionaires by wealth range. The town circles can't be split this
+// way (the per-person export behind them has no net-worth field), so the key
+// gives the statewide picture beside them. Altrata's rows are cumulative
+// ($1m+, $20m+, $50m+); these are the exclusive bands, 2024 column of
+// "Market sizing wealth data for Hawaiʻi" (Altrata, Nov 9 2025).
+const MILLIONAIRE_TIERS = [
+  { range: '$1M–$20M', people: 80569, wealth: 197.1 },
+  { range: '$20M–$50M', people: 880, wealth: 26.3 },
+  { range: '$50M+', people: 365, wealth: 69.3 },
+];
+
+function tiersTable() {
+  const rows = MILLIONAIRE_TIERS.map((t) =>
+    `<tr><th scope="row">${t.range}</th><td>${t.people.toLocaleString('en-US')}</td><td>$${t.wealth.toFixed(1)}B</td></tr>`
+  ).join('');
+  return `<table class="key-tiers">
+      <caption>Statewide by wealth range, 2024</caption>
+      <thead><tr><th scope="col">Net worth</th><th scope="col">People</th><th scope="col">Wealth</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
