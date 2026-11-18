@@ -2,10 +2,10 @@ import './map/perfFlags.js'; // must be first — applies CSS kills before paint
 import { loadConfig, loadRepData } from './data/loader.js';
 import { initColors, listSchemes } from './map/colors.js';
 import { createMap, getMap, fitHome } from './map/mapInstance.js';
-import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, getFeatureProperties, initLayerManager, setSelectionFocus, getCurrentLevel, KNOWN_LEVELS } from './map/layerManager.js';
+import { setLayer, setVariable, setColorScheme, setReliability, setMillionairesOverlay, setCompareVariable, getFeatureProperties, initLayerManager, setSelectionFocus, getCurrentLevel, KNOWN_LEVELS } from './map/layerManager.js';
 import { initPopup, clearSelectedLayer } from './map/popup.js';
 import { initDiag } from './map/diag.js';
-import { initLegend, renderLegend } from './ui/legend.js';
+import { initLegend, renderLegend, compareChoices } from './ui/legend.js';
 import { initSidebar, renderSidebar } from './ui/sidebar.js';
 import { initInfoPanel, showInfoPanel, hideInfoPanel } from './ui/infoPanel.js';
 import { initAreaSearch } from './ui/areaSearch.js';
@@ -45,6 +45,7 @@ async function main() {
     selectedVariable: Object.entries(config.variables.variables)
       .filter(([, v]) => v.show_in_dropdown)
       .map(([key]) => key),
+    compareVariable: compareChoices(),
   });
   // A ?var=millionaires link opens with the switch on (see the variable
   // handler below for why the switch follows Millionaires).
@@ -66,6 +67,16 @@ async function main() {
   // level, so fall back to the one requested.
   const drawLegend = (state) =>
     renderLegend(state.selectedVariable, state.colorScheme, getCurrentLevel() ?? state.activeLayer);
+
+  // The info panel lists the compared variable too; redraw it when either
+  // variable changes while it is open.
+  const refreshInfoPanel = (state) => {
+    const panel = document.getElementById('info-panel');
+    if (state.selectedFeatureId && panel?.classList.contains('visible')) {
+      const props = getFeatureProperties(state.selectedFeatureId);
+      if (props) showInfoPanel(props);
+    }
+  };
 
   subscribe(async (state, changed) => {
     if ('selectedFeatureId' in changed) {
@@ -93,6 +104,10 @@ async function main() {
     }
     if ('selectedVariable' in changed) {
       prevVariable = state.selectedVariable;
+      // Comparing a variable with itself shows nothing new: drop the rings.
+      if (state.compareVariable && state.compareVariable === state.selectedVariable) {
+        setState({ compareVariable: null });
+      }
       setVariable(state.selectedVariable);
       // Picking Millionaires turns the switch on, so leaving it for another
       // variable keeps the circles up as the overlay: a reader who came in on
@@ -105,11 +120,12 @@ async function main() {
       drawLegend(state);
       // If a geo is selected and the info panel is open, re-render it so the
       // headline reflects the newly chosen variable.
-      const panel = document.getElementById('info-panel');
-      if (state.selectedFeatureId && panel?.classList.contains('visible')) {
-        const props = getFeatureProperties(state.selectedFeatureId);
-        if (props) showInfoPanel(props);
-      }
+      refreshInfoPanel(state);
+    }
+    if ('compareVariable' in changed) {
+      setCompareVariable(state.compareVariable);
+      drawLegend(state);
+      refreshInfoPanel(state);
     }
     if ('colorScheme' in changed) {
       setColorScheme(state.colorScheme);
@@ -135,6 +151,7 @@ async function main() {
   setColorScheme(s0.colorScheme);
   setReliability(s0.showReliability);
   setMillionairesOverlay(millionairesVisible(s0));
+  setCompareVariable(s0.compareVariable);
   drawLegend(s0);
   renderSidebar();
   writeToUrl();

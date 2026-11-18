@@ -8,6 +8,11 @@ const state = {
   // also shows the circles (in muted "variable mode"); that case is derived
   // from selectedVariable, not stored here.
   showMillionaires: false,
+  // "Compare with" — a second area variable drawn as sized rings at each
+  // area's center, on top of the choropleth (null when off). Never the same
+  // as selectedVariable, and never a points variable (Millionaires has its
+  // own switch above).
+  compareVariable: null,
   displayOptions: { showLabels: false, showLegend: true },
   selectedFeatureId: null,
 };

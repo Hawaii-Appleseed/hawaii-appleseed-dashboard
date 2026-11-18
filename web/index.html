@@ -63,11 +63,17 @@
             </div>
             <div class="legend-source"></div>
             <div id="reliability-key" class="legend-key" hidden></div>
+            <div id="compare-key" class="legend-key" hidden></div>
             <div id="millionaires-key" class="legend-key" hidden></div>
             <div id="map-options" class="map-options" role="group" aria-label="Map options" hidden>
               <div class="mo-section mo-scheme">
                 <div class="mo-label" id="mo-scheme-label">Color scheme</div>
                 <div id="color-scheme-options" class="mo-schemes" role="radiogroup" aria-labelledby="mo-scheme-label"></div>
+              </div>
+              <div class="mo-section mo-compare">
+                <label class="mo-label" for="compare-select">Compare with</label>
+                <select id="compare-select" class="mo-select" aria-describedby="compare-help"></select>
+                <span class="mo-switch-help" id="compare-help">Adds a second variable as rings sized by value</span>
               </div>
               <label class="mo-section mo-switch mo-reliability">
                 <span class="mo-switch-text">

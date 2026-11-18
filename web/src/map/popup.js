@@ -160,6 +160,21 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// One variable's label and figure on the card. `compare` sets the second
+// figure a little smaller, so the map's main variable still leads.
+function figureHtml(properties, varKey, marker, compare = false) {
+  const meta = VARIABLES?.[varKey];
+  const label = meta?.info_panel_label || meta?.display_name || varKey || '';
+  const value = formatValue(properties[varKey], meta?.data_type);
+  // A unit after the figure (%, min) sits smaller beside it.
+  const [, figure, unit] = /^(.*?)(%| min)?$/.exec(value);
+  const cls = compare ? ' is-compare' : '';
+  return `<div class="tt-label${cls}">${marker}${escapeHtml(label)}</div>` +
+         (value === 'N/A'
+           ? `<div class="tt-value is-empty${cls}">No data</div>`
+           : `<div class="tt-value${cls}">${escapeHtml(figure)}${unit ? `<span class="tt-unit">${escapeHtml(unit)}</span>` : ''}</div>`);
+}
+
 // The card: the place first, with its color on the map beside the
 // figure, as in the info panel's headline, and the representative on one
 // line. A district leads with its neighbourhoods, its number above them.
@@ -184,19 +199,15 @@ function buildTooltipContent(properties, level) {
   // Points variables (Millionaires) are counted by town — the circles carry
   // them — so an area has no figure of its own to show.
   if (meta?.render_type !== 'points') {
-    const raw = properties[varKey];
-    const num = parseFloat(raw);
+    const num = parseFloat(properties[varKey]);
     const swatch = isNaN(num)
       ? ''
       : `<span class="ip-swatch" style="background:${getColorForValue(num, varKey, s.colorScheme, level)}" aria-hidden="true"></span>`;
-    const label = meta?.info_panel_label || meta?.display_name || varKey || '';
-    const value = formatValue(raw, meta?.data_type);
-    // A unit after the figure (%, min) sits smaller beside it.
-    const [, figure, unit] = /^(.*?)(%| min)?$/.exec(value);
-    html += `<div class="tt-label">${swatch}${escapeHtml(label)}</div>` +
-            (value === 'N/A'
-              ? `<div class="tt-value is-empty">No data</div>`
-              : `<div class="tt-value">${escapeHtml(figure)}${unit ? `<span class="tt-unit">${escapeHtml(unit)}</span>` : ''}</div>`);
+    html += figureHtml(properties, varKey, swatch);
+  }
+  // The "Compare with" variable, marked with a ring like the one on the map.
+  if (s.compareVariable && s.compareVariable !== varKey) {
+    html += figureHtml(properties, s.compareVariable, '<span class="ip-ring" aria-hidden="true"></span>', true);
   }
 
   if (rep) {

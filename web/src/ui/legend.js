@@ -1,10 +1,13 @@
 import { getSchemeColors, getThresholds, listSchemes, classColor } from '../map/colors.js';
 import { getState, setState } from '../state/store.js';
+import { compareRadius, COMPARE_INK } from '../map/layerManager.js';
 
 // The map legend: a stepped color bar with the class boundaries under it, and
-// a "Map options" menu (color scheme, reliability flags, millionaires).
+// a "Map options" menu (color scheme, "Compare with", reliability flags,
+// millionaires), and a key for each overlay on the map.
 
 let VARIABLES = null;
+let GROUPS = {};
 let els = null;
 
 // Binds the legend's controls once. Embeds drop the color-scheme and
@@ -13,6 +16,7 @@ let els = null;
 // on/off switch has to stay in view there.
 export function initLegend(variablesConfig, { embedded = false } = {}) {
   VARIABLES = variablesConfig.variables;
+  GROUPS = variablesConfig.dropdown_groups || {};
   const legend = document.getElementById('main-map-legend');
   if (!legend) return;
   els = {
@@ -24,6 +28,8 @@ export function initLegend(variablesConfig, { embedded = false } = {}) {
     source: legend.querySelector('.legend-source'),
     relKey: document.getElementById('reliability-key'),
     milKey: document.getElementById('millionaires-key'),
+    cmpKey: document.getElementById('compare-key'),
+    cmpSelect: document.getElementById('compare-select'),
     optionsBtn: document.getElementById('map-options-btn'),
     options: document.getElementById('map-options'),
     schemes: document.getElementById('color-scheme-options'),
@@ -44,11 +50,18 @@ export function initLegend(variablesConfig, { embedded = false } = {}) {
     legend.appendChild(els.milToggle.closest('.mo-switch'));
     els.options.remove();
     els.optionsBtn.remove();
-    els.options = els.optionsBtn = els.schemes = els.relToggle = els.relHelp = null;
+    els.options = els.optionsBtn = els.schemes = els.relToggle = els.relHelp = els.cmpSelect = null;
   } else {
     buildSchemeOptions();
+    buildCompareOptions();
     bindOptionsMenu();
   }
+
+  // The key's × clears the comparison (it is the only way to in an embed,
+  // where the options menu is gone).
+  els.cmpKey.addEventListener('click', (e) => {
+    if (e.target.closest('.compare-clear')) setState({ compareVariable: null });
+  });
 
   els.relToggle?.addEventListener('change', (e) => setState({ showReliability: e.target.checked }));
   els.milToggle.addEventListener('change', (e) => {
@@ -196,6 +209,7 @@ export function renderLegend(varKey, scheme, level) {
   updateSchemeOptions(scheme);
   updateReliabilityControl(varKey);
   updateMillionairesControl();
+  updateCompareControl(varKey, level);
 }
 
 // Hide every other tick label when the widest one wouldn't fit its slot.
@@ -352,4 +366,69 @@ function tiersTable() {
       <thead><tr><th scope="col">Net worth</th><th scope="col">People</th><th scope="col">Wealth</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
+}
+
+// ── Compare with ───────────────────────────────────────────────────────────
+
+// Variables that can be compared: area figures from the dropdowns. Points
+// variables (Millionaires has its own switch) and text ones are left out.
+export function compareChoices() {
+  return Object.entries(VARIABLES || {})
+    .filter(([, v]) => v.show_in_dropdown && v.render_type !== 'points' && v.data_type !== 'text')
+    .map(([key]) => key);
+}
+
+function buildCompareOptions() {
+  const groups = new Map();
+  for (const key of compareChoices()) {
+    const v = VARIABLES[key];
+    const g = v.dropdown_group || '';
+    if (!groups.has(g)) groups.set(g, []);
+    groups.get(g).push([key, v]);
+  }
+  const order = (g) => GROUPS[g]?.order ?? 99;
+  let html = '<option value="">None</option>';
+  for (const g of [...groups.keys()].sort((a, b) => order(a) - order(b))) {
+    const items = groups.get(g).sort((a, b) => (a[1].dropdown_order ?? 99) - (b[1].dropdown_order ?? 99));
+    html += `<optgroup label="${escapeHtml(GROUPS[g]?.label || g || 'Other')}">` +
+      items.map(([key, v]) => `<option value="${escapeHtml(key)}">${escapeHtml(v.dropdown_label || v.display_name || key)}</option>`).join('') +
+      '</optgroup>';
+  }
+  els.cmpSelect.innerHTML = html;
+  els.cmpSelect.addEventListener('change', (e) => setState({ compareVariable: e.target.value || null }));
+}
+
+// Ring sizes the key shows: first, middle and last class.
+function sampleClasses(n) {
+  return [...new Set([0, Math.floor((n - 1) / 2), n - 1])];
+}
+
+function updateCompareControl(varKey, level) {
+  const cmp = getState().compareVariable;
+  if (els.cmpSelect) {
+    els.cmpSelect.value = cmp || '';
+    // Comparing with the variable already on the map shows nothing new.
+    for (const opt of els.cmpSelect.options) opt.disabled = !!opt.value && opt.value === varKey;
+  }
+  const meta = cmp && VARIABLES?.[cmp];
+  els.cmpKey.hidden = !meta;
+  if (!meta) {
+    els.cmpKey.innerHTML = '';
+    return;
+  }
+  const grades = getThresholds(cmp, level);
+  const labels = rangeLabels(grades, meta.data_type);
+  const rings = sampleClasses(grades.length).map((i) => {
+    // Ring as drawn on the map: radius plus its 2px line, at the state view.
+    const d = Math.round((compareRadius(i) + 2) * 2);
+    return `<li><span class="compare-ring" style="width:${d}px;height:${d}px;--compare-ink:${COMPARE_INK}" aria-hidden="true"></span><span>${escapeHtml(labels[i])}</span></li>`;
+  }).join('');
+  els.cmpKey.innerHTML = `
+    <div class="compare-head">
+      <div class="compare-title">${escapeHtml(meta.display_name_long || meta.display_name || cmp)}<small>Rings: bigger = higher${meta.source ? ` · ${escapeHtml(meta.source)}` : ''}</small></div>
+      <button type="button" class="icon-btn compare-clear" aria-label="Stop comparing" title="Stop comparing">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <ul class="compare-rings">${rings}</ul>`;
 }

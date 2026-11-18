@@ -25,12 +25,19 @@ export function readFromUrl(allowed) {
     if (v && allowed[k].includes(v)) patch[k] = v;
   }
 
-  // `?overlay=millionaires` layers the circles on top of whatever variable is
-  // selected. (`?var=millionaires` needs no special handling — Millionaires is
-  // a real dropdown variable again, so the generic `var` read above already
-  // reproduces the Millionaire Report embed's muted look.)
-  if (params.get('overlay') === 'millionaires') {
-    patch.showMillionaires = true;
+  // `?overlay=` lists what to layer on top of the selected variable, comma
+  // separated: `millionaires` for the town circles, and/or one area variable
+  // drawn as sized rings ("Compare with"), e.g. `?overlay=snap_household_rate,millionaires`.
+  // (`?var=millionaires` needs no special handling — Millionaires is a real
+  // dropdown variable, so the generic `var` read above already reproduces
+  // the Millionaire Report embed's muted look.)
+  const overlays = params.getAll('overlay').flatMap((v) => v.split(',')).map((v) => v.trim());
+  for (const o of overlays) {
+    if (o === 'millionaires') patch.showMillionaires = true;
+    else if (!patch.compareVariable && allowed.compareVariable?.includes(o)) patch.compareVariable = o;
+  }
+  if (patch.compareVariable && patch.compareVariable === (patch.selectedVariable || getState().selectedVariable)) {
+    delete patch.compareVariable;
   }
 
   // Reliability toggle is a boolean — coerce rather than store the raw string.
@@ -45,7 +52,16 @@ export function writeToUrl() {
   for (const k of KEYS) params.set(shortKey(k), s[k]);
   // Only emit rel when on, to keep the default URL clean.
   if (s.showReliability) params.set('rel', '1');
-  const newHash = '#' + params.toString();
+  // Overlays round-trip so a combination can be linked. Millionaires is only
+  // written when it is an overlay: with Millionaires as the variable the
+  // switch follows it, and the variable itself is not persisted.
+  const overlays = [];
+  if (s.compareVariable) overlays.push(s.compareVariable);
+  if (s.showMillionaires && s.selectedVariable !== 'millionaires') overlays.push('millionaires');
+  if (overlays.length) params.set('overlay', overlays.join(','));
+  // Commas read better unescaped in an overlay list, and URLSearchParams
+  // decodes them either way.
+  const newHash = '#' + params.toString().replace(/%2C/g, ',');
   if (window.location.hash !== newHash) {
     history.replaceState(null, '', newHash);
   }

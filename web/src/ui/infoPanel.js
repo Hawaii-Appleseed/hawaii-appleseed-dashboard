@@ -295,6 +295,26 @@ export function showInfoPanel(properties, { focus = false } = {}) {
       <div class="ip-headline-value">${escapeHtml(selectedValue)}</div>
     </div>`;
 
+  // The "Compare with" variable gets a smaller headline of its own, marked
+  // with a ring like the one on the map.
+  const cmpKey = s.compareVariable && s.compareVariable !== s.selectedVariable ? s.compareVariable : null;
+  const cmpVar = cmpKey ? VARIABLES?.[cmpKey] : null;
+  const compareHtml = cmpVar ? (() => {
+    const label = cmpVar.info_panel_label || cmpVar.display_name || cmpKey;
+    const m = moeFor({ ...cmpVar, key: cmpKey }, properties);
+    return `
+    <div class="ip-headline is-compare"
+         tabindex="0"
+         data-desc="${escapeHtml(cmpVar.description || '')}"
+         data-year="${escapeHtml(extractYear(cmpVar.source))}"
+         data-label="${escapeHtml(label)}"
+         data-moe="${escapeHtml(m.moe)}"
+         data-moe-note="${escapeHtml(m.note)}">
+      <div class="ip-headline-label"><span class="ip-ring" aria-hidden="true"></span>${escapeHtml(label)}</div>
+      <div class="ip-headline-value">${escapeHtml(formatValue(properties[cmpKey], cmpVar.data_type))}</div>
+    </div>`;
+  })() : '';
+
   panel.innerHTML = `
     <div class="ip-head">
       <h2 class="ip-title" tabindex="-1">${escapeHtml(name)}</h2>
@@ -303,6 +323,7 @@ export function showInfoPanel(properties, { focus = false } = {}) {
       </button>
     </div>
     ${headlineHtml}
+    ${compareHtml}
     ${repHtml}
     <a class="btn btn-primary ip-btn" href="${factsheetUrl}" target="_blank" rel="noopener">
       <span>View / print fact sheet</span>
@@ -317,8 +338,7 @@ export function showInfoPanel(properties, { focus = false } = {}) {
   if (focus) panel.querySelector('.ip-title')?.focus({ preventScroll: true });
 
   // Bind tooltips for headline + each metric
-  const headline = panel.querySelector('.ip-headline');
-  if (headline) bindHeadlineTooltip(headline);
+  panel.querySelectorAll('.ip-headline').forEach(bindHeadlineTooltip);
   bindMetricTooltips(panel);
 }
 

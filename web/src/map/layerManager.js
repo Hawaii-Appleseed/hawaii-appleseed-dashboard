@@ -309,7 +309,7 @@ async function ensureCoastline(map) {
   // Fades in like the areas do, rather than popping onto the map.
   whenTilesReady(map, COAST_LAYER_ID, () => map.setPaintProperty(COAST_LAYER_ID, 'line-opacity', 0.9));
   if (currentLevel) placeCoastline(map, currentLevel);
-  if (pointsLayerActive && map.getLayer(pointsLayerActive.layerId)) map.moveLayer(pointsLayerActive.layerId);
+  raiseOverlays(map);
 }
 
 function fillLayerIds(level) {
@@ -705,6 +705,206 @@ export function setMillionairesOverlay(on) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// "Compare with" — a second area variable, drawn as rings at each area's
+// center on the geography on the map. Ring size steps with the variable's own
+// color classes (getThresholds), so the legend's sizes and the map can't
+// drift apart. Rings have a pale see-through center and a dark line over a
+// white halo, so they read on every fill color and stay distinct from the
+// filled orange millionaire circles, which sit above them.
+// ---------------------------------------------------------------------------
+
+const COMPARE_SOURCE = 'compare-points';
+const COMPARE_HALO = 'compare-halo';
+const COMPARE_RING = 'compare-ring';
+export const COMPARE_INK = '#1f2d3d';
+let compareVariable = null;
+
+// Radius per class at the fit-the-state zoom; the legend draws the same sizes.
+export function compareRadius(classIndex) {
+  return 4 + classIndex * 1.6;
+}
+
+// `inset` shrinks every stop (the halo sits just inside the ring); MapLibre
+// only takes zoom at the top of an expression, so it goes inside each stop.
+function compareRadiusExpr(inset = 0) {
+  // `c` is the area's class index, worked out in compareData().
+  const base = ['+', 4, ['*', ['get', 'c'], 1.6]];
+  const stop = (k) => ['-', ['*', base, k], inset];
+  // Phones open the whole state at about zoom 5, where full-size rings would
+  // swallow the smaller islands.
+  return ['interpolate', ['linear'], ['zoom'], 5, stop(0.6), 6, stop(1), 10, stop(1.6), 13, stop(2.2)];
+}
+
+// Signed area of a ring (lon/lat degrees are fine for picking the biggest).
+function ringArea(ring) {
+  let a = 0;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    a += (ring[j][0] + ring[i][0]) * (ring[j][1] - ring[i][1]);
+  }
+  return a / 2;
+}
+
+function pointInRing([x, y], ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+// One spot per area: the centroid of its largest polygon (a county's main
+// island, not the ocean between its islands). A concave shape whose centroid
+// falls outside it gets the middle of its widest horizontal run instead.
+const centerCache = new Map(); // level → Map(GEOID → [lon, lat])
+function areaCenter(geometry) {
+  if (!geometry) return null;
+  const polys = geometry.type === 'Polygon' ? [geometry.coordinates]
+    : geometry.type === 'MultiPolygon' ? geometry.coordinates : [];
+  let best = null;
+  let bestArea = 0;
+  for (const poly of polys) {
+    const a = Math.abs(ringArea(poly[0] || []));
+    if (a > bestArea) { bestArea = a; best = poly[0]; }
+  }
+  if (!best || !bestArea) return null;
+  let cx = 0;
+  let cy = 0;
+  let a6 = 0;
+  for (let i = 0, j = best.length - 1; i < best.length; j = i++) {
+    const f = best[j][0] * best[i][1] - best[i][0] * best[j][1];
+    cx += (best[j][0] + best[i][0]) * f;
+    cy += (best[j][1] + best[i][1]) * f;
+    a6 += f * 3;
+  }
+  const c = [cx / a6, cy / a6];
+  if (pointInRing(c, best)) return c;
+  // Widest run along the centroid's latitude.
+  const xs = [];
+  for (let i = 0, j = best.length - 1; i < best.length; j = i++) {
+    const [xi, yi] = best[i];
+    const [xj, yj] = best[j];
+    if ((yi > c[1]) !== (yj > c[1])) xs.push(((xj - xi) * (c[1] - yi)) / (yj - yi) + xi);
+  }
+  xs.sort((m, n) => m - n);
+  let span = null;
+  for (let k = 0; k + 1 < xs.length; k += 2) {
+    if (!span || xs[k + 1] - xs[k] > span[1] - span[0]) span = [xs[k], xs[k + 1]];
+  }
+  return span ? [(span[0] + span[1]) / 2, c[1]] : c;
+}
+
+function centersFor(level) {
+  if (centerCache.has(level)) return centerCache.get(level);
+  const data = cachedGeoJson.get(level);
+  if (!data) return null;
+  const centers = new Map();
+  for (const f of data.features || []) {
+    const id = f.properties?.GEOID;
+    const c = areaCenter(f.geometry);
+    if (id != null && c) centers.set(String(id), c);
+  }
+  centerCache.set(level, centers);
+  return centers;
+}
+
+// Numeric value of `variable` on an area, mirroring colorExpression's read.
+function numericValue(props, variable) {
+  const mirrored = props['_num_' + variable];
+  if (typeof mirrored === 'number') return mirrored;
+  const raw = props[variable];
+  return typeof raw === 'number' && isFinite(raw) ? raw : null;
+}
+
+function compareData(level, variable) {
+  const data = cachedGeoJson.get(level);
+  const centers = centersFor(level);
+  const features = [];
+  if (data && centers && variable) {
+    const thresholds = getThresholds(variable, level);
+    for (const f of data.features || []) {
+      const props = f.properties || {};
+      const v = numericValue(props, variable);
+      const center = centers.get(String(props.GEOID));
+      if (v === null || !center) continue;
+      let c = 0;
+      while (c + 1 < thresholds.length && v >= thresholds[c + 1]) c++;
+      features.push({ type: 'Feature', geometry: { type: 'Point', coordinates: center }, properties: { GEOID: props.GEOID, v, c } });
+    }
+  }
+  // Biggest first, so smaller rings draw on top where they overlap.
+  features.sort((a, b) => b.properties.c - a.properties.c);
+  return { type: 'FeatureCollection', features };
+}
+
+function removeCompareLayers(map) {
+  for (const id of [COMPARE_RING, COMPARE_HALO]) if (map.getLayer(id)) map.removeLayer(id);
+  if (map.getSource(COMPARE_SOURCE)) map.removeSource(COMPARE_SOURCE);
+}
+
+// Draw (or clear) the rings for the current variable on the current level.
+// Called whenever either changes. Keeps the stack order: area fills, then the
+// rings, then the millionaire circles on top.
+function refreshCompare(map) {
+  if (!map || !currentLevel) return;
+  if (!compareVariable) {
+    removeCompareLayers(map);
+    return;
+  }
+  const data = compareData(currentLevel, compareVariable);
+  const source = map.getSource(COMPARE_SOURCE);
+  if (source) {
+    source.setData(data);
+  } else {
+    map.addSource(COMPARE_SOURCE, { type: 'geojson', data });
+    map.addLayer({
+      id: COMPARE_HALO,
+      type: 'circle',
+      source: COMPARE_SOURCE,
+      paint: {
+        'circle-radius': compareRadiusExpr(1.5),
+        'circle-color': 'rgba(0,0,0,0)',
+        'circle-stroke-color': '#ffffff',
+        'circle-stroke-width': 5,
+        'circle-stroke-opacity': 0.9,
+      },
+    });
+    map.addLayer({
+      id: COMPARE_RING,
+      type: 'circle',
+      source: COMPARE_SOURCE,
+      paint: {
+        'circle-radius': compareRadiusExpr(),
+        'circle-color': '#ffffff',
+        'circle-opacity': 0.45,
+        'circle-stroke-color': COMPARE_INK,
+        'circle-stroke-width': 2.25,
+      },
+    });
+  }
+  raiseOverlays(map);
+}
+
+// Rings above the area layers, millionaire circles above everything.
+function raiseOverlays(map) {
+  for (const id of [COMPARE_HALO, COMPARE_RING]) if (map.getLayer(id)) map.moveLayer(id);
+  if (pointsLayerActive && map.getLayer(pointsLayerActive.layerId)) map.moveLayer(pointsLayerActive.layerId);
+}
+
+export function setCompareVariable(varKey) {
+  compareVariable = varKey || null;
+  const map = getMap();
+  if (!map) return;
+  if (currentLevel) refreshCompare(map);
+  else map.once('load', () => refreshCompare(map));
+}
+
+export function getCompareVariable() {
+  return compareVariable;
+}
+
 export async function setLayer(level) {
   requestedLevel = level;
   if (level === currentLevel) return;
@@ -752,6 +952,8 @@ export async function setLayer(level) {
     setShadowFeature(level, null); // clear any prior selection's shadow
     currentLevel = level;
     refreshReliability();
+    // The rings move to the new geography's areas (and back above its fill).
+    refreshCompare(map);
   };
 
   // Not isStyleLoaded(): a variable picked right after this geography (as the
