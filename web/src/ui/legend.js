@@ -51,7 +51,17 @@ export function initLegend(variablesConfig, { embedded = false } = {}) {
   }
 
   els.relToggle?.addEventListener('change', (e) => setState({ showReliability: e.target.checked }));
-  els.milToggle.addEventListener('change', (e) => setState({ showMillionaires: e.target.checked }));
+  els.milToggle.addEventListener('change', (e) => {
+    const on = e.target.checked;
+    // With Millionaires as the variable the circles are all there is, so
+    // turning them off swaps in the default variable rather than leaving a
+    // blank muted map.
+    if (!on && getState().selectedVariable === 'millionaires') {
+      setState({ showMillionaires: false, selectedVariable: fallbackVariable() });
+    } else {
+      setState({ showMillionaires: on });
+    }
+  });
 
   // Tick labels thin out when they would collide. Re-check when the legend
   // changes size (breakpoints) or reappears (it has no size behind the Data tab).
@@ -292,18 +302,18 @@ function updateReliabilityControl(varKey) {
 }
 
 // Reflects the millionaires switch and shows its key while the circles are up.
-// When Millionaires IS the selected variable the circles are the map's whole
-// point, so the switch reads on and locks — turning it off would leave a
-// muted backdrop showing nothing. Pick another variable to get it back.
+// The switch always works: with Millionaires as the selected variable,
+// turning it off swaps in the default variable (see the change handler).
 function updateMillionairesControl() {
   const s = getState();
   const isVariable = s.selectedVariable === 'millionaires';
   const on = isVariable || !!s.showMillionaires;
   els.milToggle.checked = on;
-  els.milToggle.disabled = isVariable;
-  els.milToggle.closest('.mo-switch').classList.toggle('is-disabled', isVariable);
+  els.milToggle.disabled = false;
+  els.milToggle.closest('.mo-switch').classList.remove('is-disabled');
+  const fallback = VARIABLES?.[fallbackVariable()];
   els.milHelp.textContent = isVariable
-    ? 'On while Millionaires is the selected variable'
+    ? `Turn off to show ${fallback?.dropdown_label || fallback?.display_name || 'another variable'}`
     : 'Circles by town, sized by count';
   // Variable mode colors circles from the scheme picker; overlay mode uses
   // the fixed accent. Mirror whichever is actually on the map.
@@ -312,6 +322,14 @@ function updateMillionairesControl() {
   els.milKey.innerHTML = on
     ? `<div class="key-row"><span class="key-swatch is-circle" style="background-color:${color}"></span>Circle size = number of millionaires</div>${tiersTable()}`
     : '';
+}
+
+// The variable the map falls back to when the millionaires switch is turned
+// off while Millionaires is the selected variable: the dashboard's default
+// (ALICE), or the first dropdown variable if that is ever dropped.
+function fallbackVariable() {
+  if (VARIABLES?.alice_rate) return 'alice_rate';
+  return Object.keys(VARIABLES || {}).find((k) => k !== 'millionaires' && VARIABLES[k].show_in_dropdown) || 'alice_rate';
 }
 
 // Statewide millionaires by wealth range. The town circles can't be split this

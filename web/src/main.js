@@ -46,6 +46,9 @@ async function main() {
       .filter(([, v]) => v.show_in_dropdown)
       .map(([key]) => key),
   });
+  // A ?var=millionaires link opens with the switch on (see the variable
+  // handler below for why the switch follows Millionaires).
+  if (getState().selectedVariable === 'millionaires') setState({ showMillionaires: true });
   const s0 = getState();
 
   // The circles are shown for either reason: the user checked "Show
@@ -89,13 +92,13 @@ async function main() {
       drawLegend(state);
     }
     if ('selectedVariable' in changed) {
-      const leftMillionaires = prevVariable === 'millionaires';
       prevVariable = state.selectedVariable;
       setVariable(state.selectedVariable);
-      // Leaving Millionaires keeps its circles up as the overlay, so a reader
-      // who came in on the millionaire map (the Wealth Tax Report embed) can
-      // set it against any other variable. The switch still turns them off.
-      if (leftMillionaires && !state.showMillionaires) setState({ showMillionaires: true });
+      // Picking Millionaires turns the switch on, so leaving it for another
+      // variable keeps the circles up as the overlay: a reader who came in on
+      // the millionaire map (the Wealth Tax Report embed) can set it against
+      // any other variable. The switch turns them off from either state.
+      if (state.selectedVariable === 'millionaires' && !state.showMillionaires) setState({ showMillionaires: true });
       // Must follow setVariable: layerManager derives variable-vs-overlay mode
       // (mute + circle colors) from the now-current variable.
       setMillionairesOverlay(millionairesVisible(state));
