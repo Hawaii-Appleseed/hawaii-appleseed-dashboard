@@ -48,9 +48,13 @@ export function initLegend(variablesConfig, { embedded = false } = {}) {
 
   if (embedded) {
     legend.appendChild(els.milToggle.closest('.mo-switch'));
+    // The "Compare with" picker stays too (off until the reader picks one),
+    // so an embed can still set a second variable against the main one.
+    legend.appendChild(els.cmpSelect.closest('.mo-compare'));
+    buildCompareOptions();
     els.options.remove();
     els.optionsBtn.remove();
-    els.options = els.optionsBtn = els.schemes = els.relToggle = els.relHelp = els.cmpSelect = null;
+    els.options = els.optionsBtn = els.schemes = els.relToggle = els.relHelp = null;
   } else {
     buildSchemeOptions();
     buildCompareOptions();

@@ -1174,6 +1174,16 @@ select {
 .map-legend > .mo-switch .mo-switch-help {
   display: none;
 }
+.map-legend > .mo-compare {
+  margin-top: 10px;
+}
+.map-legend > .mo-compare .mo-label {
+  display: block;
+  margin-bottom: 4px;
+}
+.map-legend > .mo-compare .mo-switch-help {
+  display: none;
+}
 
 /* Map options: pops up above the legend. */
 .map-options {
