@@ -1347,8 +1347,44 @@ select {
   .map-legend {
     left: 10px;
     bottom: 10px;
+    width: 250px;
     max-width: calc(100% - 20px);
-    padding: 10px 12px;
+    padding: 8px 10px;
+  }
+  /* Phones: keep the keys, drop what only explains them. The statewide
+     wealth table and source lines are in the report itself, and the
+     legend would otherwise cover most of the map. */
+  .legend-head {
+    margin-bottom: 6px;
+  }
+  .legend-source,
+  .key-tiers,
+  .compare-title small {
+    display: none;
+  }
+  .legend-key,
+  .map-legend > .mo-switch {
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+  .compare-rings {
+    gap: 10px;
+    margin-top: 2px;
+  }
+  .map-legend > .mo-compare {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .map-legend > .mo-compare .mo-label {
+    flex-shrink: 0;
+    margin: 0;
+  }
+  .map-legend > .mo-compare .mo-select {
+    flex: 1;
+    min-width: 0;
+    height: 30px;
   }
 }
 /* Short maps (phones held sideways): the legend would sit on the zoom
