@@ -67,6 +67,11 @@ export function initLegend(variablesConfig, { embedded = false } = {}) {
     if (e.target.closest('.compare-clear')) setState({ compareVariable: null });
   });
 
+  // Remember the wealth table's open/closed state (it is redrawn with the key).
+  els.milKey.addEventListener('toggle', (e) => {
+    if (e.target.classList?.contains('key-tiers-wrap')) tiersOpen = e.target.open;
+  }, true);
+
   els.relToggle?.addEventListener('change', (e) => setState({ showReliability: e.target.checked }));
   els.milToggle.addEventListener('change', (e) => {
     const on = e.target.checked;
@@ -361,15 +366,24 @@ const MILLIONAIRE_TIERS = [
   { range: '$50M+', people: 365, wealth: 69.3 },
 ];
 
+// Phones start with the table folded under its heading so the legend
+// doesn't cover the map; wider screens start with it open. Once the reader
+// opens or closes it, that choice holds through legend redraws.
+const PHONE = typeof matchMedia === 'function' ? matchMedia('(max-width: 760px)') : null;
+let tiersOpen = null;
+
 function tiersTable() {
   const rows = MILLIONAIRE_TIERS.map((t) =>
     `<tr><th scope="row">${t.range}</th><td>${t.people.toLocaleString('en-US')}</td><td>$${t.wealth.toFixed(1)}B</td></tr>`
   ).join('');
-  return `<table class="key-tiers">
-      <caption>Statewide by wealth range, 2024</caption>
-      <thead><tr><th scope="col">Net worth</th><th scope="col">People</th><th scope="col">Wealth</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  const open = tiersOpen ?? !PHONE?.matches;
+  return `<details class="key-tiers-wrap"${open ? ' open' : ''}>
+      <summary>Statewide by wealth range, 2024</summary>
+      <table class="key-tiers">
+        <thead><tr><th scope="col">Net worth</th><th scope="col">People</th><th scope="col">Wealth</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </details>`;
 }
 
 // ── Compare with ───────────────────────────────────────────────────────────

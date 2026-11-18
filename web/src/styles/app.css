@@ -1132,10 +1132,36 @@ select {
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
-.key-tiers caption {
-  text-align: left;
+.key-tiers-wrap summary {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
   color: var(--ink-3);
-  padding-bottom: 2px;
+  cursor: pointer;
+  list-style: none;
+}
+.key-tiers-wrap summary::-webkit-details-marker {
+  display: none;
+}
+/* Chevron: points right when folded, down when open. */
+.key-tiers-wrap summary::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin-left: 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 150ms ease;
+}
+.key-tiers-wrap[open] summary::after {
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+.key-tiers-wrap summary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
 }
 .key-tiers th,
 .key-tiers td {
@@ -1358,7 +1384,6 @@ select {
     margin-bottom: 6px;
   }
   .legend-source,
-  .key-tiers,
   .compare-title small {
     display: none;
   }
