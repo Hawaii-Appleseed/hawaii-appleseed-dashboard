@@ -175,6 +175,15 @@ async function main() {
   if (isEmbedded) {
     document.body.classList.add('is-embedded');
 
+    // ?controls=0: a fixed embed. The host page has already chosen what the
+    // map shows (the Millionaire Report embeds the millionaires map this way),
+    // so the geography and variable pickers and the legend's "Compare with"
+    // are hidden. The Map/Data switch and the Open button stay, so a reader
+    // can still reach the full dashboard.
+    if (/[?&]controls=0\b/.test(window.location.search)) {
+      document.body.classList.add('hide-controls');
+    }
+
     // "Open" button: visible only when embedded.
     const fsBtn = document.getElementById('fullscreen-btn');
     if (fsBtn) {

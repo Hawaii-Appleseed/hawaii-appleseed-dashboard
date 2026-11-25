@@ -309,6 +309,18 @@ select {
   display: none !important;
 }
 
+/* Fixed embeds (?controls=0, set in main.js): no pickers. The Map/Data switch
+   and Open button keep a strip of their own above the map instead of sitting
+   in the controls bar's first row. */
+.hide-controls #controls-toggle,
+.hide-controls #controls-bar,
+.hide-controls .mo-compare {
+  display: none !important;
+}
+.hide-controls #tab-map {
+  padding-top: 66px;
+}
+
 /* ========== Tab panes ========== */
 .tab-pane[hidden] { display: none !important; }
 
