@@ -1,6 +1,7 @@
 import { getSchemeColors, getThresholds, listSchemes, classColor } from '../map/colors.js';
 import { getState, setState } from '../state/store.js';
 import { compareRadius, COMPARE_INK } from '../map/layerManager.js';
+import { fitHome } from '../map/mapInstance.js';
 
 // The map legend: a stepped color bar with the class boundaries under it, and
 // a "Map options" menu (color scheme, "Compare with", reliability flags,
@@ -60,6 +61,8 @@ export function initLegend(variablesConfig, { embedded = false } = {}) {
     buildCompareOptions();
     bindOptionsMenu();
   }
+
+  initLegendFold(legend);
 
   // The key's × clears the comparison (it is the only way to in an embed,
   // where the options menu is gone).
@@ -449,4 +452,46 @@ function updateCompareControl(varKey, level) {
       </button>
     </div>
     <ul class="compare-rings">${rings}</ul>`;
+}
+
+// On a small map (an embed on a phone) the open legend covers most of the
+// islands, so it starts folded to its title row, with a button to open it.
+// The size is the map's own box, not the window, so a small embed on a wide
+// screen folds too and the full dashboard on a phone does not. Once the
+// reader opens or closes it, their choice stands until the map changes
+// between small and not small.
+const FOLD_MAX_W = 560;
+const FOLD_MAX_H = 520;
+function initLegendFold(legend) {
+  const wrap = legend.parentElement;
+  const head = legend.querySelector('.legend-head');
+  if (!wrap || !head || typeof ResizeObserver === 'undefined') return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'icon-btn legend-fold-btn';
+  btn.setAttribute('aria-controls', legend.id);
+  btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>';
+  head.appendChild(btn);
+  const setFolded = (folded) => {
+    legend.classList.toggle('is-folded', folded);
+    btn.setAttribute('aria-expanded', String(!folded));
+    btn.setAttribute('aria-label', folded ? 'Show the map key' : 'Hide the map key');
+    btn.title = folded ? 'Show key' : 'Hide key';
+  };
+  btn.addEventListener('click', () => setFolded(!legend.classList.contains('is-folded')));
+  // Tapping the folded title opens it too: it is the only thing showing.
+  head.addEventListener('click', (e) => {
+    if (legend.classList.contains('is-folded') && !e.target.closest('button')) setFolded(false);
+  });
+  let small = null;
+  new ResizeObserver(() => {
+    const now = wrap.clientWidth < FOLD_MAX_W && wrap.clientHeight < FOLD_MAX_H;
+    if (now === small) return;
+    small = now;
+    legend.classList.toggle('can-fold', now);
+    setFolded(now);
+    // The starting view clears the legend's box, which just changed size.
+    // (fitHome does nothing once the reader has moved the map.)
+    fitHome();
+  }).observe(wrap);
 }

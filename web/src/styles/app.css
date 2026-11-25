@@ -997,6 +997,34 @@ select {
 .legend-head .icon-btn {
   margin: -5px -7px -5px 0;
 }
+/* Fold toggle (legend.js): only on a small map, where the key would cover it. */
+.legend-fold-btn {
+  display: none;
+}
+.map-legend.can-fold .legend-fold-btn {
+  display: inline-flex;
+  margin: -5px -7px -5px 0;
+}
+.legend-fold-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--dur-fast) var(--ease);
+}
+.map-legend.is-folded .legend-fold-btn svg {
+  transform: rotate(180deg);
+}
+.map-legend.is-folded > :not(.legend-head) {
+  display: none !important;
+}
+.map-legend.is-folded .legend-head {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+.map-legend.is-folded {
+  width: auto;
+  padding: 8px 12px;
+}
+
 .legend-title {
   font-size: var(--text-sm);
   font-weight: 600;
